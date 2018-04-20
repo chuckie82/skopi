@@ -96,14 +96,21 @@ class Beam(object):
     def get_photon_energy(self):
         return self.photon_energy
 
-    # I am not sure whether there should be 2 pi or not
     def get_wavenumber(self):
-        return self.k*2*np.pi
+        return self.k
     
     def get_wavevector(self):
         return np.array([0,0,self.get_wavenumber()])
 
     def set_focus(self, x, y=None, shape='circle'):
+        """
+        Set the focus of the beam.
+        x is the FWHM of the beam along x axis in meter.
+        y is the FWHM of the beam along y axis in meter.
+        The shape variable defines the shape of the transverse profile of the beam. 
+        If don't know what to choose for the shape variable, leave it as default.
+        The influence is very limited in this implementatin.
+        """
         if y is not None:
             # ellipse
             self.focus_xFWHM = x
