@@ -3,18 +3,36 @@ import numpy as np
 
 # several converters
 def wavelength2wavenumber(Lambda):
+    """
+    Lambda is the wavelength in meter.
+    Return 1./Lambda
+    """
     return 1. / Lambda
 
 
 def wavenumber2wavelength(k):
+    """
+    k is the wavenumber in meter^-1.  k= 1./wavelength.
+    Return 1./k
+    """
     return 1. / k
 
 
 def photonEnergy2wavelength(photonEnergy):
+    """
+    The unit of photonEnergy is eV.
+    The unit of wavelength is meter.
+    Return 1.2398e-6 / photonEnergy
+    """
     return 1.2398e-6 / photonEnergy
 
 
 def wavelength2photonEnergy(wavelength):
+    """
+    The unit of photonEnergy is eV.
+    The unit of wavelength is meter.
+    Return 1.2398e-6 / wavelength
+    """
     return 1.2398e-6 / wavelength
 
 
@@ -55,6 +73,11 @@ class Beam(object):
 
     # setters and getters
     def set_wavelength(self, x):
+        """
+        Set the wavelength to x.
+        The unit of x is meter.
+        """
+        
         self.Lambda = x
         self.update()
 
@@ -62,6 +85,11 @@ class Beam(object):
         return self.Lambda
 
     def set_photon_energy(self, ev):
+        """
+        Set the photon_energy to eV.
+        The unit of photon_energy is eV.
+        """
+        
         self.photon_energy = ev
         self.update()
 
