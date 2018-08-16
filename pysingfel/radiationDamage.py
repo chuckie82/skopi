@@ -2,7 +2,9 @@ from geometry import *
 from util import *
 from particle import rotateParticle
 import os
-
+import h5py
+from detector import *
+from beam import *
 
 def generateRotations(uniformRotation, rotationAxis, numQuaternions):
     """

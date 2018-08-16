@@ -1,4 +1,3 @@
-
 from diffraction import *
 from detector import *
 from beam import *
