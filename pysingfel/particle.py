@@ -1,7 +1,7 @@
 import h5py
 import numpy as np
-from util import symmpdb
-from geometry import quaternion2rot3D, getRandomRotation
+from pysingfel.util import symmpdb
+from pysingfel.geometry import quaternion2rot3D, getRandomRotation
 
 
 class Particle(object):
