@@ -1,2 +1,2 @@
-from diffraction import *
-from geometry import *
+from pysingfel.gpu.diffraction import *
+from pysingfel.gpu.geometry import *
