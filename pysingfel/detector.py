@@ -1,10 +1,10 @@
 import psana
 import numpy as np
-import geometry
-from util
+import pysingfel.geometry
+import pysingfel.util
 import pysingfel.diffraction as pd
 
-from crossTalk import add_cross_talk_effect_panel as cross_talk_panel
+from pysingfel.crossTalk import add_cross_talk_effect_panel as cross_talk_panel
 
 import sys
 import os
@@ -106,7 +106,7 @@ class Detector(object):
         # Change the flag self.detector_initialized
         self.detector_initialized = 1
 
-        geom = util.readGeomFile(path)
+        geom = pysingfel.util.readGeomFile(path)
         # Set paramters
         self.panel_num = 1
         # Notice that currently the position is calculated with the assumption that the orientation is [0,0,1]
@@ -254,9 +254,9 @@ class Detector(object):
                   "information.")
             return 1
 
-        self.pixel_position_reciprocal, self.pixel_distance_reciprocal, \
-        self.polarization_correction, self.solid_angle_correction = \
-            geometry.reciprocal_space_pixel_position_and_correction(
+        (self.pixel_position_reciprocal, self.pixel_distance_reciprocal,
+         self.polarization_correction, self.solid_angle_correction) = \
+            pysingfel.geometry.reciprocal_space_pixel_position_and_correction(
                 pixel_center=self.pixel_position,
                 polarization=polar,
                 wave_vector=wavevector,
@@ -305,7 +305,7 @@ class Detector(object):
         voxel_length = np.max(self.pixel_distance_reciprocal) / voxel_half_number / (1e-10 / 2)
 
         voxel_number = int(voxel_number_1d)
-        return geometry.get_reciprocal_mesh(voxel_number, voxel_length), voxel_length
+        return pysingfel.geometry.get_reciprocal_mesh(voxel_number, voxel_length), voxel_length
 
     def get_pattern_without_corrections(self, particle, beam, device="cpu"):
 

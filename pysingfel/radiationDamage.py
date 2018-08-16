@@ -1,10 +1,11 @@
-from geometry import *
-from util import *
-from particle import rotateParticle
-import os
+from pysingfel.geometry import *
+from pysingfel.util import *
+from pysingfel.particle import rotateParticle, Particle
 import h5py
-from detector import *
-from beam import *
+from pysingfel.detector import *
+from pysingfel.beam import *
+from pysingfel.diffraction import calculate_compton, calculate_molecularFormFactorSq
+
 
 def generateRotations(uniformRotation, rotationAxis, numQuaternions):
     """
@@ -13,9 +14,9 @@ def generateRotations(uniformRotation, rotationAxis, numQuaternions):
 
     if uniformRotation is None:
         # No rotation desired, init quaternions as (1,0,0,0)
-        Quaternions =  np.empty((numQuaternions, 4))
-        Quaternions[:,0] = 1.
-        Quaternions[:,1:] = 0.
+        Quaternions = np.empty((numQuaternions, 4))
+        Quaternions[:, 0] = 1.
+        Quaternions[:, 1:] = 0.
 
         return Quaternions
 
@@ -31,6 +32,7 @@ def generateRotations(uniformRotation, rotationAxis, numQuaternions):
         for i in range(numQuaternions):
             Quaternions[i, :] = getRandomRotation(rotationAxis)
         return Quaternions
+
 
 def setEnergyFromFile(fname, beam):
     """
@@ -58,7 +60,7 @@ def setFluenceFromFile(fname, timeSlice, sliceInterval, beam):
     n_phot = 0
     for i in range(sliceInterval):
         with h5py.File(fname, 'r') as f:
-            datasetname = '/data/snp_' + '{0:07}'.format(timeSlice-i) + '/Nph'
+            datasetname = '/data/snp_' + '{0:07}'.format(timeSlice - i) + '/Nph'
             n_phot += f.get(datasetname).value
     beam.set_photonsPerPulse(n_phot)
 
@@ -140,7 +142,7 @@ def MakeOneDiffr(myQuaternions, counter, parameters, outputName):
         photon_field = F_hkl_sq + Compton
         detector_intensity += photon_field
     detector_intensity *= det.solidAngle * det.PolarCorr * beam.get_photonsPerPulsePerArea()
-    detector_counts = convert_to_poisson(detector_intensity)
+    detector_counts = np.random.poisson(detector_intensity)
     saveAsDiffrOutFile(outputName, inputName, counter, detector_counts, detector_intensity, quaternion, det, beam)
 
 

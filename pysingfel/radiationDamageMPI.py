@@ -1,10 +1,9 @@
 import argparse
-import sys
-import time
 
 from mpi4py import MPI
 
 from pysingfel.radiationDamage import *
+from pysingfel.util import *
 
 
 def main():
@@ -30,7 +29,7 @@ def main():
 
     if rank == 0:
         end = time.time()
-        print 'Finished: ', end - start, ' seconds.'
+        print('Finished: ', end - start, ' seconds.')
 
 
 def master_diffract(comm, parameters):
@@ -101,6 +100,7 @@ def parse_input(args):
     """
     Parse the input command arguments and return a dict containing all simulation parameters.
     """
+
     def ParseBoolean(b):
         # Handle different possible Boolean types.
         if b is None:
@@ -141,6 +141,7 @@ def parse_input(args):
 
     # convert argparse to dict
     return vars(parser.parse_args(args))
+
 
 if __name__ == '__main__':
     main()

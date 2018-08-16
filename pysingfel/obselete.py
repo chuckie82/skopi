@@ -135,3 +135,63 @@ def set_detector_parameters(self, oname=None, oindex=0,
                             tilt_z=0, tilt_y=0, tilt_x=0):
     self.geometry.set_detector_parameters(oname, oindex, x0, y0, z0,
                                           rot_z, rot_y, rot_x, tilt_z, tilt_y, tilt_x)
+
+
+###########################################################################
+## The following funcitons use tensorflow to do calculation
+###########################################################################
+
+'''
+import tensorflow as tf
+
+#This method also works. But the efficiency is low. So currently we are using the numba.cuda rather than
+#the tensorflow. But if you are interested, you can also check this method.
+
+def calculate_diffraction_volume_gpu(particle, q_space, q_position):
+    f_hkl = calculate_atomicFactor_3d(particle, q_space)
+    split_index = particle.SplitIdx[:]
+    atomPos = particle.atomPos[:]
+    size_x, size_y, size_z = q_space.shape
+    pattern = np.zeros_like(q_space)
+
+    atomNumber = split_index[-1]
+
+    atomSpecies = np.zeros(split_index[-1], dtype=int)
+
+    for i in range(len(split_index)-1):
+        atomSpecies[split_index[i]:split_index[i+1]] = i
+
+    form_factor = tf.constant(value= f_hkl, dtype= tf.complex64)
+    split_index = tf.constant(value= split_index)
+    atom_position = tf.constant(value= atomPos, dtype= tf.complex64)
+    reciprocal_position = tf.constant(value= q_position, dtype= tf.complex64)
+    atom_species = tf.constant(value = atomSpecies)
+    atom_number = tf.constant(value = atomNumber)
+
+    pattern_3d =  tf.Variable(tf.zeros([size_x, size_y, size_z], dtype=tf.complex64),
+                                  dtype= tf.complex64)
+
+    number = tf.Variable(0 ,dtype= tf.int64)
+
+    def condition(number, pattern_3d):
+        return number < 10
+    def body(number, pattern_3d):
+        pattern_3d = tf.add(pattern_3d , tf.multiply(form_factor[:,:,:,atom_species[number]],
+                                     tf.exp(1j* 
+                                           tf.einsum('ijkl,l->ijk', 
+                                                     reciprocal_position, atom_position[number]))))
+        number += 1
+        return number , pattern_3d
+
+    init_op = tf.global_variables_initializer()
+    index,pattern_holder = tf.while_loop(condition, body, [number , pattern_3d], 
+                              shape_invariants=[number.get_shape(), pattern_3d.get_shape()],
+                                        parallel_iterations=1000)
+
+    with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
+      # Run the init operation.
+        sess.run(init_op)
+        number_of_iteration, pattern = sess.run([index, pattern_holder ])
+
+    return number_of_iteration, np.abs(pattern) ** 2
+'''
