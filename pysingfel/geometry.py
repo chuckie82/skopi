@@ -6,7 +6,6 @@ from numba import jit
 ######################################################################
 # Take slice from the volume
 ######################################################################
-@jit
 def get_weight_in_reciprocal_space(pixel_position_reciprocal, voxel_length):
     """
     Obtain the weight of the pixel for adjacent voxels.
