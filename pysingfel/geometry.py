@@ -6,6 +6,7 @@ from numba import jit
 ######################################################################
 # Take slice from the volume
 ######################################################################
+@jit
 def get_weight_in_reciprocal_space(pixel_position_reciprocal, voxel_length):
     """
     Obtain the weight of the pixel for adjacent voxels.
@@ -20,7 +21,7 @@ def get_weight_in_reciprocal_space(pixel_position_reciprocal, voxel_length):
     num_panel, num_x, num_y, _ = pixel_position_reciprocal.shape
 
     # Get one nearest neighbor
-    _indexes = np.floor(pixel_position_voxel_unit, dtype=np.int64)
+    _indexes = np.floor(pixel_position_voxel_unit).astype(np.int64)
 
     # Generate the holders
     indexes = np.zeros((num_panel, num_x, num_y, 8, 3), dtype=np.int64)
