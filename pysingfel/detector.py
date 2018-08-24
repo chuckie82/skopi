@@ -50,14 +50,8 @@ class Detector(object):
         self.pixel_position = None
 
         # pixel information in reciprocal space
-        self.pixel_position_reciprocal = None  # pixel position in reciprocal space with unit being m^-1
-        self.pixel_distance_reciprocal = None  # pixel distance to the center in reciprocal space 
-
-        # Pixel indexing map: Because the pixel position only take down the position of the pixel in real space
-        # rather than the pixel index in the picture, we use this map variable to store the mapping.
-        # For user defined detector, because there is only one panel, this methods is essentially 
-        # redundent, but for pre-defined detector, this methods seems necessary to me since otherwise
-        # I'll have to implement the rotation matrix for the pixels to restore the right sequence.
+        self.pixel_position_reciprocal = None  # (m^-1)
+        self.pixel_distance_reciprocal = None  # pixel distance to the center in reciprocal space
         self.pixel_index_map = 0
 
         # Corrections

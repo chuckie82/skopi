@@ -10,7 +10,7 @@ from numba import jit
 def get_weight_in_reciprocal_space(pixel_position_reciprocal, voxel_length):
     """
     Obtain the weight of the pixel for adjacent voxels.
-    :param pixel_position_reciprocal:
+    :param pixel_position_reciprocal: The position of each pixel in the reciprocal space in
     :param voxel_length:
     :return:
     """
