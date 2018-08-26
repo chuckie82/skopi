@@ -3,6 +3,7 @@ import pysingfel.geometry as pg
 import pysingfel.util as pu
 import pysingfel.diffraction as pd
 import pysingfel.crossTalk as pc
+import pysingfel.gpu.diffraction as pgd
 
 import sys
 import os
@@ -169,8 +170,9 @@ class PlainDetector(DetectorBase):
         """
         wavevector = beam.get_wavevector()
         polar = beam.Polarization
-        intensity = beam.
+        intensity = beam.get_photonsPerPulse() / (4 * beam.get_focus() ** 2)
 
+        # Get the reciprocal positions and the corrections
         (self.pixel_position_reciprocal,
          self.pixel_distance_reciprocal,
          self.polarization_correction,
@@ -178,15 +180,151 @@ class PlainDetector(DetectorBase):
                                                                              polarization=polar,
                                                                              wave_vector=wavevector,
                                                                              orientation=self.orientation)
+        # Apply the scaling factor of the solid angle of the central pixel.
+        self.solid_angle_per_pixel *= self.pixel_width * self.pixel_height / self.distance ** 2
 
+        # Put all the corrections together
+        self.linear_correction = intensity * self.Thomson_factor * np.multiply(self.polarization_correction,
+                                                                               self.solid_angle_per_pixel)
 
-def scaling_factor(beam, detector):
-    # Solid angle
-    factor = detector.pixel_width[0, 0, 0] * detector.pixel_height[0, 0, 0] / detector.distance ** 2
-    # Thomson factor and intensity
-    factor *= 2.817895019671143 * 2.817895019671143 * 1e-30 * beam.get_photonsPerPulse() / (4 * beam.get_focus() ** 2)
+    def assemble_image_stack(self, image_stack):
+        """
+        Assemble the image stack into a 2D diffraction pattern.
+        For this specific object, since it only has one panel, the result is to remove the first dimension.
 
-    return factor
+        :param image_stack: The [1, num_x, num_y] numpy array.
+        :return: The [num_x, num_y] numpy array.
+        """
+        return np.reshape(image_stack, (self.pixel_num_x, self.pixel_num_y))
+
+    def assemble_image_stack_batch(self, image_stack_batch):
+        """
+        Assemble the image stack batch into a stack of 2D diffraction patterns.
+        For this specific object, since it has only one panel, the result is a simple reshape.
+
+        :param image_stack_batch: The [stack_num, 1, num_x, num_y] numpy array
+        :return: The [stack_num, num_x, num_y] numpy array
+        """
+        stack_num = image_stack_batch.shape[0]
+        return np.reshape(image_stack_batch, (stack_num, self.pixel_num_x, self.pixel_num_y))
+
+    ####################################################################################################################
+    # Calculate diffraction patterns
+    ####################################################################################################################
+
+    def get_pattern_without_corrections(self, particle, device="cpu"):
+        """
+        Generate a single diffraction pattern without any correction from the particle object.
+
+        :param particle: The particle object
+        :param device: 'cpu' or 'gpu'
+        :return: A diffraction pattern.
+        """
+
+        if device == "cpu":
+            diffraction_pattern = pd.calculate_molecularFormFactorSq(particle,
+                                                                     self.pixel_distance_reciprocal,
+                                                                     self.pixel_position_reciprocal)
+        elif device == "gpu":
+            diffraction_pattern = pgd.calculate_diffraction_pattern_gpu(self.pixel_position_reciprocal,
+                                                                        particle,
+                                                                        "intensity")
+        else:
+            print(" The device parameter can only be set as \"gpu\" or \"cpu\" ")
+            raise Exception('Wrong parameter value. device can only be set as \"gpu\" or \"cpu\" ')
+
+        return diffraction_pattern
+
+    def get_pattern_with_corrections(self, particle, device="cpu"):
+        """
+        Generate a single diffraction pattern without any correction from the particle object.
+
+        :param particle: The particle object
+        :param device: 'cpu' or 'gpu'
+        :return: A diffraction pattern.
+        """
+
+        if device == "cpu":
+            diffraction_pattern = pd.calculate_molecularFormFactorSq(particle,
+                                                                     self.pixel_distance_reciprocal,
+                                                                     self.pixel_position_reciprocal)
+        elif device == "gpu":
+            diffraction_pattern = pgd.calculate_diffraction_pattern_gpu(self.pixel_position_reciprocal,
+                                                                        particle,
+                                                                        "intensity")
+        else:
+            print(" The device parameter can only be set as \"gpu\" or \"cpu\" ")
+            raise Exception('Wrong parameter value. device can only be set as \"gpu\" or \"cpu\" ')
+
+        return np.multiply(diffraction_pattern, self.linear_correction)
+
+    def add_static_noise(self, pattern):
+        """
+        Add static noise to the diffraction pattern.
+        :param pattern: The pattern stack.
+        :return: Pattern stack + static_noise
+        """
+        return pattern + np.random.uniform(0, 2 * np.sqrt(3 * self.pixel_rms))
+
+    def add_solid_angle_correction(self, pattern):
+        return np.multiply(pattern, self.solid_angle_per_pixel)
+
+    def add_polarization_correction(self, pattern):
+        return np.multiply(pattern, self.polarization_correction)
+
+    def add_correction_and_quantization(self, pattern):
+        return np.random.poisson(np.multiply(np.multiply(pattern,
+                                                         self.solid_angle_per_pixel),
+                                             self.polarization_correction))
+
+    def photons_without_static_noise(self, particle, beam, device="cpu"):
+        raw_data = self.get_pattern_without_corrections(particle, beam, device)
+        return self.add_correction_and_quantization(raw_data)
+
+    def get_adu(self, particle, beam, path, device="cpu"):
+        raw_photon = self.photons_without_static_noise(particle, beam, device)
+        return pc.add_cross_talk_effect_panel(path, raw_photon) + np.random.uniform(0, 2 * np.sqrt(3 * self.pixel_rms))
+
+    ####################################################################################################################
+    # For 3D slicing.
+    ####################################################################################################################
+    def preferred_voxel_length(self, wave_vector):
+        """
+        If one want to put the diffraction pattern into 3D reciprocal space, then one needs to select a
+        proper voxel length for the reciprocal space. This function gives a reasonable estimation of this
+        length
+
+        :param wave_vector: The wavevector of in this experiment.
+        :return: voxel_length.
+        """
+        # Notice that this voxel length has nothing to do with the voxel length utilized in dragonfly.
+        voxel_length = np.sqrt(np.sum(np.square(wave_vector)))
+        voxel_length /= self.distance * np.min(self.pixel_width, self.pixel_height)
+
+        return voxel_length
+
+    def preferred_reciprocal_mesh_number(self, wave_vector):
+        """
+
+        :param wave_vector:
+        :return:
+        """
+        """ Return the prefered the reciprocal voxel grid number along 1 dimension. """
+        voxel_length = self.preferred_voxel_length(wave_vector)
+        reciprocal_space_range = np.max(self.pixel_distance_reciprocal)
+        # The voxel number along 1 dimension is 2*voxel_half_num_1d+1
+        voxel_half_num_1d = int(np.floor_divide(reciprocal_space_range, voxel_length) + 1)
+
+        voxel_num_1d = int(2 * voxel_half_num_1d + 1)
+        return voxel_num_1d
+
+    def get_reciprocal_mesh(self, voxel_number_1d):
+        voxel_half_number = int((voxel_number_1d / 2) - 1)
+        voxel_length = np.max(self.pixel_distance_reciprocal) / voxel_half_number
+
+        voxel_number = int(voxel_number_1d)
+        return pg.get_reciprocal_mesh(voxel_number, voxel_length), voxel_length
+
 
 class LclsDetector(object):
     def __init__(self):
@@ -447,7 +585,6 @@ def add_shot_noise(pattern):
 
 def add_cross_talk_effect_panel(pattern, path):
     return pc.add_cross_talk_effect_panel(path, pattern)
-
 
 ####################################
 #     From now on, the functions are used to add detector effects
