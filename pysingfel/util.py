@@ -2,17 +2,14 @@ import h5py
 import numpy as np
 
 
-# from pysingfel.diffraction import *
-
-def radial_distribution(volume):
-    shape = volume.shape
-    pass
-
-
 def prepH5(outputName):
     """
     Create output file, prepare top level groups, write metadata.
+
+    :param outputName: The output file name.
+    :return: None
     """
+
     with h5py.File(outputName, 'w') as f:
         # Generate top level groups
         f.create_group('data')
@@ -70,9 +67,17 @@ def saveAsDiffrOutFile(outputName, inputName, counter, detector_counts, detector
             f.create_dataset('params/beam/photonEnergy', data=beam.get_photon_energy())
 
 
+########################################################################################################################
+# Parser
+########################################################################################################################
 # Read from Geom file
 def readGeomFile(fname):
-    ## geometry dictionary contains the parameters used to initialize the detector
+    """
+    Parse the .geom file to initialize the user defined detector.
+    :param fname:
+    :return:
+    """
+    # geometry dictionary contains the parameters used to initialize the detector
     geom = {}
     with open(fname) as f:
         content = f.readlines()
@@ -82,9 +87,11 @@ def readGeomFile(fname):
                 if tmp[0] == 'geom/d':
                     geom.update({'distance': float(tmp[1])})
                 if tmp[0] == 'geom/pix_width':
-                    geom.update({'pixel size': float(tmp[1])})
+                    geom.update({'pixel size x': float(tmp[1])})
+                    geom.update({'pixel size y': float(tmp[1])})
                 if tmp[0] == 'geom/px':
-                    geom.update({'pixel number': int(tmp[1])})
+                    geom.update({'pixel number x': int(tmp[1])})
+                    geom.update({'pixel number y': int(tmp[1])})
 
     return geom
 
@@ -92,8 +99,9 @@ def readGeomFile(fname):
 # Read pdb file and return atom position and type            
 def symmpdb(fname):
     """
-    Read REMARK 350 BIOMT from pdb file, which specify the necessary transformation to get the full protein structure.
-    Return the atom position as well as atom type in numpy arrays.
+    Parse the pdb file. This function can handle the REMARK 350 correctly.
+    :param fname: The address of the pdb file.
+    :return: Numpy array containing the type and position of each atom in the pdb file.
     """
 
     AtomTypes = {'H': 1, 'C': 6, 'N': 7, 'O': 8, 'P': 15, 'S': 16}
@@ -229,3 +237,7 @@ def symmpdb(fname):
     # sort based on atomtype and charge
     return atom_info[np.lexsort((atom_info[:, 4].astype(int), atom_info[:, 3].astype(int)))]
     # return atom_info, sym_dict, atoms_array
+
+########################################################################################################################
+# For detector.py
+########################################################################################################################

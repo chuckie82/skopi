@@ -260,7 +260,7 @@ def _geometry_correction(pixel_center, orientation):
     return geometry_correction
 
 
-def reciprocal_space_pixel_position_and_correction(pixel_center, wave_vector, polarization, orientation):
+def reciprocal_position_and_correction(pixel_center, wave_vector, polarization, orientation):
     """
     Calculate the pixel positions in reciprocal space and all the related corrections.
 

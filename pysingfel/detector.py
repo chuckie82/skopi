@@ -1,62 +1,72 @@
-import psana
 import numpy as np
-import pysingfel.geometry
-import pysingfel.util
+import pysingfel.geometry as pg
+import pysingfel.util as pu
 import pysingfel.diffraction as pd
-
-from pysingfel.crossTalk import add_cross_talk_effect_panel as cross_talk_panel
+import pysingfel.crossTalk as pc
 
 import sys
 import os
 
-# USE :py:class:`PSCalib.CalibParsStore`
-import PSCalib.GlobalUtils as gu
 from PSCalib.GenericCalibPars import GenericCalibPars
-from PSCalib.CalibParsBaseAndorV1 import CalibParsBaseAndorV1
-from PSCalib.CalibParsBaseCameraV1 import CalibParsBaseCameraV1
-from PSCalib.CalibParsBaseCSPad2x2V1 import CalibParsBaseCSPad2x2V1
 from PSCalib.CalibParsBasePnccdV1 import CalibParsBasePnccdV1
 from PSCalib.GeometryAccess import GeometryAccess, img_from_pixel_arrays
 
+"""
+The idea behind these classes is that I can not put everything in a single class in a controllable 
+and elegant way. Therefore, I try to create several different classes sharing the same interface
+for the user and the other modules.
 
-# The information the detector module should contain
-class Detector(object):
-    def __init__(self, mode="Unspecified"):
+In these classes, in the __init__ function, properties and methods starting with _ are private which
+means the other classes does not depends on them. 
+"""
 
-        # whether use the user defined detector or pre-defined detector
-        self.mode = mode
 
-        # Flags
-        self.detector_initialized = 0
-        self.pixel_initialized = 0
+class DetectorBase(object):
+    """
+    This is the base object for all detector object.
+    It does not contain any methods. It provides interfaces for the other modules.
+    """
 
+    def __init__(self):
         # Define the hierarchy system. For simplicity, we only use two-layer structure.
         self.panel_num = 1
-        self.panel_orientation = None
 
         # Define all properties the detector should have
-        self.distance = 0  # (m) detector distance
-        self.pix_width = 0  # (m)
-        self.pix_height = 0  # (m)
-        self.pix_area = 0  # (m^2)
-        self.pix_num_x = 0  # number of pixels in x
-        self.pix_num_y = 0  # number of pixels in y
-        self.pix_num_total = 0  # total number of pixels (px*py)
+        self.distance = 1  # (m) detector distance
+        self.pixel_width = 0  # (m)
+        self.pixel_height = 0  # (m)
+        self.pixel_area = 0  # (m^2)
+        self.pixel_num_x = 0  # number of pixels in x
+        self.pixel_num_y = 0  # number of pixels in y
+        self.pixel_num_total = 0  # total number of pixels (px*py)
         self.center_x = 0  # center of detector in x
         self.center_y = 0  # center of detector in y
-        self.orientation = [0, 0, 1]
-
-        # pixel position in real space
-        self.pixel_position = None
+        self.orientation = np.array([0, 0, 1])
+        self.pixel_position = None  # (m)
 
         # pixel information in reciprocal space
         self.pixel_position_reciprocal = None  # (m^-1)
-        self.pixel_distance_reciprocal = None  # pixel distance to the center in reciprocal space
+        self.pixel_distance_reciprocal = None  # (m^-1)
+
+        # Pixel map
         self.pixel_index_map = 0
+        self.pixel_index_x_max = 1
+        self.pixel_index_y_max = 1
 
         # Corrections
-        self.solid_angle_correction = None  # solid angle
-        self.polarization_correction = None  # Polarization correction 
+        self.solid_angle_per_pixel = None  # solid angle
+        self.polarization_correction = None  # Polarization correction
+
+        """
+        The theoretical differential cross section of an electron ignoring the polarization effect is,
+                do/dO = ( e^2/(4*Pi*epsilon0*m*c^2) )^2  *  ( 1 + cos(xi)^2 )/2 
+        Therefore, one needs to includes the leading constant factor which is the following numerical value.
+        """
+        # Tompson Scattering factor
+        self.Thomson_factor = 2.817895019671143 * 2.817895019671143 * 1e-30
+
+        # Total scaling and correction factor.
+        self.linear_correction = None
 
         # Detector effects
         self.pedestal = 0
@@ -69,82 +79,168 @@ class Detector(object):
         # self.geometry currently only work for the pre-defined detectors
         self.geometry = None
 
-        if not ((self.mode == "User Defined") or (self.mode == "LCLS Detectors")):
-            print('If you want to use LCLS detectors like pnccdFront or pnccdBack,\n ' +
-                  'please specifiy the mode parameter as \"LCLS Detector\".' +
-                  'After the creation of the detector object, please use ' +
-                  'the self.initialize_as_LCLS_detector(path= path of the detector calib folder) function' +
-                  'to initialize the detector object.')
-            print('If you don\'t want to use LCLS detector and only want to set up a \n' +
-                  'plain panel of detector with specified pixel size and distance to the interaction \n' +
-                  'point, please set the mode parameter as \"User Defined\". Then please use the function: \n' +
-                  ' self.initialize_with_detector_geometry_file(path= path of the detector geometry file)')
-            print('By the way, advanced user can tune the .data file associated with the LCLS detector to change \n' +
-                  'detector parameters. The detailed methods can be found \n' +
-                  'in the official documentation.')
 
-        if self.mode == "User Defined":
-            print("Please use self.initialize_with_detector_geometry_" +
-                  "file(path= path of the detector geometry file) to " +
-                  "initialize the detector object.")
+class PlainDetector(DetectorBase):
+    """
+    This object constructs a detector based on the .geom file.
+    """
 
-        if self.mode == "LCLS Detectors":
-            print(
-                "Please use self.initialize_as_LCLS_" +
-                "detector(path= path of the detector calib folder)" +
-                " to initialize the detector object.")
+    def __init__(self, geom_file=None, beam=None):
+        """
+        Define parameters.
+        :param geom_file: The geometry file that can be used to initialize the object.
+        :param beam: The beam object.
+        """
+        super(PlainDetector, self).__init__()
+        if geom_file:
+            if beam:
+                print("Initialize the detector with the geometry file and the beam object.")
+            else:
+                print("Initialize the detector with the geometry file only. "
+                      "Please also initialize the detector with the beam object."
+                      " file before calculating the diffraction patterns. ")
+            self.initialize(geom_file=geom_file, beam=beam)
+        else:
+            print("Please initialize the detector with the geometry file and the beam object with"
+                  "self.initialize (and perhaps self.initialize_pixels_with_beam) ")
 
-    def initialize_with_detector_geometry_file(self, path):
+    def initialize(self, geom_file, beam=None):
+        """
+        Initialize the detector with the user-defined geometry file (and perhaps self.initialize_pixels_with_beam).
 
-        self.mode = "User Defined"
-        # Change the flag self.detector_initialized
-        self.detector_initialized = 1
+        :param geom_file: The path of the .geom file.
+        :param beam: The beam object.
+        :return: None
+        """
+        geom = pu.readGeomFile(geom_file)
+        self.geometry = geom
 
-        geom = pysingfel.util.readGeomFile(path)
-        # Set paramters
+        # Set parameters
         self.panel_num = 1
-        # Notice that currently the position is calculated with the assumption that the orientation is [0,0,1]
-        # So the following value should not be changed at present.
-        self.panel_orientation = np.array([[0, 0, 1], ])
 
-        self.pix_num_x = int(geom['pixel number'])
-        self.pix_num_y = int(geom['pixel number'])
-        self.pix_num_total = np.array([self.pix_num_x * self.pix_num_y, ])
-
+        # Extract info
+        self.pixel_num_x = int(geom['pixel number x'])
+        self.pixel_num_y = int(geom['pixel number y'])
+        self.pixel_num_total = np.array([self.pixel_num_x * self.pixel_num_y, ])
         self.distance = np.array([geom['distance'], ])
 
-        self.pix_width = np.ones((1, self.pix_num_x, self.pix_num_y)) * geom['pixel size']
-        self.pix_height = np.ones((1, self.pix_num_x, self.pix_num_y)) * geom['pixel size']
+        self.pixel_width = geom['pixel size x']
+        self.pixel_height = geom['pixel size y']
 
         # Calculate real space position
-        self.pixel_position = np.zeros((1, self.pix_num_x, self.pix_num_y, 3))
+        self.pixel_position = np.zeros((self.panel_num, self.pixel_num_x, self.pixel_num_y, 3))
         # z direction position
         self.pixel_position[0, ::, ::, 2] += self.distance
 
-        # These variables will be automatically released when the function finishes
-        # So do not bother to delete them manually.
-        x_coordinate_temp = self.pix_width * (np.array(range(self.pix_num_x)) - (self.pix_num_x - 1) / 2.)
-        y_coordinate_temp = self.pix_height * (np.array(range(self.pix_num_y)) - (self.pix_num_y - 1) / 2.)
+        # x,y direction position
+        total_length_x = (self.pixel_num_x - 1) * self.pixel_width
+        total_length_y = (self.pixel_num_y - 1) * self.pixel_height
+
+        x_coordinate_temp = np.linspace(-total_length_x / 2, total_length_x / 2, num=self.pixel_num_x, endpoint=True)
+        y_coordinate_temp = np.linspace(-total_length_y / 2, total_length_y / 2, num=self.pixel_num_y, endpoint=True)
         mesh_temp = np.meshgrid(x_coordinate_temp, y_coordinate_temp)
 
         self.pixel_position[0, ::, ::, 0] = mesh_temp[0][::, ::]
         self.pixel_position[0, ::, ::, 1] = mesh_temp[1][::, ::]
 
         # Calculate the index map for the image
+        mesh_temp = np.meshgrid(np.arange(self.pixel_num_x), np.arange(self.pixel_num_y))
         self.pixel_index_map[0, :, :, 0] = mesh_temp[0][::, ::]
         self.pixel_index_map[0, :, :, 1] = mesh_temp[1][::, ::]
+        self.pixel_index_x_max = self.pixel_num_x
+        self.pixel_index_y_max = self.pixel_num_y
 
         # Initialize the detector effect parameters
-        self.pedestal = np.zeros((1, self.pix_num_x, self.pix_num_y))
-        self.pixel_rms = np.zeros((1, self.pix_num_x, self.pix_num_y))
-        self.pixel_bkgd = np.zeros((1, self.pix_num_x, self.pix_num_y))
-        self.pixel_status = np.zeros((1, self.pix_num_x, self.pix_num_y))
-        self.pixel_mask = np.zeros((1, self.pix_num_x, self.pix_num_y))
-        self.pixel_gain = np.ones((1, self.pix_num_x, self.pix_num_y))
+        self.pedestal = np.zeros((1, self.pixel_num_x, self.pixel_num_y))
+        self.pixel_rms = np.zeros((1, self.pixel_num_x, self.pixel_num_y))
+        self.pixel_bkgd = np.zeros((1, self.pixel_num_x, self.pixel_num_y))
+        self.pixel_status = np.zeros((1, self.pixel_num_x, self.pixel_num_y))
+        self.pixel_mask = np.zeros((1, self.pixel_num_x, self.pixel_num_y))
+        self.pixel_gain = np.ones((1, self.pixel_num_x, self.pixel_num_y))
 
-        self._calculate_pixel_range()
+        if beam:
+            self.initialize_pixels_with_beam(beam=beam)
 
-    def initialize_as_LCLS_detector(self, path):
+    def initialize_pixels_with_beam(self, beam=None):
+        """
+        Calculate the pixel position in the reciprocal space and several corrections.
+        :param beam: The beam object
+        :return: None
+        """
+        wavevector = beam.get_wavevector()
+        polar = beam.Polarization
+        intensity = beam.
+
+        (self.pixel_position_reciprocal,
+         self.pixel_distance_reciprocal,
+         self.polarization_correction,
+         self.solid_angle_per_pixel) = pg.reciprocal_position_and_correction(pixel_center=self.pixel_position,
+                                                                             polarization=polar,
+                                                                             wave_vector=wavevector,
+                                                                             orientation=self.orientation)
+
+
+def scaling_factor(beam, detector):
+    # Solid angle
+    factor = detector.pixel_width[0, 0, 0] * detector.pixel_height[0, 0, 0] / detector.distance ** 2
+    # Thomson factor and intensity
+    factor *= 2.817895019671143 * 2.817895019671143 * 1e-30 * beam.get_photonsPerPulse() / (4 * beam.get_focus() ** 2)
+
+    return factor
+
+class LclsDetector(object):
+    def __init__(self):
+
+        # Define the hierarchy system. For simplicity, we only use two-layer structure.
+        self.panel_num = 1
+
+        # Define all properties the detector should have
+        self.distance = 0  # (m) detector distance
+        self.pixel_width = 0  # (m)
+        self.pixel_height = 0  # (m)
+        self.pixel_area = 0  # (m^2)
+        self.pixel_num_x = 0  # number of pixels in x
+        self.pixel_num_y = 0  # number of pixels in y
+        self.pixel_num_total = 0  # total number of pixels (px*py)
+        self.center_x = 0  # center of detector in x
+        self.center_y = 0  # center of detector in y
+        self.orientation = [0, 0, 1]
+
+        # pixel position in real space
+        self.pixel_position = None
+
+        # pixel information in reciprocal space
+        self.pixel_position_reciprocal = None  # (m^-1)
+        self.pixel_distance_reciprocal = None  # (m^-1)
+        self.pixel_index_map = 0
+
+        # Corrections
+        self.solid_angle_per_pixel = None  # solid angle
+        self.polarization_correction = None  # Polarization correction 
+
+        """
+        The theoretical differential cross section of an electron ignoring the polarization effect is,
+                do/dO = ( e^2/(4*Pi*epsilon0*m*c^2) )^2  *  ( 1 + cos(xi)^2 )/2 
+        Therefore, one needs to includes the leading constant factor which is the following numerical value.
+        """
+        # Tompson Scattering factor
+        self.Thomson_factor = 2.817895019671143 * 2.817895019671143 * 1e-30
+
+        # Total scaling and correction factor.
+        self.linear_correction = None
+
+        # Detector effects
+        self.pedestal = 0
+        self.pixel_rms = 0
+        self.pixel_bkgd = 0
+        self.pixel_status = 0
+        self.pixel_mask = 0
+        self.pixel_gain = 0
+
+        # self.geometry currently only work for the pre-defined detectors
+        self.geometry = None
+
+    def initialize_as_lcls_detector(self, path):
 
         self.mode = "LCLS Detectors"
         # parse the path to extract the necessary information to use psana modules
@@ -209,13 +305,13 @@ class Detector(object):
         del temp_index
 
         self.panel_orientation = np.array([[0, 0, 1], ] * self.panel_num)
-        self.pix_num_x = np.array([self.pixel_index_map.shape[1], ] * self.panel_num)
-        self.pix_num_y = np.array([self.pixel_index_map.shape[2], ] * self.panel_num)
-        self.pix_num_total = np.sum(np.multiply(self.pix_num_x, self.pix_num_y))
+        self.pixel_num_x = np.array([self.pixel_index_map.shape[1], ] * self.panel_num)
+        self.pixel_num_y = np.array([self.pixel_index_map.shape[2], ] * self.panel_num)
+        self.pix_num_total = np.sum(np.multiply(self.pixel_num_x, self.pixel_num_y))
 
         tmp = float(self.geometry.get_pixel_scale_size())
-        self.pix_width = np.ones((self.panel_num, self.pix_num_x[0], self.pix_num_y[0])) * tmp
-        self.pix_height = np.ones((self.panel_num, self.pix_num_x[0], self.pix_num_y[0])) * tmp
+        self.pixel_width = np.ones((self.panel_num, self.pixel_num_x[0], self.pixel_num_y[0])) * tmp
+        self.pixel_height = np.ones((self.panel_num, self.pixel_num_x[0], self.pixel_num_y[0])) * tmp
 
         ##################################
         # The following several lines initialize the detector effects besides cross talk.
@@ -249,8 +345,8 @@ class Detector(object):
             return 1
 
         (self.pixel_position_reciprocal, self.pixel_distance_reciprocal,
-         self.polarization_correction, self.solid_angle_correction) = \
-            pysingfel.geometry.reciprocal_space_pixel_position_and_correction(
+         self.polarization_correction, self.solid_angle_per_pixel) = \
+            pg.reciprocal_space_pixel_position_and_correction(
                 pixel_center=self.pixel_position,
                 polarization=polar,
                 wave_vector=wavevector,
@@ -291,7 +387,7 @@ class Detector(object):
         # Notice that the voxel length has something to do with the units which I have never figured out what happened.
         voxel_length = np.sqrt(np.sum(np.square(wave_vector
                                                 ))) / self.distance * np.min(
-            np.minimum(self.pix_width, self.pix_height))
+            np.minimum(self.pixel_width, self.pixel_height))
         return voxel_length
 
     def get_reciprocal_mesh(self, voxel_number_1d):
@@ -299,7 +395,7 @@ class Detector(object):
         voxel_length = np.max(self.pixel_distance_reciprocal) / voxel_half_number / (1e-10 / 2)
 
         voxel_number = int(voxel_number_1d)
-        return pysingfel.geometry.get_reciprocal_mesh(voxel_number, voxel_length), voxel_length
+        return pg.get_reciprocal_mesh(voxel_number, voxel_length), voxel_length
 
     def get_pattern_without_corrections(self, particle, beam, device="cpu"):
 
@@ -326,39 +422,33 @@ class Detector(object):
         return pattern + np.random.uniform(0, 2 * np.sqrt(3 * self.pixel_rms))
 
     def _add_solid_angle_correction(self, pattern):
-        return np.multiply(pattern, self.solid_angle_correction)
+        return np.multiply(pattern, self.solid_angle_per_pixel)
 
     def _add_polarization_correction(self, pattern):
         return np.multiply(pattern, self.polarization_correction)
 
-    def add_shot_noise(self, pattern):
-        return np.random.poisson(pattern)
-
     def add_correction_and_quantization(self, pattern):
         return np.random.poisson(np.multiply(np.multiply(pattern,
-                                                         self.solid_angle_correction),
+                                                         self.solid_angle_per_pixel),
                                              self.polarization_correction))
-
-    def add_cross_talk_effect_panel(self, pattern, path):
-        return cross_talk_panel(path, pattern)
 
     def photons_without_static_noise(self, particle, beam, device="cpu"):
         raw_data = self.get_pattern_without_corrections(particle, beam, device)
         return self.add_correction_and_quantization(raw_data)
 
-    def get_ADU(self, particle, beam, path, device="cpu"):
+    def get_adu(self, particle, beam, path, device="cpu"):
         raw_photon = self.photons_without_static_noise(particle, beam, device)
-        return cross_talk_panel(path, raw_photon) + np.random.uniform(0, 2 * np.sqrt(3 * self.pixel_rms))
+        return pc.add_cross_talk_effect_panel(path, raw_photon) + np.random.uniform(0, 2 * np.sqrt(3 * self.pixel_rms))
+
+
+def add_shot_noise(pattern):
+    return np.random.poisson(pattern)
+
+
+def add_cross_talk_effect_panel(pattern, path):
+    return pc.add_cross_talk_effect_panel(path, pattern)
 
 
 ####################################
 #     From now on, the functions are used to add detector effects
 ####################################
-
-def scaling_factor(beam, detector):
-    # Solid angle
-    factor = detector.pix_width[0, 0, 0] * detector.pix_height[0, 0, 0] / detector.distance ** 2
-    # Thomson factor and intensity
-    factor *= 2.81794 * 2.81794 * 1e-30 * beam.get_photonsPerPulse() / (4 * beam.get_focus() ** 2)
-
-    return factor
