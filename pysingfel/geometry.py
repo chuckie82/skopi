@@ -230,37 +230,38 @@ def _polarization_correction(pixel_center, polarization):
     return polarization_correction
 
 
-def _geometry_correction(pixel_center, orientation):
+def solid_angle(pixel_center, pixel_width, pixel_height, orientation):
     """
-    Obtain the geometric correction.
+    Calculate the solid angle for each pixel.
 
-    :param pixel_center: The position of each pixel in real space.
+    :param pixel_center: The position of each pixel in real space. In pixel stack format.
     :param orientation: The orientation of the detector.
-    :return: The geometric correction array.
+    :param pixel_height: The pixel height for each pixel. In pixel stack format.
+    :param pixel_width: The pixel width for each pixel. In pixel stack format.
+    :return: Solid angle of each pixel.
     """
-    # reshape the array into a 1d position array
-    pixel_center_1d = reshape_pixels_position_arrays_to_1d(pixel_center)
-    distance = pixel_center_1d[0, 2]
-    pixel_center_norm = np.sqrt(np.sum(np.square(pixel_center_1d), axis=1))
-    pixel_center_direction = pixel_center_1d / pixel_center_norm[:, np.newaxis]
 
-    # Calculate the solid angle correction
+    pixel_center_norm = np.sqrt(np.sum(np.square(pixel_center), axis=-1))
+
+    # Calculate the direction of each pixel.
+    pixel_center_direction = pixel_center / pixel_center_norm[:, np.newaxis]
+
+    # Normalize the orientation vector
     orientation_norm = np.sqrt(np.sum(np.square(orientation)))
     orientation_normalized = orientation / orientation_norm
 
-    # The correction induced by the orientation
-    geometry_correction_1d = np.abs(np.dot(pixel_center_direction, orientation_normalized))
-    # The correction induced by the distance
-    distance_correction = np.square(distance / pixel_center_norm)
-    geometry_correction_1d = np.multiply(geometry_correction_1d, distance_correction)
+    # The correction induced by projection which is a factor of cosine.
+    cosine = np.abs(np.dot(pixel_center_direction, orientation_normalized))
 
-    # Restore the pattern shape.
-    geometry_correction = np.reshape(geometry_correction_1d, pixel_center.shape[0:-1])
+    # Calculate the solid angle ignoring the projection
+    _solid_angle = np.divide(np.multiply(pixel_width, pixel_height), np.square(pixel_center_norm))
+    solid_angle_array = np.multiply(cosine, _solid_angle)
 
-    return geometry_correction
+    return solid_angle_array
 
 
-def reciprocal_position_and_correction(pixel_center, wave_vector, polarization, orientation):
+def reciprocal_position_and_correction(pixel_center, pixel_width, pixel_height,
+                                       wave_vector, polarization, orientation):
     """
     Calculate the pixel positions in reciprocal space and all the related corrections.
 
@@ -268,20 +269,24 @@ def reciprocal_position_and_correction(pixel_center, wave_vector, polarization, 
     :param wave_vector: The wavevector.
     :param polarization: The polarization vector.
     :param orientation: The normal direction of the detector.
+    :param pixel_height: The pixel height for each pixel. In pixel stack format.
+    :param pixel_width: The pixel width for each pixel. In pixel stack format.
     :return: pixel_position_reciprocal, pixel_position_reciprocal_norm, polarization_correction, geometry_correction
     """
     # Calculate the position and distance in reciprocal space
     pixel_position_reciprocal = _reciprocal_space_pixel_position(pixel_center=pixel_center,
                                                                  wave_vector=wave_vector)
-    pixel_position_reciprocal_norm = np.sqrt(np.sum(np.square(pixel_position_reciprocal), axis=-1)) * (1e-10 / 2.)
+    pixel_position_reciprocal_norm = np.sqrt(np.sum(np.square(pixel_position_reciprocal), axis=-1))
 
     # Calculate the corrections.
     polarization_correction = _polarization_correction(pixel_center=pixel_center,
                                                        polarization=polarization)
-    geometry_correction = _geometry_correction(pixel_center=pixel_center,
-                                               orientation=orientation)
+    solid_angle_array = solid_angle(pixel_center=pixel_center,
+                                    pixel_height=pixel_height,
+                                    pixel_width=pixel_width,
+                                    orientation=orientation)
 
-    return pixel_position_reciprocal, pixel_position_reciprocal_norm, polarization_correction, geometry_correction
+    return pixel_position_reciprocal, pixel_position_reciprocal_norm, polarization_correction, solid_angle_array
 
 
 ######################################################################
