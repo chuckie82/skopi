@@ -235,7 +235,7 @@ class PlainDetector(DetectorBase):
 
         return diffraction_pattern
 
-    def get_pattern_with_corrections(self, particle, device="cpu"):
+    def get_diffraction_field(self, particle, device="cpu"):
         """
         Generate a single diffraction pattern without any correction from the particle object.
 
@@ -267,23 +267,50 @@ class PlainDetector(DetectorBase):
         return pattern + np.random.uniform(0, 2 * np.sqrt(3 * self.pixel_rms))
 
     def add_solid_angle_correction(self, pattern):
+        """
+        Add solid angle corrections to the image stack.
+        :param pattern: Pattern stack
+        :return:
+        """
         return np.multiply(pattern, self.solid_angle_per_pixel)
 
     def add_polarization_correction(self, pattern):
+        """
+        Add polarization correction to the image stack
+        :param pattern: image stack
+        :return:
+        """
         return np.multiply(pattern, self.polarization_correction)
 
     def add_correction_and_quantization(self, pattern):
-        return np.random.poisson(np.multiply(np.multiply(pattern,
-                                                         self.solid_angle_per_pixel),
-                                             self.polarization_correction))
+        """
+        Add corrections to image stack and apply quantization to the image stack
+        :param pattern: The image stack.
+        :return:
+        """
+        return np.random.poisson(np.multiply(pattern, self.linear_correction))
 
-    def photons_without_static_noise(self, particle, beam, device="cpu"):
-        raw_data = self.get_pattern_without_corrections(particle, beam, device)
+    def get_photons(self, particle, device="cpu"):
+        """
+        Get a simulated photon patterns stack
+        :param particle: The paticle object
+        :param device: 'cpu' or 'gpu'
+        :return: A image stack of photons
+        """
+        raw_data = self.get_pattern_without_corrections(particle=particle, device=device)
         return self.add_correction_and_quantization(raw_data)
 
-    def get_adu(self, particle, beam, path, device="cpu"):
-        raw_photon = self.photons_without_static_noise(particle, beam, device)
-        return pc.add_cross_talk_effect_panel(path, raw_photon) + np.random.uniform(0, 2 * np.sqrt(3 * self.pixel_rms))
+    def get_adu(self, particle, path, device="cpu"):
+        """
+        Get a simulated adu pattern stack
+
+        :param particle: The particle object.
+        :param path: The path to the crosstalk effect library.
+        :param device: 'cpu' or 'gpu'
+        :return: An image stack of adu.
+        """
+        raw_photon = self.get_photons(particle=particle, device=device)
+        return pc.add_cross_talk_effect_panel(lib_path=path, photons=raw_photon)
 
     ####################################################################################################################
     # For 3D slicing.
@@ -305,9 +332,12 @@ class PlainDetector(DetectorBase):
 
     def preferred_reciprocal_mesh_number(self, wave_vector):
         """
+        If one want to put the diffraction pattern into 3D reciprocal space, then one needs to select a
+        proper voxel number for a proper voxel length for the reciprocal space.
+        This function gives a reasonable estimation of this length and voxel number
 
-        :param wave_vector:
-        :return:
+        :param wave_vector: The wavevector of in this experiment.
+        :return: The reciprocal mesh number along 1 dimension
         """
         """ Return the prefered the reciprocal voxel grid number along 1 dimension. """
         voxel_length = self.preferred_voxel_length(wave_vector)
@@ -319,68 +349,44 @@ class PlainDetector(DetectorBase):
         return voxel_num_1d
 
     def get_reciprocal_mesh(self, voxel_number_1d):
+        """
+        Get the a proper reciprocal mesh.
+
+        :param voxel_number_1d: The voxel number along 1 dimension. Notice that this number has to be odd.
+        :return: The reciprocal mesh, voxel length.
+        """
         voxel_half_number = int((voxel_number_1d / 2) - 1)
         voxel_length = np.max(self.pixel_distance_reciprocal) / voxel_half_number
+        voxel_number = int(voxel_number_1d) + 4  # Get some more pixels for flexibility
 
-        voxel_number = int(voxel_number_1d)
         return pg.get_reciprocal_mesh(voxel_number, voxel_length), voxel_length
 
 
-class LclsDetector(object):
-    def __init__(self):
+class LclsDetector(DetectorBase):
+    """
+    Class for lcls detectors.
+    """
 
-        # Define the hierarchy system. For simplicity, we only use two-layer structure.
-        self.panel_num = 1
-
-        # Define all properties the detector should have
-        self.distance = 0  # (m) detector distance
-        self.pixel_width = 0  # (m)
-        self.pixel_height = 0  # (m)
-        self.pixel_area = 0  # (m^2)
-        self.pixel_num_x = 0  # number of pixels in x
-        self.pixel_num_y = 0  # number of pixels in y
-        self.pixel_num_total = 0  # total number of pixels (px*py)
-        self.center_x = 0  # center of detector in x
-        self.center_y = 0  # center of detector in y
-        self.orientation = [0, 0, 1]
-
-        # pixel position in real space
-        self.pixel_position = None
-
-        # pixel information in reciprocal space
-        self.pixel_position_reciprocal = None  # (m^-1)
-        self.pixel_distance_reciprocal = None  # (m^-1)
-        self.pixel_index_map = 0
-
-        # Corrections
-        self.solid_angle_per_pixel = None  # solid angle
-        self.polarization_correction = None  # Polarization correction 
-
+    def __init__(self, geom=None, beam=None):
         """
-        The theoretical differential cross section of an electron ignoring the polarization effect is,
-                do/dO = ( e^2/(4*Pi*epsilon0*m*c^2) )^2  *  ( 1 + cos(xi)^2 )/2 
-        Therefore, one needs to includes the leading constant factor which is the following numerical value.
+        Initialize the detector.
         """
-        # Tompson Scattering factor
-        self.Thomson_factor = 2.817895019671143 * 2.817895019671143 * 1e-30
+        super(LclsDetector, self).__init__()
 
-        # Total scaling and correction factor.
-        self.linear_correction = None
+        if geom:
+            if beam:
+                print("Initialize the detector with the geometry file and the beam object.")
+            else:
+                print("Initialize the detector with the geometry file only. "
+                      "Please also initialize the detector with the beam object."
+                      " file before calculating the diffraction patterns. ")
+            self.initialize_as_lcls_detector(path=geom, beam=beam)
+        else:
+            print("Please initialize the detector with the geometry file and the beam object with"
+                  "self.initialize (and perhaps self.initialize_pixels_with_beam) ")
 
-        # Detector effects
-        self.pedestal = 0
-        self.pixel_rms = 0
-        self.pixel_bkgd = 0
-        self.pixel_status = 0
-        self.pixel_mask = 0
-        self.pixel_gain = 0
+    def initialize_as_lcls_detector(self, path, beam):
 
-        # self.geometry currently only work for the pre-defined detectors
-        self.geometry = None
-
-    def initialize_as_lcls_detector(self, path):
-
-        self.mode = "LCLS Detectors"
         # parse the path to extract the necessary information to use psana modules
         parsed_path = path.split('/')
 
@@ -405,17 +411,44 @@ class LclsDetector(object):
         #################################################################
         # The default geometry information may require some modification
         #################################################################
-        self.detector_initialized = 1
 
         # All pre-defined detector are initialized in a similar way.
         # We will parse the path in the self._initialize(path) function again
-        self._initialize(path)
+        self.initialize_as_pnccd(path)
 
         sys.stdout = old_stdout
         f.close()
         os.remove('./Detector_initialization.log')
 
-    def _initialize(self, path):
+        if beam:
+            self.initialize_pixels_with_beam(beam=beam)
+
+    def initialize_pixels_with_beam(self, beam=None):
+        """
+        Calculate the pixel position in the reciprocal space and several corrections.
+        :param beam: The beam object
+        :return: None
+        """
+        wavevector = beam.get_wavevector()
+        polar = beam.Polarization
+        intensity = beam.get_photonsPerPulse() / (4 * beam.get_focus() ** 2)
+
+        # Get the reciprocal positions and the corrections
+        (self.pixel_position_reciprocal,
+         self.pixel_distance_reciprocal,
+         self.polarization_correction,
+         self.solid_angle_per_pixel) = pg.reciprocal_position_and_correction(pixel_center=self.pixel_position,
+                                                                             polarization=polar,
+                                                                             wave_vector=wavevector,
+                                                                             orientation=self.orientation)
+        # Apply the scaling factor of the solid angle of the central pixel.
+        self.solid_angle_per_pixel *= self.pixel_width[0, 0, 0] * self.pixel_height[0, 0, 0] / self.distance ** 2
+
+        # Put all the corrections together
+        self.linear_correction = intensity * self.Thomson_factor * np.multiply(self.polarization_correction,
+                                                                               self.solid_angle_per_pixel)
+
+    def initialize_as_pnccd(self, path):
 
         #################################################################
         # The following several lines initialize the geometry information

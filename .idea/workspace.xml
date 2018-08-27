@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="039ff22a-d945-4aee-b14d-32f864fd569b" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pysingfel/detector.py" beforeDir="false" afterPath="$PROJECT_DIR$/pysingfel/detector.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pysingfel/geometry.py" beforeDir="false" afterPath="$PROJECT_DIR$/pysingfel/geometry.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -16,8 +18,20 @@
       <file leaf-file-name="detector.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/pysingfel/detector.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="390">
-              <caret line="271" column="8" selection-start-line="271" selection-start-column="8" selection-end-line="271" selection-end-column="8" />
+            <state relative-caret-position="-560">
+              <caret line="405" column="52" lean-forward="true" selection-start-line="405" selection-start-column="52" selection-end-line="405" selection-end-column="52" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="crossTalk.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/pysingfel/crossTalk.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="599">
+              <caret line="57" column="31" selection-start-line="57" selection-start-column="4" selection-end-line="57" selection-end-column="31" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -28,8 +42,8 @@
       <file leaf-file-name="geometry.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pysingfel/geometry.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="323">
-              <caret line="262" column="38" selection-start-line="262" selection-start-column="4" selection-end-line="262" selection-end-column="38" />
+            <state relative-caret-position="342">
+              <caret line="298" column="46" selection-start-line="298" selection-start-column="46" selection-end-line="298" selection-end-column="46" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -40,7 +54,7 @@
       <file leaf-file-name="util.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pysingfel/util.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="542">
+            <state relative-caret-position="1691">
               <caret line="90" column="46" selection-start-line="90" selection-start-column="46" selection-end-line="90" selection-end-column="46" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
@@ -52,7 +66,7 @@
       <file leaf-file-name="beam.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pysingfel/beam.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1439">
+            <state relative-caret-position="1881">
               <caret line="99" column="21" selection-start-line="99" selection-start-column="21" selection-end-line="99" selection-end-column="21" />
             </state>
           </provider>
@@ -116,6 +130,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -132,7 +147,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -194,27 +208,27 @@
       <window_info anchor="bottom" id="Find" order="1" />
     </layout>
     <layout-to-restore>
+      <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info content_ui="combo" id="Project" order="0" weight="0.14635417" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Version Control" order="8" />
-      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="right" id="SciView" order="3" />
+      <window_info anchor="bottom" id="Run" order="2" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info content_ui="combo" id="Project" order="0" weight="0.14635417" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Database Changes" order="9" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Run" order="2" />
-      <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Python Console" order="10" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="right" id="Database" order="4" />
       <window_info anchor="bottom" id="Terminal" order="11" />
       <window_info anchor="bottom" id="Event Log" order="12" side_tool="true" visible="true" weight="0.32911393" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Message" order="0" />
-      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Database Changes" order="9" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Version Control" order="8" />
+      <window_info anchor="right" id="SciView" order="3" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Python Console" order="10" />
     </layout-to-restore>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -224,13 +238,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/pysingfel/beam.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1881">
-          <caret line="99" column="21" lean-forward="true" selection-start-line="99" selection-start-column="21" selection-end-line="99" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/pysingfel/geometry.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="133">
@@ -442,7 +449,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/pysingfel/util.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="542">
+        <state relative-caret-position="1691">
           <caret line="90" column="46" selection-start-line="90" selection-start-column="46" selection-end-line="90" selection-end-column="46" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
@@ -452,15 +459,25 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/pysingfel/beam.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1439">
+        <state relative-caret-position="1881">
           <caret line="99" column="21" selection-start-line="99" selection-start-column="21" selection-end-line="99" selection-end-column="21" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/pysingfel/geometry.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="323">
-          <caret line="262" column="38" selection-start-line="262" selection-start-column="4" selection-end-line="262" selection-end-column="38" />
+        <state relative-caret-position="342">
+          <caret line="298" column="46" selection-start-line="298" selection-start-column="46" selection-end-line="298" selection-end-column="46" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pysingfel/crossTalk.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="599">
+          <caret line="57" column="31" selection-start-line="57" selection-start-column="4" selection-end-line="57" selection-end-column="31" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
@@ -469,8 +486,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/pysingfel/detector.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
-          <caret line="271" column="8" selection-start-line="271" selection-start-column="8" selection-end-line="271" selection-end-column="8" />
+        <state relative-caret-position="-560">
+          <caret line="405" column="52" lean-forward="true" selection-start-line="405" selection-start-column="52" selection-end-line="405" selection-end-column="52" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
