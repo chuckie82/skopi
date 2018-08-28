@@ -2,7 +2,7 @@ import numpy as np
 import pysingfel.geometry as pg
 import pysingfel.util as pu
 import pysingfel.diffraction as pd
-import pysingfel.crossTalk as pc
+import pysingfel.crosstalk as pc
 import pysingfel.gpu.diffraction as pgd
 
 import sys
@@ -265,34 +265,24 @@ class PlainDetector(DetectorBase):
     This object constructs a detector based on the .geom file.
     """
 
-    def __init__(self, geom_file=None, beam=None):
+    def __init__(self, geom, beam):
         """
         Define parameters.
-        :param geom_file: The geometry file that can be used to initialize the object.
+        :param geom: The geometry file that can be used to initialize the object.
         :param beam: The beam object.
         """
         super(PlainDetector, self).__init__()
-        if geom_file:
-            if beam:
-                print("Initialize the detector with the geometry file and the beam object.")
-            else:
-                print("Initialize the detector with the geometry file only. "
-                      "Please also initialize the detector with the beam object."
-                      " file before calculating the diffraction patterns. ")
-            self.initialize(geom_file=geom_file, beam=beam)
-        else:
-            print("Please initialize the detector with the geometry file and the beam object with"
-                  "self.initialize (and perhaps self.initialize_pixels_with_beam) ")
+        self.initialize(geom=geom, beam=beam)
 
-    def initialize(self, geom_file, beam=None):
+    def initialize(self, geom, beam=None):
         """
         Initialize the detector with the user-defined geometry file (and perhaps self.initialize_pixels_with_beam).
 
-        :param geom_file: The path of the .geom file.
+        :param geom: The path of the .geom file.
         :param beam: The beam object.
         :return: None
         """
-        geom = pu.readGeomFile(geom_file)
+        geom = pu.readGeomFile(geom)
         self.geometry = geom
 
         # Set parameters
@@ -338,8 +328,8 @@ class PlainDetector(DetectorBase):
         self.pixel_mask = np.zeros((1, self.pixel_num_x, self.pixel_num_y))
         self.pixel_gain = np.ones((1, self.pixel_num_x, self.pixel_num_y))
 
-        if beam:
-            self.initialize_pixels_with_beam(beam=beam)
+        # Initialize the pixel effects
+        self.initialize_pixels_with_beam(beam=beam)
 
     def assemble_image_stack(self, image_stack):
         """
@@ -368,67 +358,63 @@ class LclsDetector(DetectorBase):
     Class for lcls detectors.
     """
 
-    def __init__(self, geom=None, beam=None):
+    def __init__(self, det_name, geom, beam, run_num=0):
         """
-        Initialize the detector.
+        Initialize the detector with provided information.
+        If det_name is not None, then initialize the object with the geom info.
+        If beam is not None, then initialize the pixel properties related to the beam.
+
+        :param det_name: The detector name. 'pnccd', 'cspad'.
+        :param geom: The path to the geometry .data file.
+        :param beam: The beam object.
+        :param run_num: The run_num containing the background, rms and gain and the other pixel pixel properties.
         """
         super(LclsDetector, self).__init__()
 
-        if geom:
-            if beam:
-                print("Initialize the detector with the geometry file and the beam object.")
-            else:
-                print("Initialize the detector with the geometry file only. "
-                      "Please also initialize the detector with the beam object."
-                      " file before calculating the diffraction patterns. ")
-            self.initialize_as_lcls_detector(path=geom, beam=beam)
-        else:
-            print("Please initialize the detector with the geometry file and the beam object with"
-                  "self.initialize (and perhaps self.initialize_pixels_with_beam) ")
-
-    def initialize_as_lcls_detector(self, path, beam):
-
-        # parse the path to extract the necessary information to use psana modules
-        parsed_path = path.split('/')
-
-        # notify the user that the path should be as deep as the geometry folder
-        if parsed_path[-1] != "geometry":
+        # Parse the path to extract the necessary information to use psana modules
+        parsed_path = geom.split('/')
+        # Notify the user that the path should be as deep as the geometry profile
+        if parsed_path[-2] != "geometry":
             # print parsed_path[-1]
-            print(" Sorry, at present, the package is not very smart. Please specify the path of the detector" +
-                  "as deep as the geometry folder. And example would be like:" +
-                  "/reg/d/psdm/amo/experiment_name/calib/group/source/geometry" +
-                  "where the \" /calib/group/source/geometry \" part is essential. The address before that part is not"
-                  + " essential and can be replaced with your absolute address or relative address.")
+            raise Exception(
+                " Sorry, at present, the package is not very smart. Please specify " +
 
-        fname_geometry = path + '/0-end.data'
+                "the path of the detector as deep as the geometry profile. \n " +
+                "And example would be like:" +
+                "/reg/d/psdm/amo/experiment_name/calib/group/source/geometry/0-end.data \n" +
+                "where the '/calib/group/source/geometry/0-end.data' part is essential. \n" +
+                "The address before that part is not essential and can be replaced with" +
+                " your absolute address or relative address.")
 
-        # At present I have to redirect the output to make the output reasonable to user
+        # Initialize the detector according to different detector type
+        if det_name == 'pnccd':
+            self.initialize_as_pnccd(geom=geom, run_num=run_num)
+        elif det_name == 'cspad':
+            self.initialize_as_pnccd(geom=geom, run_num=run_num)
+        else:
+            raise Exception("Currently, this object only support 'cspad' and 'pnccd' detector.")
+
+        # Initialize the pixel effects
+        self.initialize_pixels_with_beam(beam=beam)
+
+    def initialize_as_pnccd(self, geom, run_num=0):
+        """
+        Initialize the detector as pnccd
+        :param geom: The pnccd .data file which characterize the geometry profile.
+        :param run_num: The run_num containing the background, rms and gain and the other pixel pixel properties.
+        :return:  None
+        """
+
+        # Redirect the output stream
         old_stdout = sys.stdout
         f = open('Detector_initialization.log', 'w')
         sys.stdout = f
 
-        self.geometry = GeometryAccess(fname_geometry, 0o377)
-
         #################################################################
-        # The default geometry information may require some modification
+        # Initialize the geometry configuration
         #################################################################
+        self.geometry = GeometryAccess(geom, 0o377)
 
-        # All pre-defined detector are initialized in a similar way.
-        # We will parse the path in the self._initialize(path) function again
-        self.initialize_as_pnccd(path)
-
-        sys.stdout = old_stdout
-        f.close()
-        os.remove('./Detector_initialization.log')
-
-        if beam:
-            self.initialize_pixels_with_beam(beam=beam)
-
-    def initialize_as_pnccd(self, path):
-
-        #################################################################
-        # The following several lines initialize the geometry information
-        #################################################################
         # Set coordinate in real space
         temp = self.geometry.get_pixel_coords()
         temp_index = self.geometry.get_pixel_coord_indexes()
@@ -446,15 +432,15 @@ class LclsDetector(DetectorBase):
                 for n in range(2):
                     self.pixel_index_map[m + l * temp[0].shape[2], :, :, n] = temp_index[n][0, l, m, :, :]
 
-        self.pixel_index_map = self.pixel_index_map.astype('int32')
+        self.pixel_index_map = self.pixel_index_map.astype(np.int64)
 
-        del temp
-        del temp_index
+        # Get the range of the pixel index
+        self.pixel_index_x_max = np.max(self.pixel_index_map[:, :, :, 0])
+        self.pixel_index_y_max = np.max(self.pixel_index_map[:, :, :, 1])
 
-        self.panel_orientation = np.array([[0, 0, 1], ] * self.panel_num)
         self.pixel_num_x = np.array([self.pixel_index_map.shape[1], ] * self.panel_num)
         self.pixel_num_y = np.array([self.pixel_index_map.shape[2], ] * self.panel_num)
-        self.pix_num_total = np.sum(np.multiply(self.pixel_num_x, self.pixel_num_y))
+        self.pixel_num_total = np.sum(np.multiply(self.pixel_num_x, self.pixel_num_y))
 
         tmp = float(self.geometry.get_pixel_scale_size())
         self.pixel_width = np.ones((self.panel_num, self.pixel_num_x[0], self.pixel_num_y[0])) * tmp
@@ -464,13 +450,13 @@ class LclsDetector(DetectorBase):
         # The following several lines initialize the detector effects besides cross talk.
         ##################################
         # first we should parse the path
-        parsed_path = path.split('/')
+        parsed_path = geom.split('/')
 
         cbase = CalibParsBasePnccdV1()
-        calibdir = '/'.join(parsed_path[:-3])
-        group = parsed_path[-3]
-        source = parsed_path[-2]
-        runnum = 0
+        calibdir = '/'.join(parsed_path[:-4])
+        group = parsed_path[-4]
+        source = parsed_path[-3]
+        runnum = run_num
         pbits = 255
         gcp = GenericCalibPars(cbase, calibdir, group, source, runnum, pbits)
 
@@ -481,7 +467,19 @@ class LclsDetector(DetectorBase):
         self.pixel_status = gcp.pixel_status()
         self.pixel_gain = gcp.pixel_gain()
 
+        # Redirect the output stream
+        sys.stdout = old_stdout
+        f.close()
+        os.remove('./Detector_initialization.log')
+
     def assemble_image_stack(self, image_stack):
+        """
+        Assemble the image stack into a 2D diffraction pattern.
+        For this specific object, since it only has one panel, the result is to remove the first dimension.
+
+        :param image_stack: The [1, num_x, num_y] numpy array.
+        :return: The [num_x, num_y] numpy array.
+        """
         # construct the image holder:
         image = np.zeros((self.pixel_index_x_max, self.pixel_index_y_max))
         for l in range(self.panel_num):
@@ -490,10 +488,28 @@ class LclsDetector(DetectorBase):
 
         return image
 
+    def assemble_image_stack_batch(self, image_stack_batch):
+        """
+        Assemble the image stack batch into a stack of 2D diffraction patterns.
+        For this specific object, since it has only one panel, the result is a simple reshape.
+
+        :param image_stack_batch: The [stack_num, 1, num_x, num_y] numpy array
+        :return: The [stack_num, num_x, num_y] numpy array
+        """
+        stack_num = image_stack_batch.shape[0]
+
+        # construct the image holder:
+        image = np.zeros((stack_num, self.pixel_index_x_max, self.pixel_index_y_max))
+        for l in range(self.panel_num):
+            image[:, self.pixel_index_map[l, :, :, 0], self.pixel_index_map[l, :, :, 1]] = image_stack_batch[:, l, :, :]
+
+        return image
+
 
 class UserDefinedDetector(DetectorBase):
     """
-    Class for lcls detectors.
+    Class for user defined detector. The user has to provide the necessary information
+    with a dictionary with proper entries to use this class.
     """
 
     def __init__(self):
@@ -514,4 +530,53 @@ class UserDefinedDetector(DetectorBase):
             To use this class, the user has to provide the necessary information to initialize the detector.
             All the necessary entries are listed in the example notebook.
         """
-        pass
+        # Define the hierarchy system. For simplicity, we only use two-layer structure.
+        self.panel_num = int(param['panel number'])
+
+        # Define all properties the detector should have
+        self.distance = 1  # (m) detector distance
+        self.pixel_width = 0  # (m)
+        self.pixel_height = 0  # (m)
+        self.pixel_area = 0  # (m^2)
+        self.pixel_num_x = 0  # number of pixels in x
+        self.pixel_num_y = 0  # number of pixels in y
+        self.pixel_num_total = 0  # total number of pixels (px*py)
+        self.center_x = 0  # center of detector in x
+        self.center_y = 0  # center of detector in y
+        self.orientation = np.array([0, 0, 1])
+        self.pixel_position = None  # (m)
+
+        # pixel information in reciprocal space
+        self.pixel_position_reciprocal = None  # (m^-1)
+        self.pixel_distance_reciprocal = None  # (m^-1)
+
+        # Pixel map
+        self.pixel_index_map = 0
+        self.pixel_index_x_max = 1
+        self.pixel_index_y_max = 1
+
+        # Corrections
+        self.solid_angle_per_pixel = None  # solid angle
+        self.polarization_correction = None  # Polarization correction
+
+        """
+        The theoretical differential cross section of an electron ignoring the polarization effect is,
+                do/dO = ( e^2/(4*Pi*epsilon0*m*c^2) )^2  *  ( 1 + cos(xi)^2 )/2 
+        Therefore, one needs to includes the leading constant factor which is the following numerical value.
+        """
+        # Tompson Scattering factor
+        self.Thomson_factor = 2.817895019671143 * 2.817895019671143 * 1e-30
+
+        # Total scaling and correction factor.
+        self.linear_correction = None
+
+        # Detector effects
+        self.pedestal = 0
+        self.pixel_rms = 0
+        self.pixel_bkgd = 0
+        self.pixel_status = 0
+        self.pixel_mask = 0
+        self.pixel_gain = 0
+
+        # self.geometry currently only work for the pre-defined detectors
+        self.geometry = None
