@@ -1,12 +1,33 @@
 import numpy as np
 import time
 from numba import jit
+from scipy.stats import special_ortho_group
+
+
+######################################################################
+# The following functions are utilized to rotate the pixels in reciprocal space
+######################################################################
+
+def rotate_pixels_in_reciprocal_space(rot_mat, pixels_position):
+    """
+    Rotate the pixel positions according to the rotation matrix
+
+    Note that for np.dot(a,b)
+    If a is an N-D array and b is an M-D array (where M>=2),
+    it is a sum product over the last axis of a and the second-to-last axis of b.
+
+    :param rot_mat: The rotation matrix for M v
+    :param pixels_position: [the other dimensions,  3 for x,y,z]
+    :return: np.dot(pixels_position, rot_mat.T)
+    """
+
+    return np.dot(pixels_position, rot_mat.T)
 
 
 ######################################################################
 # Take slice from the volume
 ######################################################################
-@jit
+@jit(nonpython=True, parallel=True)
 def get_weight_in_reciprocal_space(pixel_position_reciprocal, voxel_length):
     """
     Obtain the weight of the pixel for adjacent voxels.
@@ -124,7 +145,7 @@ def take_n_slice(pattern_shape, pixel_position, volume, voxel_length, orientatio
     tic = time.time()
     for l in range(slice_num):
         # construct the rotation matrix
-        rot_mat = quaternion2rot3D(orientations[l, :])
+        rot_mat = quaternion2rot3d(orientations[l, :])
         # rotate the pixels in the reciprocal space. Notice that at this time, the pixel position is in 3D
         rotated_pixel_position = rotate_pixels_in_reciprocal_space(rot_mat, pixel_position)
         # calculate the index and weight in 3D
@@ -139,6 +160,15 @@ def take_n_slice(pattern_shape, pixel_position, volume, voxel_length, orientatio
 
 
 def take_n_random_slices(detector_, volume_, voxel_length_, number_):
+    """
+    Take n slices from n random orientations.
+    
+    :param detector_: 
+    :param volume_: 
+    :param voxel_length_: 
+    :param number_: 
+    :return: 
+    """
     # Preprocess
     pattern_shape_ = detector_.pixel_rms.shape
     pixel_position_ = detector_.pixel_position_reciprocal.copy()
@@ -149,7 +179,7 @@ def take_n_random_slices(detector_, volume_, voxel_length_, number_):
     tic = time.time()
     for l in range(number_):
         # construct the rotation matrix
-        rotmat_ = quaternion2rot3D(getRandomRotation('x'))
+        rotmat_ = quaternion2rot3d(get_random_rotation(rotation_axis='random'))
         # rotate the pixels in the reciprocal space. Notice that at this time, the pixel position is in 3D
         pixel_position_new = rotate_pixels_in_reciprocal_space(rotmat_, pixel_position_)
         # calculate the index and weight in 3D
@@ -177,7 +207,7 @@ def reshape_pixels_position_arrays_to_1d(array):
     return array_1d
 
 
-def _reciprocal_space_pixel_position(pixel_center, wave_vector):
+def get_reciprocal_space_pixel_position(pixel_center, wave_vector):
     """
     Obtain the coordinate of each pixel in the reciprocal space.
     :param pixel_center: The coordinate of  the pixel in real space.
@@ -202,7 +232,7 @@ def _reciprocal_space_pixel_position(pixel_center, wave_vector):
     return pixel_position_reciprocal
 
 
-def _polarization_correction(pixel_center, polarization):
+def get_polarization_correction(pixel_center, polarization):
     """
     Obtain the polarization correction.
 
@@ -259,8 +289,8 @@ def solid_angle(pixel_center, pixel_area, orientation):
     return solid_angle_array
 
 
-def reciprocal_position_and_correction(pixel_position, pixel_area,
-                                       wave_vector, polarization, orientation):
+def get_reciprocal_position_and_correction(pixel_position, pixel_area,
+                                           wave_vector, polarization, orientation):
     """
     Calculate the pixel positions in reciprocal space and all the related corrections.
 
@@ -272,13 +302,13 @@ def reciprocal_position_and_correction(pixel_position, pixel_area,
     :return: pixel_position_reciprocal, pixel_position_reciprocal_norm, polarization_correction, geometry_correction
     """
     # Calculate the position and distance in reciprocal space
-    pixel_position_reciprocal = _reciprocal_space_pixel_position(pixel_center=pixel_position,
-                                                                 wave_vector=wave_vector)
+    pixel_position_reciprocal = get_reciprocal_space_pixel_position(pixel_center=pixel_position,
+                                                                    wave_vector=wave_vector)
     pixel_position_reciprocal_norm = np.sqrt(np.sum(np.square(pixel_position_reciprocal), axis=-1))
 
     # Calculate the corrections.
-    polarization_correction = _polarization_correction(pixel_center=pixel_position,
-                                                       polarization=polarization)
+    polarization_correction = get_polarization_correction(pixel_center=pixel_position,
+                                                          polarization=polarization)
     solid_angle_array = solid_angle(pixel_center=pixel_position,
                                     pixel_area=pixel_area,
                                     orientation=orientation)
@@ -314,50 +344,65 @@ def get_reciprocal_mesh(voxel_num_1d, voxel_length):
 # The following functions are utilized to assemble the images
 ######################################################################
 
-def assemble_image_from_index_and_panel(image_stack, index):
+def assemble_image_stack(image_stack, index_map):
+    """
+    Assemble the image stack to obtain a 2D pattern according to the index map
+
+    :param image_stack: [panel num, panel pixel num x, panel pixel num y]
+    :param index_map: [panel num, panel pixel num x, panel pixel num y]
+    :return: 2D pattern
+    """
     # get boundary
-    index_max_x = np.max(index[:, :, :, 0])
-    index_max_y = np.max(index[:, :, :, 1])
+    index_max_x = np.max(index_map[:, :, :, 0])
+    index_max_y = np.max(index_map[:, :, :, 1])
     # set holder
     image = np.zeros((index_max_x, index_max_y))
     # loop through the panels
-    for l in range(index.shape[0]):
-        image[index[l, :, :, :]] = image_stack[l, :, :]
+    for l in range(index_map.shape[0]):
+        image[index_map[l, :, :, :]] = image_stack[l, :, :]
 
     return image
 
 
-def batch_assemble_image_from_index_and_panel(image_stack, index):
-    pass
+def assemble_image_stack_batch(image_stack, index_map):
+    """
+    Assemble the image stack to obtain a 2D pattern according to the index map
 
+    :param image_stack: [stack num, panel num, panel pixel num x, panel pixel num y]
+    :param index_map: [panel num, panel pixel num x, panel pixel num y]
+    :return: [stack num, 2d pattern x, 2d pattern y]
+    """
+    # get boundary
+    index_max_x = np.max(index_map[:, :, :, 0])
+    index_max_y = np.max(index_map[:, :, :, 1])
+    # get stack number and panel number
+    stack_num = image_stack.shape[0]
+    panel_num = image_stack.shape[1]
 
-######################################################################
-# The following functions are utilized to rotate the pixels in reciprocal space
-######################################################################
+    # set holder
+    image = np.zeros((stack_num, index_max_x, index_max_y))
 
-def rotate_pixels_in_reciprocal_space(rot_mat, pixels_position):
-    pixels_position_1d = reshape_pixels_position_arrays_to_1d(pixels_position)
-    pixels_position_1d = pixels_position_1d.dot(rot_mat)
-    return np.reshape(pixels_position_1d, pixels_position.shape)
+    # loop through the panels
+    for l in range(panel_num):
+        image[:, index_map[l, :, :, 0], index_map[l, :, :, 1]] = image_stack[:, l, :, :]
+
+    return image
 
 
 ######################################################################
 # Some trivial geometry calculations
 ######################################################################
 
-def corrCoeff(X, Y):
-    x = X.reshape(-1)
-    y = Y.reshape(-1)
-    x -= np.mean(x)
-    y -= np.mean(y)
-    return np.dot(x, y) / np.sqrt(np.dot(x, x) * np.dot(y, y))
-
-
 # Converters between different descriptions of 3D rotation.
-def angleAxis2rot3D(axis, theta):
+def angle_axis_to_rot3d(axis, theta):
     """
     Convert rotation with angle theta around a certain axis to a rotation matrix in 3D.
+
+    :param axis: A numpy array for the rotation axis.
+    :param theta: Rotation angle.
+    :return:
     """
+
     if len(axis) is not 3:
         raise ValueError('Number of axis element must be 3!')
     axis = axis.astype(float)
@@ -365,78 +410,94 @@ def angleAxis2rot3D(axis, theta):
     a = axis[0]
     b = axis[1]
     c = axis[2]
-    cosTheta = np.cos(theta)
-    bracket = 1 - cosTheta
-    aBracket = a * bracket
-    bBracket = b * bracket
-    cBracket = c * bracket
-    sinTheta = np.sin(theta)
-    aSinTheta = a * sinTheta
-    bSinTheta = b * sinTheta
-    cSinTheta = c * sinTheta
-    rot3D = np.array([[a * aBracket + cosTheta, a * bBracket - cSinTheta, a * cBracket + bSinTheta],
-                      [b * aBracket + cSinTheta, b * bBracket + cosTheta, b * cBracket - aSinTheta],
-                      [c * aBracket - bSinTheta, c * bBracket + aSinTheta, c * cBracket + cosTheta]])
-    return rot3D
+    cos_theta = np.cos(theta)
+    bracket = 1 - cos_theta
+    a_bracket = a * bracket
+    b_bracket = b * bracket
+    c_bracket = c * bracket
+    sin_theta = np.sin(theta)
+    a_sin_theta = a * sin_theta
+    b_sin_theta = b * sin_theta
+    c_sin_theta = c * sin_theta
+    rot3d = np.array([[a * a_bracket + cos_theta, a * b_bracket - c_sin_theta, a * c_bracket + b_sin_theta],
+                      [b * a_bracket + c_sin_theta, b * b_bracket + cos_theta, b * c_bracket - a_sin_theta],
+                      [c * a_bracket - b_sin_theta, c * b_bracket + a_sin_theta, c * c_bracket + cos_theta]])
+    return rot3d
 
 
-def euler2rot3D(psi, theta, phi):
+def euler_to_rot3d(psi, theta, phi):
     """
     Convert rotation with euler angle (psi, theta, phi) to a rotation matrix in 3D.
+    
+    :param psi: 
+    :param theta: 
+    :param phi: 
+    :return: 
     """
-    Rphi = np.array([[np.cos(phi), np.sin(phi), 0],
+
+    rphi = np.array([[np.cos(phi), np.sin(phi), 0],
                      [-np.sin(phi), np.cos(phi), 0],
                      [0, 0, 1]])
-    Rtheta = np.array([[np.cos(theta), 0, -np.sin(theta)],
+    rtheta = np.array([[np.cos(theta), 0, -np.sin(theta)],
                        [0, 1, 0],
                        [np.sin(theta), 0, np.cos(theta)]])
-    Rpsi = np.array([[np.cos(psi), np.sin(psi), 0],
+    rpsi = np.array([[np.cos(psi), np.sin(psi), 0],
                      [-np.sin(psi), np.cos(psi), 0],
                      [0, 0, 1]])
-    return np.dot(Rpsi, np.dot(Rtheta, Rphi))
+    return np.dot(rpsi, np.dot(rtheta, rphi))
 
 
-def euler2quaternion(psi, theta, phi):
+def euler_to_quaternion(psi, theta, phi):
     """
     Convert rotation with euler angle (psi, theta, phi) to quaternion description.
+    
+    :param psi: 
+    :param theta: 
+    :param phi: 
+    :return: 
     """
+
     if abs(psi) == 0 and abs(theta) == 0 and abs(phi) == 0:
         quaternion = np.array([1., 0., 0., 0.])
     else:
-        R = euler2rot3D(psi, theta, phi)
-        W = np.array([R[1, 2] - R[2, 1], R[2, 0] - R[0, 2], R[0, 1] - R[1, 0]])
-        if W[0] >= 0:
-            W /= np.linalg.norm(W)
+        r = euler_to_rot3d(psi, theta, phi)
+        w = np.array([r[1, 2] - r[2, 1], r[2, 0] - r[0, 2], r[0, 1] - r[1, 0]])
+        if w[0] >= 0:
+            w /= np.linalg.norm(w)
         else:
-            W /= np.linalg.norm(W) * -1
-        theta = np.arccos(0.5 * (np.trace(R) - 1))
-        CCisTheta = corrCoeff(R, angleAxis2rot3D(W, theta))
-        CCisNegTheta = corrCoeff(R, angleAxis2rot3D(W, -theta))
-        if CCisNegTheta > CCisTheta:
+            w /= np.linalg.norm(w) * -1
+        theta = np.arccos(0.5 * (np.trace(r) - 1))
+        cc_is_theta = np.corrcoef(x=r, y=angle_axis_to_rot3d(w, theta))
+        cc_is_negtheta = np.corrcoef(x=r, y=angle_axis_to_rot3d(w, -theta))
+        if cc_is_negtheta > cc_is_theta:
             theta = -theta
         quaternion = np.array(
-            [np.cos(theta / 2.), np.sin(theta / 2.) * W[0], np.sin(theta / 2.) * W[1], np.sin(theta / 2.) * W[2]])
+            [np.cos(theta / 2.), np.sin(theta / 2.) * w[0], np.sin(theta / 2.) * w[1], np.sin(theta / 2.) * w[2]])
     if quaternion[0] < 0:
         quaternion *= -1
     return quaternion
 
 
-def quaternion2AngleAxis(quaternion):
+def quaternion_to_angle_axis(quaternion):
     """
     Convert quaternion to a right hand rotation theta about certain axis.
+
+    :param quaternion:
+    :return:  angle, axis
     """
-    HA = np.arccos(quaternion[0])
-    theta = 2 * HA
+
+    ha = np.arccos(quaternion[0])
+    theta = 2 * ha
     if theta < np.finfo(float).eps:
         theta = 0
         axis = np.array([1, 0, 0])
     else:
-        axis = quaternion[[1, 2, 3]] / np.sin(HA)
+        axis = quaternion[[1, 2, 3]] / np.sin(ha)
     return theta, axis
 
 
 @jit
-def quaternion2rot3D(quat):
+def quaternion2rot3d(quat):
     """
     Convert the quaternion to rotation matrix.
 
@@ -473,69 +534,82 @@ def quaternion2rot3D(quat):
 
 
 # Functions to generate rotations for different cases: uniform(1d), uniform(3d), random.
-def pointsOn1Sphere(numPts, rotationAxis):
+def points_on_1sphere(num_pts, rotation_axis):
     """
     Given number of points and axis of rotation, distribute evenly on the surface of a 1-sphere (circle).
+
+    :param num_pts: Number of points 
+    :param rotation_axis: Rotation axis.
+    :return: Quaternion list of shape [number of quaternion, 4]
     """
-    points = np.zeros((numPts, 4))
-    incAng = 360. / numPts
-    myAng = 0
-    if rotationAxis == 'y':
-        for i in range(numPts):
-            points[i, :] = euler2quaternion(0, myAng * np.pi / 180, 0)
-            myAng += incAng
-    elif rotationAxis == 'z':
-        for i in range(numPts):
-            points[i, :] = euler2quaternion(0, 0, myAng * np.pi / 180)
-            myAng += incAng
+
+    points = np.zeros((num_pts, 4))
+    inc_ang = 360. / num_pts
+    my_ang = 0
+    if rotation_axis == 'y':
+        for i in range(num_pts):
+            points[i, :] = euler_to_quaternion(0, my_ang * np.pi / 180, 0)
+            my_ang += inc_ang
+    elif rotation_axis == 'z':
+        for i in range(num_pts):
+            points[i, :] = euler_to_quaternion(0, 0, my_ang * np.pi / 180)
+            my_ang += inc_ang
     return points
 
 
-def pointsOn4Sphere(numPts):
+def points_on_2sphere(num_pts):
     """
     Given number of points, distribute evenly on hyper surface of a 4-sphere.
+
+    
+    :param num_pts: Number of points 
+    :return: Quaternion list of shape [number of quaternion, 4]
     """
-    points = np.zeros((2 * numPts, 4))
-    N = 4
-    surfaceArea = N * np.pi ** (N / 2) / (N / 2)  # for even N
-    delta = np.exp(np.log(surfaceArea / numPts) / 3)
-    Iter = 0
+
+    points = np.zeros((2 * num_pts, 4))
+    dim_num = 4
+    # Surface area for unit sphere when dim_num is even
+    surface_area = dim_num * np.pi ** (dim_num / 2) / (dim_num / 2)
+    delta = np.exp(np.log(surface_area / num_pts) / 3)
+    iteration = 0
     ind = 0
-    maxIter = 1000
-    while ind != numPts and Iter < maxIter:
+    max_iter = 1000
+    while ind != num_pts and iteration < max_iter:
         ind = 0
-        deltaW1 = delta
-        w1 = 0.5 * deltaW1
+        delta_w1 = delta
+        w1 = 0.5 * delta_w1
         while w1 < np.pi:
             q0 = np.cos(w1)
-            deltaW2 = deltaW1 / np.sin(w1)
-            w2 = 0.5 * deltaW2
+            delta_w2 = delta_w1 / np.sin(w1)
+            w2 = 0.5 * delta_w2
             while w2 < np.pi:
                 q1 = np.sin(w1) * np.cos(w2)
-                deltaW3 = deltaW2 / np.sin(w2)
-                w3 = 0.5 * deltaW3
+                delta_w3 = delta_w2 / np.sin(w2)
+                w3 = 0.5 * delta_w3
                 while w3 < 2 * np.pi:
                     q2 = np.sin(w1) * np.sin(w2) * np.cos(w3)
                     q3 = np.sin(w1) * np.sin(w2) * np.sin(w3)
                     points[ind, :] = np.array([q0, q1, q2, q3])
                     ind += 1
-                    w3 += deltaW3
-                w2 += deltaW2
-            w1 += deltaW1
-        delta *= np.exp(np.log(float(ind) / numPts) / 3)
-        Iter += 1
-    return points[0:numPts, :]
+                    w3 += delta_w3
+                w2 += delta_w2
+            w1 += delta_w1
+        delta *= np.exp(np.log(float(ind) / num_pts) / 3)
+        iteration += 1
+    return points[0:num_pts, :]
 
 
-def getRandomRotation(rotationAxis):
+def get_random_rotation(rotation_axis):
     """
-    Generate random rotation.
+    Generate a random rotation matrix.
+
+    :param rotation_axis: The rotation axis. If it's 'y', then the rotation is around y axis.
+                          Otherwise the rotation is totally random.
+    :return: A rotation matrix
     """
-    if rotationAxis == 'y':
+
+    if rotation_axis == 'y':
         u = np.random.random() * 2 * np.pi  # random angle between [0, 2pi]
-        return euler2quaternion(0, u, 0)
+        return euler_to_quaternion(0, u, 0)
     else:
-        u = np.random.rand(3)  # uniform random distribution in the [0,1] interval
-        # generate uniform random quaternion on SO(3)
-        return np.array([np.sqrt(1 - u[0]) * np.sin(2 * np.pi * u[1]), np.sqrt(1 - u[0]) * np.cos(2 * np.pi * u[1]),
-                         np.sqrt(u[0]) * np.sin(2 * np.pi * u[2]), np.sqrt(u[0]) * np.cos(2 * np.pi * u[2])])
+        return special_ortho_group.rvs(3)

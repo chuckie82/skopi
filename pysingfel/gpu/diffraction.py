@@ -1,29 +1,46 @@
-from numba import cuda, float64, int32, complex128
+from numba import cuda
 from pysingfel.diffraction import *
 import math
 import numpy as np
 
 
-###########################################################################
-# The following funcitons focus on numba.cuda calculation
-###########################################################################
-
 @cuda.jit('void(float64[:,:], float64[:,:], float64[:,:], float64[:], float64[:], int64, int64[:], int64)')
-def calculate_pattern_gpu_back_engine(formFactor, voxelPosition, atomPosition, patternCos,
-                                      patternSin, atomTypeNum, splitIndex, voxelNum):
+def calculate_pattern_gpu_back_engine(form_factor, pixel_position, atom_position, pattern_cos,
+                                      pattern_sin, atom_type_num, split_index, pixel_num):
+    """
+    Calculate the scattering field with the provided information.
+
+    :param form_factor: The form factor for each atom.
+    :param pixel_position: The position of each pixel.
+    :param atom_position: The position of each atom
+    :param pattern_cos: Holder for the real part of the scattering field
+    :param pattern_sin: Holder for the imaginary part of the scattering field.
+    :param atom_type_num: The number of atom types involved in this particle.
+    :param split_index: The ends for each kinds of the atoms
+    :param pixel_num: The number of pixels to calculate.
+    :return: None
+    """
     row = cuda.grid(1)
-    for atom_type in range(atomTypeNum):
-        form_factor = formFactor[atom_type, row]
-        for atom_iter in range(splitIndex[atom_type], splitIndex[atom_type + 1]):
-            if row < voxelNum:
+    for atom_type in range(atom_type_num):
+        form_factor = form_factor[atom_type, row]
+        for atom_iter in range(split_index[atom_type], split_index[atom_type + 1]):
+            if row < pixel_num:
                 holder = 0
                 for l in range(3):
-                    holder += voxelPosition[row, l] * atomPosition[atom_iter, l]
-                patternCos[row] += form_factor * math.cos(holder)
-                patternSin[row] += form_factor * math.sin(holder)
+                    holder += pixel_position[row, l] * atom_position[atom_iter, l]
+                pattern_cos[row] += form_factor * math.cos(holder)
+                pattern_sin[row] += form_factor * math.sin(holder)
 
 
 def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='intensity'):
+    """
+    Calculate the diffraction field of the specified reciprocal space.
+
+    :param reciprocal_space: The reciprocal space over which to calculate the diffraction field.
+    :param particle: The particle object to calculate the diffraction field.
+    :param return_type: 'intensity' to return the intensity field. 'complex_field' to return the full diffraction field.
+    :return: The diffraction field.
+    """
     """This function can be used to calculate the diffraction field for 
     arbitrary reciprocal space """
 
@@ -31,7 +48,7 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
     shape = reciprocal_space.shape
     pixel_number = np.prod(shape[:-1])
     reciprocal_space_1d = np.reshape(reciprocal_space, [pixel_number, 3])
-    reciprocal_norm_1d = np.sqrt(np.sum(np.square(reciprocal_space_1d), axis=-1)) * (1e-10 / 2.)
+    reciprocal_norm_1d = np.sqrt(np.sum(np.square(reciprocal_space_1d), axis=-1))
 
     # Calculate atom form factor for the reciprocal space
     form_factor = calculate_atomicFactor(particle, reciprocal_norm_1d, pixel_number)
@@ -55,14 +72,14 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
     cuda_form_factor = cuda.to_device(form_factor)
 
     # Calculate the pattern
-    calculate_pattern_gpu_back_engine[(pixel_number + 511) / 512, 512](cuda_form_factor,
-                                                                       cuda_reciprocal_position,
-                                                                       cuda_atom_position,
-                                                                       cuda_pattern_cos,
-                                                                       cuda_pattern_sin,
-                                                                       atom_type_num,
-                                                                       cuda_split_index,
-                                                                       pixel_number)
+    calculate_pattern_gpu_back_engine[(pixel_number + 511) / 512, 512](form_factor=cuda_form_factor,
+                                                                       pixel_position=cuda_reciprocal_position,
+                                                                       atom_position=cuda_atom_position,
+                                                                       pattern_cos=cuda_pattern_cos,
+                                                                       pattern_sin=cuda_pattern_sin,
+                                                                       atom_type_num=atom_type_num,
+                                                                       split_index=cuda_split_index,
+                                                                       pixel_num=pixel_number)
 
     cuda_pattern_cos.to_host()
     cuda_pattern_sin.to_host()
@@ -74,7 +91,6 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
         pattern = np.reshape(pattern_cos + 1j * pattern_sin, shape[:-1])
         return pattern
     else:
-        print("Set parameter return_type = \"intensity\", program will return " +
-              "the intensity of the diffraction field received by the detector. ")
-        print("Set parameter return_type = \"complex_field\", program will return " +
-              "the complex scattered field received by the detector. ")
+        print("Please set the parameter return_type = 'intensity' or 'complex_field'")
+        print("This time, this program return the complex field.")
+        return np.reshape(pattern_cos + 1j * pattern_sin, shape[:-1])

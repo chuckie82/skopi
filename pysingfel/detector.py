@@ -95,11 +95,11 @@ class DetectorBase(object):
         (self.pixel_position_reciprocal,
          self.pixel_distance_reciprocal,
          self.polarization_correction,
-         self.solid_angle_per_pixel) = pg.reciprocal_position_and_correction(pixel_position=self.pixel_position,
-                                                                             polarization=polar,
-                                                                             wave_vector=wavevector,
-                                                                             pixel_area=self.pixel_area,
-                                                                             orientation=self.orientation)
+         self.solid_angle_per_pixel) = pg.get_reciprocal_position_and_correction(pixel_position=self.pixel_position,
+                                                                                 polarization=polar,
+                                                                                 wave_vector=wavevector,
+                                                                                 pixel_area=self.pixel_area,
+                                                                                 orientation=self.orientation)
 
         # Put all the corrections together
         self.linear_correction = intensity * self.Thomson_factor * np.multiply(self.polarization_correction,
@@ -565,7 +565,7 @@ class CsPadDetector(DetectorBase):
 
         # Set coordinate in real space
         temp = self.geometry.get_pixel_coords()
-        temp = temp.reshape((1, ))
+        temp = temp.reshape((1,))
         temp_index = self.geometry.get_pixel_coord_indexes()
 
         self.panel_num = temp[0].shape[1] * temp[0].shape[2]
