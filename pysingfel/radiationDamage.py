@@ -23,9 +23,9 @@ def generateRotations(uniformRotation, rotationAxis, numQuaternions):
     # Case uniform:
     if uniformRotation:
         if rotationAxis == 'y' or rotationAxis == 'z':
-            return pointsOn1Sphere(numQuaternions, rotationAxis)
+            return points_on_1sphere(numQuaternions, rotationAxis)
         elif rotationAxis == 'xyz':
-            return pointsOn4Sphere(numQuaternions)
+            return points_on_2sphere(numQuaternions)
     else:
         # Case non-uniform:
         Quaternions = np.zeros((numQuaternions, 4))

@@ -159,38 +159,38 @@ def take_n_slice(pattern_shape, pixel_position, volume, voxel_length, orientatio
     return slices_holder
 
 
-def take_n_random_slices(detector_, volume_, voxel_length_, number_):
+def take_n_random_slices(detector, volume, voxel_length, number):
     """
     Take n slices from n random orientations.
     
-    :param detector_: 
-    :param volume_: 
-    :param voxel_length_: 
-    :param number_: 
-    :return: 
+    :param detector: The detector object
+    :param volume: The volume to slice from
+    :param voxel_length: The voxel length of this volume
+    :param number: The number of patterns to slice from.
+    :return: [number, panel number, panel pixel number x, panel pixel number y]
     """
     # Preprocess
-    pattern_shape_ = detector_.pixel_rms.shape
-    pixel_position_ = detector_.pixel_position_reciprocal.copy()
+    pattern_shape_ = detector.pixel_rms.shape
+    pixel_position_ = detector.pixel_position_reciprocal.copy()
 
     # Create variable to hold the slices
-    slices_ = np.zeros((number_, pattern_shape_[0], pattern_shape_[1], pattern_shape_[2]))
+    slices = np.zeros((number, pattern_shape_[0], pattern_shape_[1], pattern_shape_[2]))
 
     tic = time.time()
-    for l in range(number_):
+    for l in range(number):
         # construct the rotation matrix
-        rotmat_ = quaternion2rot3d(get_random_rotation(rotation_axis='random'))
+        rotmat = quaternion2rot3d(get_random_rotation(rotation_axis='random'))
         # rotate the pixels in the reciprocal space. Notice that at this time, the pixel position is in 3D
-        pixel_position_new = rotate_pixels_in_reciprocal_space(rotmat_, pixel_position_)
+        pixel_position_new = rotate_pixels_in_reciprocal_space(rotmat, pixel_position_)
         # calculate the index and weight in 3D
-        index_, weight_ = get_weight_in_reciprocal_space(pixel_position_new, voxel_length_)
+        index, weight_ = get_weight_in_reciprocal_space(pixel_position_new, voxel_length)
         # get one slice
-        slices_[l, :, :, :] = take_one_slice(index_, weight_, volume_, detector_.pix_num_total)
+        slices[l, :, :, :] = take_one_slice(index, weight_, volume, detector.pix_num_total)
 
     toc = time.time()
-    print("Finishing constructing %d patterns in %f seconds" % (number_, toc - tic))
+    print("Finishing constructing %d patterns in %f seconds" % (number, toc - tic))
 
-    return slices_
+    return slices
 
 
 ######################################################################

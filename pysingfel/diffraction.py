@@ -5,7 +5,7 @@ from pysingfel.particle import *
 import numpy as np
 
 
-def calculate_Thomson(ang):
+def calculate_thomson(ang):
     # Should fix this to accept angles mu and theta
     re = 2.81793870e-15  # classical electron radius (m)
     P = (1 + np.cos(ang)) / 2.

@@ -11,7 +11,7 @@ requirements = [
 
 setup(name='pysingfel',
       maintainer = 'Haoyuan Li',
-      version = '0.1.1',
+      version = '0.3.0',
       maintainer_email = 'hyli16@stanford.edu',
       description='Python version of singfel.',
       long_description=open('README.rst', encoding='utf8').read(),
