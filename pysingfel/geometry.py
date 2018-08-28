@@ -230,14 +230,13 @@ def _polarization_correction(pixel_center, polarization):
     return polarization_correction
 
 
-def solid_angle(pixel_center, pixel_width, pixel_height, orientation):
+def solid_angle(pixel_center, pixel_area, orientation):
     """
     Calculate the solid angle for each pixel.
 
     :param pixel_center: The position of each pixel in real space. In pixel stack format.
     :param orientation: The orientation of the detector.
-    :param pixel_height: The pixel height for each pixel. In pixel stack format.
-    :param pixel_width: The pixel width for each pixel. In pixel stack format.
+    :param pixel_area: The pixel area for each pixel. In pixel stack format.
     :return: Solid angle of each pixel.
     """
 
@@ -254,13 +253,13 @@ def solid_angle(pixel_center, pixel_width, pixel_height, orientation):
     cosine = np.abs(np.dot(pixel_center_direction, orientation_normalized))
 
     # Calculate the solid angle ignoring the projection
-    _solid_angle = np.divide(np.multiply(pixel_width, pixel_height), np.square(pixel_center_norm))
+    _solid_angle = np.divide(pixel_area, np.square(pixel_center_norm))
     solid_angle_array = np.multiply(cosine, _solid_angle)
 
     return solid_angle_array
 
 
-def reciprocal_position_and_correction(pixel_center, pixel_width, pixel_height,
+def reciprocal_position_and_correction(pixel_center, pixel_area,
                                        wave_vector, polarization, orientation):
     """
     Calculate the pixel positions in reciprocal space and all the related corrections.
@@ -269,8 +268,7 @@ def reciprocal_position_and_correction(pixel_center, pixel_width, pixel_height,
     :param wave_vector: The wavevector.
     :param polarization: The polarization vector.
     :param orientation: The normal direction of the detector.
-    :param pixel_height: The pixel height for each pixel. In pixel stack format.
-    :param pixel_width: The pixel width for each pixel. In pixel stack format.
+    :param pixel_area: The pixel area for each pixel. In pixel stack format.
     :return: pixel_position_reciprocal, pixel_position_reciprocal_norm, polarization_correction, geometry_correction
     """
     # Calculate the position and distance in reciprocal space
@@ -282,8 +280,7 @@ def reciprocal_position_and_correction(pixel_center, pixel_width, pixel_height,
     polarization_correction = _polarization_correction(pixel_center=pixel_center,
                                                        polarization=polarization)
     solid_angle_array = solid_angle(pixel_center=pixel_center,
-                                    pixel_height=pixel_height,
-                                    pixel_width=pixel_width,
+                                    pixel_area=pixel_area,
                                     orientation=orientation)
 
     return pixel_position_reciprocal, pixel_position_reciprocal_norm, polarization_correction, solid_angle_array

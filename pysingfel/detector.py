@@ -98,8 +98,7 @@ class DetectorBase(object):
          self.solid_angle_per_pixel) = pg.reciprocal_position_and_correction(pixel_center=self.pixel_position,
                                                                              polarization=polar,
                                                                              wave_vector=wavevector,
-                                                                             pixel_width=self.pixel_width,
-                                                                             pixel_height=self.pixel_height,
+                                                                             pixel_area=self.pixel_area,
                                                                              orientation=self.orientation)
 
         # Put all the corrections together
@@ -282,6 +281,9 @@ class PlainDetector(DetectorBase):
         :param beam: The beam object.
         :return: None
         """
+        ################################################################################################################
+        # Initialize the geometry configuration
+        ################################################################################################################
         geom = pu.readGeomFile(geom)
         self.geometry = geom
 
@@ -296,6 +298,7 @@ class PlainDetector(DetectorBase):
 
         self.pixel_width = np.ones((self.panel_num, self.pixel_num_x, self.pixel_num_y)) * geom['pixel size x']
         self.pixel_height = np.ones((self.panel_num, self.pixel_num_x, self.pixel_num_y)) * geom['pixel size y']
+        self.pixel_area = np.multiply(self.pixel_height, self.pixel_width)
 
         # Calculate real space position
         self.pixel_position = np.zeros((self.panel_num, self.pixel_num_x, self.pixel_num_y, 3))
@@ -320,13 +323,16 @@ class PlainDetector(DetectorBase):
         self.pixel_index_x_max = self.pixel_num_x
         self.pixel_index_y_max = self.pixel_num_y
 
+        ################################################################################################################
+        # Initialize the pixel effects
+        ################################################################################################################
         # Initialize the detector effect parameters
-        self.pedestal = np.zeros((1, self.pixel_num_x, self.pixel_num_y))
-        self.pixel_rms = np.zeros((1, self.pixel_num_x, self.pixel_num_y))
-        self.pixel_bkgd = np.zeros((1, self.pixel_num_x, self.pixel_num_y))
-        self.pixel_status = np.zeros((1, self.pixel_num_x, self.pixel_num_y))
-        self.pixel_mask = np.zeros((1, self.pixel_num_x, self.pixel_num_y))
-        self.pixel_gain = np.ones((1, self.pixel_num_x, self.pixel_num_y))
+        self.pedestal = np.zeros((self.panel_num, self.pixel_num_x, self.pixel_num_y))
+        self.pixel_rms = np.zeros((self.panel_num, self.pixel_num_x, self.pixel_num_y))
+        self.pixel_bkgd = np.zeros((self.panel_num, self.pixel_num_x, self.pixel_num_y))
+        self.pixel_status = np.zeros((self.panel_num, self.pixel_num_x, self.pixel_num_y))
+        self.pixel_mask = np.zeros((self.panel_num, self.pixel_num_x, self.pixel_num_y))
+        self.pixel_gain = np.ones((self.panel_num, self.pixel_num_x, self.pixel_num_y))
 
         # Initialize the pixel effects
         self.initialize_pixels_with_beam(beam=beam)
@@ -410,9 +416,9 @@ class LclsDetector(DetectorBase):
         f = open('Detector_initialization.log', 'w')
         sys.stdout = f
 
-        #################################################################
+        ################################################################################################################
         # Initialize the geometry configuration
-        #################################################################
+        ################################################################################################################
         self.geometry = GeometryAccess(geom, 0o377)
 
         # Set coordinate in real space
@@ -446,9 +452,12 @@ class LclsDetector(DetectorBase):
         self.pixel_width = np.ones((self.panel_num, self.pixel_num_x[0], self.pixel_num_y[0])) * tmp
         self.pixel_height = np.ones((self.panel_num, self.pixel_num_x[0], self.pixel_num_y[0])) * tmp
 
-        ##################################
-        # The following several lines initialize the detector effects besides cross talk.
-        ##################################
+        # Calculate the pixel area
+        self.pixel_area = np.multiply(self.pixel_height, self.pixel_width)
+
+        ################################################################################################################
+        # Initialize the pixel effects
+        ################################################################################################################
         # first we should parse the path
         parsed_path = geom.split('/')
 
@@ -512,11 +521,13 @@ class UserDefinedDetector(DetectorBase):
     with a dictionary with proper entries to use this class.
     """
 
-    def __init__(self):
+    def __init__(self, param):
         """
-        Initialize the detector.
+        Initialize the detector
+        :param param:  The dictionary containing all the necessary information to initialize the detector.
         """
         super(UserDefinedDetector, self).__init__()
+        self.initialize(param=param)
 
     def initialize(self, param):
         """
@@ -530,53 +541,80 @@ class UserDefinedDetector(DetectorBase):
             To use this class, the user has to provide the necessary information to initialize the detector.
             All the necessary entries are listed in the example notebook.
         """
+        ################################################################################################################
+        # Extract necessary information
+        ################################################################################################################
+
         # Define the hierarchy system. For simplicity, we only use two-layer structure.
         self.panel_num = int(param['panel number'])
 
         # Define all properties the detector should have
-        self.distance = 1  # (m) detector distance
-        self.pixel_width = 0  # (m)
-        self.pixel_height = 0  # (m)
-        self.pixel_area = 0  # (m^2)
-        self.pixel_num_x = 0  # number of pixels in x
-        self.pixel_num_y = 0  # number of pixels in y
-        self.pixel_num_total = 0  # total number of pixels (px*py)
-        self.center_x = 0  # center of detector in x
-        self.center_y = 0  # center of detector in y
+        self.distance = float(param['detector distance'])  # detector distance in (m)
+        self.pixel_width = param['pixel width'].astype(np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
+        self.pixel_height = param['pixel height'].astype(np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
+        self.center_x = param['pixel center x'].astype(np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
+        self.center_y = param['pixel center y'].astype(np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
         self.orientation = np.array([0, 0, 1])
         self.pixel_position = None  # (m)
 
-        # pixel information in reciprocal space
-        self.pixel_position_reciprocal = None  # (m^-1)
-        self.pixel_distance_reciprocal = None  # (m^-1)
-
         # Pixel map
-        self.pixel_index_map = 0
+        self.pixel_index_map = param['pixel map'].astype(np.int64)  # [panel number, pixel num x, pixel num y]
+
+        # Detector effects
+        if 'pedestal' in param:
+            self.pedestal = param['pedestal'].astype(np.float64)
+        else:
+            self.pedestal = np.zeros((self.panel_num, self.pixel_num_x, self.pixel_num_y))
+
+        if 'pixel rms' in param:
+            self.pedestal = param['pixel rms'].astype(np.float64)
+        else:
+            self.pedestal = np.zeros((self.panel_num, self.pixel_num_x, self.pixel_num_y))
+
+        if 'pixel bkgd' in param:
+            self.pedestal = param['pixel bkgd'].astype(np.float64)
+        else:
+            self.pedestal = np.zeros((self.panel_num, self.pixel_num_x, self.pixel_num_y))
+
+        if 'pixel status' in param:
+            self.pedestal = param['pixel status'].astype(np.float64)
+        else:
+            self.pedestal = np.zeros((self.panel_num, self.pixel_num_x, self.pixel_num_y))
+
+        if 'pixel mask' in param:
+            self.pedestal = param['pixel mask'].astype(np.float64)
+        else:
+            self.pedestal = np.zeros((self.panel_num, self.pixel_num_x, self.pixel_num_y))
+
+        if 'pixel gain' in param:
+            self.pedestal = param['pixel gain'].astype(np.float64)
+        else:
+            self.pedestal = np.ones((self.panel_num, self.pixel_num_x, self.pixel_num_y))
+
+        ################################################################################################################
+        # Do necessary calculation to finishes the initialization
+        ################################################################################################################
+        # self.geometry currently only work for the pre-defined detectors
+        self.geometry = param
+
+        # Calculate the pixel area
+        self.pixel_area = np.multiply(self.pixel_height, self.pixel_width)
+
+        self.pixel_num_x = 0  # number of pixels in x
+        self.pixel_num_y = 0  # number of pixels in y
+        self.pixel_num_total = 0  # total number of pixels (px*py)
+
+        # Pixel range info
         self.pixel_index_x_max = 1
         self.pixel_index_y_max = 1
 
         # Corrections
         self.solid_angle_per_pixel = None  # solid angle
         self.polarization_correction = None  # Polarization correction
-
-        """
-        The theoretical differential cross section of an electron ignoring the polarization effect is,
-                do/dO = ( e^2/(4*Pi*epsilon0*m*c^2) )^2  *  ( 1 + cos(xi)^2 )/2 
-        Therefore, one needs to includes the leading constant factor which is the following numerical value.
-        """
-        # Tompson Scattering factor
-        self.Thomson_factor = 2.817895019671143 * 2.817895019671143 * 1e-30
-
         # Total scaling and correction factor.
         self.linear_correction = None
 
-        # Detector effects
-        self.pedestal = 0
-        self.pixel_rms = 0
-        self.pixel_bkgd = 0
-        self.pixel_status = 0
-        self.pixel_mask = 0
-        self.pixel_gain = 0
 
-        # self.geometry currently only work for the pre-defined detectors
-        self.geometry = None
+        # pixel information in reciprocal space
+        self.pixel_position_reciprocal = None  # (m^-1)
+        self.pixel_distance_reciprocal = None  # (m^-1)
