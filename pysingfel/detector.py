@@ -38,8 +38,8 @@ class DetectorBase(object):
         self.pixel_width = 0  # (m)
         self.pixel_height = 0  # (m)
         self.pixel_area = 0  # (m^2)
-        self.pixel_num_x = 0  # number of pixels in x
-        self.pixel_num_y = 0  # number of pixels in y
+        self.panel_pixel_num_x = 0  # number of pixels in x
+        self.panel_pixel_num_y = 0  # number of pixels in y
         self.pixel_num_total = 0  # total number of pixels (px*py)
         self.center_x = 0  # center of detector in x
         self.center_y = 0  # center of detector in y
@@ -52,8 +52,8 @@ class DetectorBase(object):
 
         # Pixel map
         self.pixel_index_map = 0
-        self.pixel_index_x_max = 1
-        self.pixel_index_y_max = 1
+        self.detector_pixel_num_x = 1
+        self.detector_pixel_num_y = 1
 
         # Corrections
         self.solid_angle_per_pixel = None  # solid angle
@@ -95,7 +95,7 @@ class DetectorBase(object):
         (self.pixel_position_reciprocal,
          self.pixel_distance_reciprocal,
          self.polarization_correction,
-         self.solid_angle_per_pixel) = pg.reciprocal_position_and_correction(pixel_center=self.pixel_position,
+         self.solid_angle_per_pixel) = pg.reciprocal_position_and_correction(pixel_position=self.pixel_position,
                                                                              polarization=polar,
                                                                              wave_vector=wavevector,
                                                                              pixel_area=self.pixel_area,
@@ -291,48 +291,52 @@ class PlainDetector(DetectorBase):
         self.panel_num = 1
 
         # Extract info
-        self.pixel_num_x = int(geom['pixel number x'])
-        self.pixel_num_y = int(geom['pixel number y'])
-        self.pixel_num_total = np.array([self.pixel_num_x * self.pixel_num_y, ])
+        self.panel_pixel_num_x = int(geom['pixel number x'])
+        self.panel_pixel_num_y = int(geom['pixel number y'])
+        self.pixel_num_total = np.array([self.panel_pixel_num_x * self.panel_pixel_num_y, ])
         self.distance = np.array([geom['distance'], ])
 
-        self.pixel_width = np.ones((self.panel_num, self.pixel_num_x, self.pixel_num_y)) * geom['pixel size x']
-        self.pixel_height = np.ones((self.panel_num, self.pixel_num_x, self.pixel_num_y)) * geom['pixel size y']
+        self.pixel_width = np.ones((self.panel_num,
+                                    self.panel_pixel_num_x, self.panel_pixel_num_y)) * geom['pixel size x']
+        self.pixel_height = np.ones((self.panel_num,
+                                     self.panel_pixel_num_x, self.panel_pixel_num_y)) * geom['pixel size y']
         self.pixel_area = np.multiply(self.pixel_height, self.pixel_width)
 
         # Calculate real space position
-        self.pixel_position = np.zeros((self.panel_num, self.pixel_num_x, self.pixel_num_y, 3))
+        self.pixel_position = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y, 3))
         # z direction position
         self.pixel_position[0, ::, ::, 2] += self.distance
 
         # x,y direction position
-        total_length_x = (self.pixel_num_x - 1) * self.pixel_width
-        total_length_y = (self.pixel_num_y - 1) * self.pixel_height
+        total_length_x = (self.panel_pixel_num_x - 1) * self.pixel_width
+        total_length_y = (self.panel_pixel_num_y - 1) * self.pixel_height
 
-        x_coordinate_temp = np.linspace(-total_length_x / 2, total_length_x / 2, num=self.pixel_num_x, endpoint=True)
-        y_coordinate_temp = np.linspace(-total_length_y / 2, total_length_y / 2, num=self.pixel_num_y, endpoint=True)
+        x_coordinate_temp = np.linspace(-total_length_x / 2, total_length_x / 2, num=self.panel_pixel_num_x,
+                                        endpoint=True)
+        y_coordinate_temp = np.linspace(-total_length_y / 2, total_length_y / 2, num=self.panel_pixel_num_y,
+                                        endpoint=True)
         mesh_temp = np.meshgrid(x_coordinate_temp, y_coordinate_temp)
 
         self.pixel_position[0, ::, ::, 0] = mesh_temp[0][::, ::]
         self.pixel_position[0, ::, ::, 1] = mesh_temp[1][::, ::]
 
         # Calculate the index map for the image
-        mesh_temp = np.meshgrid(np.arange(self.pixel_num_x), np.arange(self.pixel_num_y))
+        mesh_temp = np.meshgrid(np.arange(self.panel_pixel_num_x), np.arange(self.panel_pixel_num_y))
         self.pixel_index_map[0, :, :, 0] = mesh_temp[0][::, ::]
         self.pixel_index_map[0, :, :, 1] = mesh_temp[1][::, ::]
-        self.pixel_index_x_max = self.pixel_num_x
-        self.pixel_index_y_max = self.pixel_num_y
+        self.detector_pixel_num_x = self.panel_pixel_num_x
+        self.detector_pixel_num_y = self.panel_pixel_num_y
 
         ################################################################################################################
         # Initialize the pixel effects
         ################################################################################################################
         # Initialize the detector effect parameters
-        self.pedestal = np.zeros((self.panel_num, self.pixel_num_x, self.pixel_num_y))
-        self.pixel_rms = np.zeros((self.panel_num, self.pixel_num_x, self.pixel_num_y))
-        self.pixel_bkgd = np.zeros((self.panel_num, self.pixel_num_x, self.pixel_num_y))
-        self.pixel_status = np.zeros((self.panel_num, self.pixel_num_x, self.pixel_num_y))
-        self.pixel_mask = np.zeros((self.panel_num, self.pixel_num_x, self.pixel_num_y))
-        self.pixel_gain = np.ones((self.panel_num, self.pixel_num_x, self.pixel_num_y))
+        self.pedestal = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
+        self.pixel_rms = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
+        self.pixel_bkgd = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
+        self.pixel_status = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
+        self.pixel_mask = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
+        self.pixel_gain = np.ones((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
 
         # Initialize the pixel effects
         self.initialize_pixels_with_beam(beam=beam)
@@ -345,7 +349,7 @@ class PlainDetector(DetectorBase):
         :param image_stack: The [1, num_x, num_y] numpy array.
         :return: The [num_x, num_y] numpy array.
         """
-        return np.reshape(image_stack, (self.pixel_num_x, self.pixel_num_y))
+        return np.reshape(image_stack, (self.panel_pixel_num_x, self.panel_pixel_num_y))
 
     def assemble_image_stack_batch(self, image_stack_batch):
         """
@@ -356,26 +360,23 @@ class PlainDetector(DetectorBase):
         :return: The [stack_num, num_x, num_y] numpy array
         """
         stack_num = image_stack_batch.shape[0]
-        return np.reshape(image_stack_batch, (stack_num, self.pixel_num_x, self.pixel_num_y))
+        return np.reshape(image_stack_batch, (stack_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
 
 
-class LclsDetector(DetectorBase):
+class PnccdDetector(DetectorBase):
     """
     Class for lcls detectors.
     """
 
-    def __init__(self, det_name, geom, beam, run_num=0):
+    def __init__(self, geom, beam, run_num=0):
         """
-        Initialize the detector with provided information.
-        If det_name is not None, then initialize the object with the geom info.
-        If beam is not None, then initialize the pixel properties related to the beam.
+        Initialize a pnccd detector.
 
-        :param det_name: The detector name. 'pnccd', 'cspad'.
         :param geom: The path to the geometry .data file.
         :param beam: The beam object.
         :param run_num: The run_num containing the background, rms and gain and the other pixel pixel properties.
         """
-        super(LclsDetector, self).__init__()
+        super(PnccdDetector, self).__init__()
 
         # Parse the path to extract the necessary information to use psana modules
         parsed_path = geom.split('/')
@@ -392,18 +393,12 @@ class LclsDetector(DetectorBase):
                 "The address before that part is not essential and can be replaced with" +
                 " your absolute address or relative address.")
 
-        # Initialize the detector according to different detector type
-        if det_name == 'pnccd':
-            self.initialize_as_pnccd(geom=geom, run_num=run_num)
-        elif det_name == 'cspad':
-            self.initialize_as_pnccd(geom=geom, run_num=run_num)
-        else:
-            raise Exception("Currently, this object only support 'cspad' and 'pnccd' detector.")
+        self.initialize(geom=geom, run_num=run_num)
 
         # Initialize the pixel effects
         self.initialize_pixels_with_beam(beam=beam)
 
-    def initialize_as_pnccd(self, geom, run_num=0):
+    def initialize(self, geom, run_num=0):
         """
         Initialize the detector as pnccd
         :param geom: The pnccd .data file which characterize the geometry profile.
@@ -441,16 +436,16 @@ class LclsDetector(DetectorBase):
         self.pixel_index_map = self.pixel_index_map.astype(np.int64)
 
         # Get the range of the pixel index
-        self.pixel_index_x_max = np.max(self.pixel_index_map[:, :, :, 0])
-        self.pixel_index_y_max = np.max(self.pixel_index_map[:, :, :, 1])
+        self.detector_pixel_num_x = np.max(self.pixel_index_map[:, :, :, 0])
+        self.detector_pixel_num_y = np.max(self.pixel_index_map[:, :, :, 1])
 
-        self.pixel_num_x = np.array([self.pixel_index_map.shape[1], ] * self.panel_num)
-        self.pixel_num_y = np.array([self.pixel_index_map.shape[2], ] * self.panel_num)
-        self.pixel_num_total = np.sum(np.multiply(self.pixel_num_x, self.pixel_num_y))
+        self.panel_pixel_num_x = np.array([self.pixel_index_map.shape[1], ] * self.panel_num)
+        self.panel_pixel_num_y = np.array([self.pixel_index_map.shape[2], ] * self.panel_num)
+        self.pixel_num_total = np.sum(np.multiply(self.panel_pixel_num_x, self.panel_pixel_num_y))
 
         tmp = float(self.geometry.get_pixel_scale_size())
-        self.pixel_width = np.ones((self.panel_num, self.pixel_num_x[0], self.pixel_num_y[0])) * tmp
-        self.pixel_height = np.ones((self.panel_num, self.pixel_num_x[0], self.pixel_num_y[0])) * tmp
+        self.pixel_width = np.ones((self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0])) * tmp
+        self.pixel_height = np.ones((self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0])) * tmp
 
         # Calculate the pixel area
         self.pixel_area = np.multiply(self.pixel_height, self.pixel_width)
@@ -490,7 +485,7 @@ class LclsDetector(DetectorBase):
         :return: The [num_x, num_y] numpy array.
         """
         # construct the image holder:
-        image = np.zeros((self.pixel_index_x_max, self.pixel_index_y_max))
+        image = np.zeros((self.detector_pixel_num_x, self.detector_pixel_num_y))
         for l in range(self.panel_num):
             image[self.pixel_index_map[l, :, :, 0],
                   self.pixel_index_map[l, :, :, 1]] = image_stack[l, :, :]
@@ -508,7 +503,155 @@ class LclsDetector(DetectorBase):
         stack_num = image_stack_batch.shape[0]
 
         # construct the image holder:
-        image = np.zeros((stack_num, self.pixel_index_x_max, self.pixel_index_y_max))
+        image = np.zeros((stack_num, self.detector_pixel_num_x, self.detector_pixel_num_y))
+        for l in range(self.panel_num):
+            image[:, self.pixel_index_map[l, :, :, 0], self.pixel_index_map[l, :, :, 1]] = image_stack_batch[:, l, :, :]
+
+        return image
+
+
+class CsPadDetector(DetectorBase):
+    """
+    Class for lcls detectors.
+    """
+
+    def __init__(self, geom, beam, run_num=0):
+        """
+        Initialize a pnccd detector.
+
+        :param geom: The path to the geometry .data file.
+        :param beam: The beam object.
+        :param run_num: The run_num containing the background, rms and gain and the other pixel pixel properties.
+        """
+        super(CsPadDetector, self).__init__()
+
+        # Parse the path to extract the necessary information to use psana modules
+        parsed_path = geom.split('/')
+        # Notify the user that the path should be as deep as the geometry profile
+        if parsed_path[-2] != "geometry":
+            # print parsed_path[-1]
+            raise Exception(
+                " Sorry, at present, the package is not very smart. Please specify " +
+
+                "the path of the detector as deep as the geometry profile. \n " +
+                "And example would be like:" +
+                "/reg/d/psdm/amo/experiment_name/calib/group/source/geometry/0-end.data \n" +
+                "where the '/calib/group/source/geometry/0-end.data' part is essential. \n" +
+                "The address before that part is not essential and can be replaced with" +
+                " your absolute address or relative address.")
+
+        self.initialize(geom=geom, run_num=run_num)
+
+        # Initialize the pixel effects
+        self.initialize_pixels_with_beam(beam=beam)
+
+    def initialize(self, geom, run_num=0):
+        """
+        Initialize the detector as pnccd
+        :param geom: The pnccd .data file which characterize the geometry profile.
+        :param run_num: The run_num containing the background, rms and gain and the other pixel pixel properties.
+        :return:  None
+        """
+
+        # Redirect the output stream
+        old_stdout = sys.stdout
+        f = open('Detector_initialization.log', 'w')
+        sys.stdout = f
+
+        ################################################################################################################
+        # Initialize the geometry configuration
+        ################################################################################################################
+        self.geometry = GeometryAccess(geom, 0o377)
+
+        # Set coordinate in real space
+        temp = self.geometry.get_pixel_coords()
+        temp = temp.reshape((1, ))
+        temp_index = self.geometry.get_pixel_coord_indexes()
+
+        self.panel_num = temp[0].shape[1] * temp[0].shape[2]
+        self.distance = temp[2][0, 0, 0, 0, 0]
+
+        self.pixel_position = np.zeros((self.panel_num, temp[0].shape[3], temp[0].shape[4], 3))
+        self.pixel_index_map = np.zeros((self.panel_num, temp[0].shape[3], temp[0].shape[4], 2))
+
+        for l in range(temp[0].shape[1]):
+            for m in range(temp[0].shape[2]):
+                for n in range(3):
+                    self.pixel_position[m + l * temp[0].shape[2], :, :, n] = temp[n][0, l, m, :, :]
+                for n in range(2):
+                    self.pixel_index_map[m + l * temp[0].shape[2], :, :, n] = temp_index[n][0, l, m, :, :]
+
+        self.pixel_index_map = self.pixel_index_map.astype(np.int64)
+
+        # Get the range of the pixel index
+        self.detector_pixel_num_x = np.max(self.pixel_index_map[:, :, :, 0])
+        self.detector_pixel_num_y = np.max(self.pixel_index_map[:, :, :, 1])
+
+        self.panel_pixel_num_x = np.array([self.pixel_index_map.shape[1], ] * self.panel_num)
+        self.panel_pixel_num_y = np.array([self.pixel_index_map.shape[2], ] * self.panel_num)
+        self.pixel_num_total = np.sum(np.multiply(self.panel_pixel_num_x, self.panel_pixel_num_y))
+
+        tmp = float(self.geometry.get_pixel_scale_size())
+        self.pixel_width = np.ones((self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0])) * tmp
+        self.pixel_height = np.ones((self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0])) * tmp
+
+        # Calculate the pixel area
+        self.pixel_area = np.multiply(self.pixel_height, self.pixel_width)
+
+        ################################################################################################################
+        # Initialize the pixel effects
+        ################################################################################################################
+        # first we should parse the path
+        parsed_path = geom.split('/')
+
+        cbase = CalibParsBasePnccdV1()
+        calibdir = '/'.join(parsed_path[:-4])
+        group = parsed_path[-4]
+        source = parsed_path[-3]
+        runnum = run_num
+        pbits = 255
+        gcp = GenericCalibPars(cbase, calibdir, group, source, runnum, pbits)
+
+        self.pedestal = gcp.pedestals()
+        self.pixel_rms = gcp.pixel_rms()
+        self.pixel_mask = gcp.pixel_mask()
+        self.pixel_bkgd = gcp.pixel_bkgd()
+        self.pixel_status = gcp.pixel_status()
+        self.pixel_gain = gcp.pixel_gain()
+
+        # Redirect the output stream
+        sys.stdout = old_stdout
+        f.close()
+        os.remove('./Detector_initialization.log')
+
+    def assemble_image_stack(self, image_stack):
+        """
+        Assemble the image stack into a 2D diffraction pattern.
+        For this specific object, since it only has one panel, the result is to remove the first dimension.
+
+        :param image_stack: The [1, num_x, num_y] numpy array.
+        :return: The [num_x, num_y] numpy array.
+        """
+        # construct the image holder:
+        image = np.zeros((self.detector_pixel_num_x, self.detector_pixel_num_y))
+        for l in range(self.panel_num):
+            image[self.pixel_index_map[l, :, :, 0],
+                  self.pixel_index_map[l, :, :, 1]] = image_stack[l, :, :]
+
+        return image
+
+    def assemble_image_stack_batch(self, image_stack_batch):
+        """
+        Assemble the image stack batch into a stack of 2D diffraction patterns.
+        For this specific object, since it has only one panel, the result is a simple reshape.
+
+        :param image_stack_batch: The [stack_num, 1, num_x, num_y] numpy array
+        :return: The [stack_num, num_x, num_y] numpy array
+        """
+        stack_num = image_stack_batch.shape[0]
+
+        # construct the image holder:
+        image = np.zeros((stack_num, self.detector_pixel_num_x, self.detector_pixel_num_y))
         for l in range(self.panel_num):
             image[:, self.pixel_index_map[l, :, :, 0], self.pixel_index_map[l, :, :, 1]] = image_stack_batch[:, l, :, :]
 
@@ -521,18 +664,20 @@ class UserDefinedDetector(DetectorBase):
     with a dictionary with proper entries to use this class.
     """
 
-    def __init__(self, param):
+    def __init__(self, geom, beam):
         """
         Initialize the detector
-        :param param:  The dictionary containing all the necessary information to initialize the detector.
+        :param geom:  The dictionary containing all the necessary information to initialize the detector.
+        :param beam: The beam object
         """
         super(UserDefinedDetector, self).__init__()
-        self.initialize(param=param)
+        self.initialize(geom=geom, beam=beam)
 
-    def initialize(self, param):
+    def initialize(self, geom, beam):
         """
         Initialize the detector with user defined parameters
-        :param param: The dictionary containing all the necessary information to initialized the detector.
+        :param geom: The dictionary containing all the necessary information to initialized the detector.
+        :param beam: The beam object
         :return: None
         """
 
@@ -546,75 +691,79 @@ class UserDefinedDetector(DetectorBase):
         ################################################################################################################
 
         # Define the hierarchy system. For simplicity, we only use two-layer structure.
-        self.panel_num = int(param['panel number'])
+        self.panel_num = int(geom['panel number'])
 
         # Define all properties the detector should have
-        self.distance = float(param['detector distance'])  # detector distance in (m)
-        self.pixel_width = param['pixel width'].astype(np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
-        self.pixel_height = param['pixel height'].astype(np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
-        self.center_x = param['pixel center x'].astype(np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
-        self.center_y = param['pixel center y'].astype(np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
+        self.distance = float(geom['detector distance'])  # detector distance in (m)
+        self.pixel_width = geom['pixel width'].astype(np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
+        self.pixel_height = geom['pixel height'].astype(np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
+        self.center_x = geom['pixel center x'].astype(np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
+        self.center_y = geom['pixel center y'].astype(np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
         self.orientation = np.array([0, 0, 1])
-        self.pixel_position = None  # (m)
+
+        # construct the the pixel position array
+        self.pixel_position = np.zeros((self.panel_num, self.panel_pixel_num_x,
+                                        self.panel_pixel_num_y, 3))
+        self.pixel_position[:, :, :, 2] = self.distance
+        self.pixel_position[:, :, :, 0] = self.center_x
+        self.pixel_position[:, :, :, 1] = self.center_y
 
         # Pixel map
-        self.pixel_index_map = param['pixel map'].astype(np.int64)  # [panel number, pixel num x, pixel num y]
+        self.pixel_index_map = geom['pixel map'].astype(np.int64)  # [panel number, pixel num x, pixel num y]
 
-        # Detector effects
-        if 'pedestal' in param:
-            self.pedestal = param['pedestal'].astype(np.float64)
-        else:
-            self.pedestal = np.zeros((self.panel_num, self.pixel_num_x, self.pixel_num_y))
+        # Detector pixel number info
+        self.detector_pixel_num_x = np.max(self.pixel_index_map[:, :, :, 0])
+        self.detector_pixel_num_y = np.max(self.pixel_index_map[:, :, :, 1])
 
-        if 'pixel rms' in param:
-            self.pedestal = param['pixel rms'].astype(np.float64)
-        else:
-            self.pedestal = np.zeros((self.panel_num, self.pixel_num_x, self.pixel_num_y))
+        # Panel pixel number info
+        self.panel_pixel_num_x = self.pixel_index_map.shape[1]  # number of pixels in each panel in x direction
+        self.panel_pixel_num_y = self.pixel_index_map.shape[2]  # number of pixels in each panel in y direction
 
-        if 'pixel bkgd' in param:
-            self.pedestal = param['pixel bkgd'].astype(np.float64)
-        else:
-            self.pedestal = np.zeros((self.panel_num, self.pixel_num_x, self.pixel_num_y))
-
-        if 'pixel status' in param:
-            self.pedestal = param['pixel status'].astype(np.float64)
-        else:
-            self.pedestal = np.zeros((self.panel_num, self.pixel_num_x, self.pixel_num_y))
-
-        if 'pixel mask' in param:
-            self.pedestal = param['pixel mask'].astype(np.float64)
-        else:
-            self.pedestal = np.zeros((self.panel_num, self.pixel_num_x, self.pixel_num_y))
-
-        if 'pixel gain' in param:
-            self.pedestal = param['pixel gain'].astype(np.float64)
-        else:
-            self.pedestal = np.ones((self.panel_num, self.pixel_num_x, self.pixel_num_y))
+        # total number of pixels (px*py)
+        self.pixel_num_total = self.panel_num * self.panel_pixel_num_x * self.panel_pixel_num_y
 
         ################################################################################################################
         # Do necessary calculation to finishes the initialization
         ################################################################################################################
         # self.geometry currently only work for the pre-defined detectors
-        self.geometry = param
+        self.geometry = geom
 
         # Calculate the pixel area
         self.pixel_area = np.multiply(self.pixel_height, self.pixel_width)
 
-        self.pixel_num_x = 0  # number of pixels in x
-        self.pixel_num_y = 0  # number of pixels in y
-        self.pixel_num_total = 0  # total number of pixels (px*py)
+        # Get reciprocal space configurations and corrections.
+        self.initialize_pixels_with_beam(beam=beam)
 
-        # Pixel range info
-        self.pixel_index_x_max = 1
-        self.pixel_index_y_max = 1
+        ################################################################################################################
+        # Do necessary calculation to finishes the initialization
+        ################################################################################################################
+        # Detector effects
+        if 'pedestal' in geom:
+            self.pedestal = geom['pedestal'].astype(np.float64)
+        else:
+            self.pedestal = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
 
-        # Corrections
-        self.solid_angle_per_pixel = None  # solid angle
-        self.polarization_correction = None  # Polarization correction
-        # Total scaling and correction factor.
-        self.linear_correction = None
+        if 'pixel rms' in geom:
+            self.pixel_rms = geom['pixel rms'].astype(np.float64)
+        else:
+            self.pixel_rms = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
 
+        if 'pixel bkgd' in geom:
+            self.pixel_bkgd = geom['pixel bkgd'].astype(np.float64)
+        else:
+            self.pixel_bkgd = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
 
-        # pixel information in reciprocal space
-        self.pixel_position_reciprocal = None  # (m^-1)
-        self.pixel_distance_reciprocal = None  # (m^-1)
+        if 'pixel status' in geom:
+            self.pixel_status = geom['pixel status'].astype(np.float64)
+        else:
+            self.pixel_status = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
+
+        if 'pixel mask' in geom:
+            self.pixel_mask = geom['pixel mask'].astype(np.float64)
+        else:
+            self.pixel_mask = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
+
+        if 'pixel gain' in geom:
+            self.pixel_gain = geom['pixel gain'].astype(np.float64)
+        else:
+            self.pixel_gain = np.ones((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))

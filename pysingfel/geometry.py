@@ -259,12 +259,12 @@ def solid_angle(pixel_center, pixel_area, orientation):
     return solid_angle_array
 
 
-def reciprocal_position_and_correction(pixel_center, pixel_area,
+def reciprocal_position_and_correction(pixel_position, pixel_area,
                                        wave_vector, polarization, orientation):
     """
     Calculate the pixel positions in reciprocal space and all the related corrections.
 
-    :param pixel_center: The position of the pixel in real space.
+    :param pixel_position: The position of the pixel in real space.
     :param wave_vector: The wavevector.
     :param polarization: The polarization vector.
     :param orientation: The normal direction of the detector.
@@ -272,14 +272,14 @@ def reciprocal_position_and_correction(pixel_center, pixel_area,
     :return: pixel_position_reciprocal, pixel_position_reciprocal_norm, polarization_correction, geometry_correction
     """
     # Calculate the position and distance in reciprocal space
-    pixel_position_reciprocal = _reciprocal_space_pixel_position(pixel_center=pixel_center,
+    pixel_position_reciprocal = _reciprocal_space_pixel_position(pixel_center=pixel_position,
                                                                  wave_vector=wave_vector)
     pixel_position_reciprocal_norm = np.sqrt(np.sum(np.square(pixel_position_reciprocal), axis=-1))
 
     # Calculate the corrections.
-    polarization_correction = _polarization_correction(pixel_center=pixel_center,
+    polarization_correction = _polarization_correction(pixel_center=pixel_position,
                                                        polarization=polarization)
-    solid_angle_array = solid_angle(pixel_center=pixel_center,
+    solid_angle_array = solid_angle(pixel_center=pixel_position,
                                     pixel_area=pixel_area,
                                     orientation=orientation)
 

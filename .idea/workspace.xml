@@ -14,16 +14,30 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="detector.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="detector.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pysingfel/detector.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3366">
-              <caret line="602" column="27" lean-forward="true" selection-start-line="602" selection-start-column="27" selection-end-line="602" selection-end-column="28" />
+            <state relative-caret-position="703">
+              <caret line="769" lean-forward="true" selection-start-line="769" selection-end-line="769" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
-                <element signature="e#828#11488#0" />
-                <element signature="e#1039#2985#0" />
-                <element signature="e#11530#16210#0" />
+                <element signature="e#828#11395#0" />
+                <element signature="e#11437#16584#0" />
+                <element signature="e#16628#23118#0" />
+                <element signature="e#23141#29612#0" />
+                <element signature="e#23739#29105#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="particle.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/pysingfel/particle.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="285">
+              <caret line="15" column="70" lean-forward="true" selection-start-line="15" selection-start-column="70" selection-end-line="15" selection-end-column="70" />
+              <folding>
+                <element signature="e#0#11#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -32,10 +46,22 @@
       <file leaf-file-name="geometry.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pysingfel/geometry.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="703">
+            <state relative-caret-position="-3952">
               <caret line="288" column="70" lean-forward="true" selection-start-line="288" selection-start-column="70" selection-end-line="288" selection-end-column="70" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="radiationDamage.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/pysingfel/radiationDamage.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="855">
+              <caret line="135" column="8" selection-start-line="135" selection-start-column="8" selection-end-line="135" selection-end-column="8" />
+              <folding>
+                <element signature="e#0#32#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -57,9 +83,13 @@
       <find>pixel_index_x</find>
       <find>self.panel_orien</find>
       <find>panel_orientation</find>
+      <find>pixel_num_y</find>
+      <find>pixel_index_y_max</find>
     </findStrings>
     <replaceStrings>
       <replace>pixel_num_y</replace>
+      <replace>panel_pixel_num_y</replace>
+      <replace>detector_pixel_num_y</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -213,6 +243,11 @@
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
   </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <option name="time" value="1" />
+    </breakpoint-manager>
+  </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/pysingfel/geometry.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -230,9 +265,11 @@
           <caret line="8" column="10" lean-forward="true" selection-start-line="8" selection-start-column="10" selection-end-line="8" selection-end-column="10" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#828#11488#0" />
-            <element signature="e#1039#2985#0" />
-            <element signature="e#11530#16210#0" />
+            <element signature="e#828#11395#0" />
+            <element signature="e#11437#16584#0" />
+            <element signature="e#16628#23118#0" />
+            <element signature="e#23141#29612#0" />
+            <element signature="e#23739#29105#0" />
           </folding>
         </state>
       </provider>
@@ -442,6 +479,31 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/pysingfel/detector.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="703">
+          <caret line="769" lean-forward="true" selection-start-line="769" selection-end-line="769" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#828#11395#0" />
+            <element signature="e#11437#16584#0" />
+            <element signature="e#16628#23118#0" />
+            <element signature="e#23141#29612#0" />
+            <element signature="e#23739#29105#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pysingfel/geometry.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-3952">
+          <caret line="288" column="70" lean-forward="true" selection-start-line="288" selection-start-column="70" selection-end-line="288" selection-end-column="70" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/pysingfel/radiationDamage.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="855">
@@ -454,30 +516,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/pysingfel/particle.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="19">
-          <caret line="3" column="15" selection-start-line="3" selection-start-column="15" selection-end-line="3" selection-end-column="15" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pysingfel/geometry.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="703">
-          <caret line="288" column="70" lean-forward="true" selection-start-line="288" selection-start-column="70" selection-end-line="288" selection-end-column="70" />
+        <state relative-caret-position="285">
+          <caret line="15" column="70" lean-forward="true" selection-start-line="15" selection-start-column="70" selection-end-line="15" selection-end-column="70" />
           <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pysingfel/detector.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3366">
-          <caret line="602" column="27" lean-forward="true" selection-start-line="602" selection-start-column="27" selection-end-line="602" selection-end-column="28" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#828#11488#0" />
-            <element signature="e#1039#2985#0" />
-            <element signature="e#11530#16210#0" />
+            <element signature="e#0#11#0" expanded="true" />
           </folding>
         </state>
       </provider>
