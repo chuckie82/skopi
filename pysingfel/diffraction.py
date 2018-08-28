@@ -1,7 +1,6 @@
 import numba as nb
 from numba import jit
 from scipy.interpolate import CubicSpline
-from pysingfel.particle import *
 import numpy as np
 
 
@@ -29,9 +28,6 @@ def calculate_compton(particle, detector):
     return Compton
 
 
-##########################################################################
-## The following functions focus on numba cpu computation
-##########################################################################
 def calculate_atomicFactor(particle, q_space, pixel_num):
     f_hkl = np.zeros((particle.numAtomTypes, pixel_num))
     q_space_1d = np.reshape(q_space, [pixel_num, ])
@@ -61,7 +57,6 @@ def cal(f_hkl, atomPos, q_xyz, xyzInd, pixel_number):
     return np.abs(F) ** 2
 
 
-## With this, one can calculate the form factor for arbitrary reciprocal space
 def calculate_molecularFormFactorSq(particle, q_space, q_position):
     shape = q_position.shape
     pixel_number = np.prod(shape[:-1])
