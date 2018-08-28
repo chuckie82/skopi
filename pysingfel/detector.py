@@ -284,7 +284,7 @@ class PlainDetector(DetectorBase):
         ################################################################################################################
         # Initialize the geometry configuration
         ################################################################################################################
-        geom = pu.readGeomFile(geom)
+        geom = pu.read_geomfile(geom)
         self.geometry = geom
 
         # Set parameters

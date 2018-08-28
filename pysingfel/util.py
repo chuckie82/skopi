@@ -2,15 +2,15 @@ import h5py
 import numpy as np
 
 
-def prepH5(outputName):
+def prep_h5(output_name):
     """
     Create output file, prepare top level groups, write metadata.
 
-    :param outputName: The output file name.
+    :param output_name: The output file name.
     :return: None
     """
 
-    with h5py.File(outputName, 'w') as f:
+    with h5py.File(output_name, 'w') as f:
         # Generate top level groups
         f.create_group('data')
         f.create_group('params')
@@ -19,9 +19,10 @@ def prepH5(outputName):
 
         # Write metadata
         # Package format version
-        f.create_dataset('info/package_version', data=np.string_('SingFEL v0.2.0'))
+        f.create_dataset('info/package_version', data=np.string_('PySingFEL v0.3.0'))
         # Contact
-        f.create_dataset('info/contact', data=np.string_('Carsten Fortmann-Grote <carsten.grote@xfel.eu>'))
+        f.create_dataset('info/contact', data=np.string_('Carsten Fortmann-Grote <carsten.grote@xfel.eu> for Simex'
+                                                         'Haoyuan Li <hyli16@stanford.edu> for PySingFEL'))
         # Data Description
         f.create_dataset('info/data_description',
                          data=np.string_('This dataset contains diffraction patterns generated using SingFEL.'))
@@ -35,11 +36,22 @@ def prepH5(outputName):
         f.create_dataset('version', data=np.string_('0.2'))
 
 
-def saveAsDiffrOutFile(outputName, inputName, counter, detector_counts, detector_intensity, quaternion, det, beam):
+def save_as_diffr_outfile(output_name, input_name, counter, detector_counts, detector_intensity, quaternion, det, beam):
     """
     Save simulation results as new dataset in to the h5py file prepared before.
+
+    :param output_name:
+    :param input_name:
+    :param counter:
+    :param detector_counts:
+    :param detector_intensity: The detector intensity
+    :param quaternion: The quaternion for each pattern.
+    :param det: The detector object
+    :param beam: The beam object
+    :return:
     """
-    with h5py.File(outputName, 'a') as f:
+
+    with h5py.File(output_name, 'a') as f:
         group_name = '/data/' + '{0:07}'.format(counter + 1) + '/'
         f.create_dataset(group_name + 'data', data=detector_counts)
         f.create_dataset(group_name + 'diffr', data=detector_intensity)
@@ -47,35 +59,32 @@ def saveAsDiffrOutFile(outputName, inputName, counter, detector_counts, detector
 
         # Link history from input pmi file into output diffr file
         group_name_history = group_name + 'history/parent/detail/'
-        f[group_name_history + 'data'] = h5py.ExternalLink(inputName, 'data')
-        f[group_name_history + 'info'] = h5py.ExternalLink(inputName, 'info')
-        f[group_name_history + 'misc'] = h5py.ExternalLink(inputName, 'misc')
-        f[group_name_history + 'params'] = h5py.ExternalLink(inputName, 'params')
-        f[group_name_history + 'version'] = h5py.ExternalLink(inputName, 'version')
-        f[group_name + '/history/parent/parent'] = h5py.ExternalLink(inputName, 'history/parent')
+        f[group_name_history + 'data'] = h5py.ExternalLink(input_name, 'data')
+        f[group_name_history + 'info'] = h5py.ExternalLink(input_name, 'info')
+        f[group_name_history + 'misc'] = h5py.ExternalLink(input_name, 'misc')
+        f[group_name_history + 'params'] = h5py.ExternalLink(input_name, 'params')
+        f[group_name_history + 'version'] = h5py.ExternalLink(input_name, 'version')
+        f[group_name + '/history/parent/parent'] = h5py.ExternalLink(input_name, 'history/parent')
 
         # Parameters
         if 'geom' not in f['params'].keys() and 'beam' not in f['params'].keys():
             # Geometry
-            f.create_dataset('params/geom/detectorDist', data=det.get_detector_dist())
-            f.create_dataset('params/geom/pixelWidth', data=det.get_pix_width())
-            f.create_dataset('params/geom/pixelHeight', data=det.get_pix_height())
-            f.create_dataset('params/geom/mask', data=np.ones((det.py, det.px)))
+            f.create_dataset('params/geom/detectorDist', data=det.distance)
+            f.create_dataset('params/geom/pixelWidth', data=det.pixel_width[0, 0, 0])
+            f.create_dataset('params/geom/pixelHeight', data=det.pixel_width[0, 0, 0])
+            f.create_dataset('params/geom/mask', data=np.ones((det.detector_pixel_num_x,
+                                                               det.detector_pixel_num_x)))
             f.create_dataset('params/beam/focusArea', data=beam.get_focus_area())
 
             # Photons
             f.create_dataset('params/beam/photonEnergy', data=beam.get_photon_energy())
 
 
-########################################################################################################################
-# Parser
-########################################################################################################################
-# Read from Geom file
-def readGeomFile(fname):
+def read_geomfile(fname):
     """
     Parse the .geom file to initialize the user defined detector.
-    :param fname:
-    :return:
+    :param fname: The .geom file
+    :return: A dict object containing the information of this configuration file.
     """
     # geometry dictionary contains the parameters used to initialize the detector
     geom = {}
@@ -104,7 +113,7 @@ def symmpdb(fname):
     :return: Numpy array containing the type and position of each atom in the pdb file.
     """
 
-    AtomTypes = {'H': 1, 'C': 6, 'N': 7, 'O': 8, 'P': 15, 'S': 16}
+    atom_types = {'H': 1, 'C': 6, 'N': 7, 'O': 8, 'P': 15, 'S': 16}
 
     fin = open(fname, 'r')
 
@@ -117,15 +126,15 @@ def symmpdb(fname):
         # read atom coordinates
         if line[0:4] == 'ATOM' or line[0:6] == 'HETATM':
             atom_count += 1
-            chainID = line[21]
-            if chainID not in atoms_dict.keys():
-                atoms_dict[chainID] = []
+            chain_id = line[21]
+            if chain_id not in atoms_dict.keys():
+                atoms_dict[chain_id] = []
             # occupany > 50 % || one of either if occupany = 50 %
             if (float(line[56:60]) > 0.5) or (float(line[56:60]) == 0.5 and line[16] != 'B'):
                 # [x, y, z, atomtype, charge]
                 tmp = [float(line[30:38].strip()), float(line[38:46].strip()), float(line[46:54].strip()), 0, 0]
-                if line[76:78].strip() in AtomTypes.keys():
-                    tmp[3] = AtomTypes[line[76:78].strip()]
+                if line[76:78].strip() in atom_types.keys():
+                    tmp[3] = atom_types[line[76:78].strip()]
                     charge = line[78:80].strip()  # charge info, should be in the form of '2+' or '1-' if not blank
                     if len(charge) is not 0:
                         if len(charge) is not 2:
@@ -133,7 +142,7 @@ def symmpdb(fname):
                         else:
                             charge = int(charge[1] + charge[0])  # swap the order to be '+2' or '-1' and convert to int
                             tmp[4] = charge
-                    atoms_dict[chainID].append(tmp)
+                    atoms_dict[chain_id].append(tmp)
 
                     """if test <= 10:
                         print tmp
@@ -147,10 +156,10 @@ def symmpdb(fname):
         flag2 = 'REMARK 350                    AND CHAINS: '
         if line.startswith(flag1):
             line = line.strip()
-            chainIDs = line.replace(flag1, '').replace(',', '').split()
+            chain_ids = line.replace(flag1, '').replace(',', '').split()
             line = fin.readline().strip()
             while line.startswith(flag2):
-                chainIDs += line.replace(flag2, '').replace(',', '').split()
+                chain_ids += line.replace(flag2, '').replace(',', '').split()
                 line = fin.readline().strip()
             sys_tmp = []
             trans_tmp = []
@@ -158,8 +167,8 @@ def symmpdb(fname):
                 sys_tmp.append([float(line[24:33]), float(line[34:43]), float(line[44:53])])
                 trans_tmp.append(float(line[58:68]))
                 line = fin.readline().strip()
-            sym_dict[tuple(chainIDs)] = np.asarray(sys_tmp)  # cannot use list as dict keys, but tuple works
-            trans_dict[tuple(chainIDs)] = np.asarray(trans_tmp)
+            sym_dict[tuple(chain_ids)] = np.asarray(sys_tmp)  # cannot use list as dict keys, but tuple works
+            trans_dict[tuple(chain_ids)] = np.asarray(trans_tmp)
             # print "find transformation"
 
             continue
@@ -169,19 +178,19 @@ def symmpdb(fname):
     fin.close()
 
     # convert atom positions in numpy array
-    for chainID in atoms_dict.keys():
-        atoms_dict[chainID] = np.asarray(atoms_dict[chainID])
+    for chain_id in atoms_dict.keys():
+        atoms_dict[chain_id] = np.asarray(atoms_dict[chain_id])
 
-    ## To define a fake atom to initialize the variable 
-    ## When return, this atom is not returned
+    # To define a fake atom to initialize the variable
+    # When return, this atom is not returned
     atoms = np.zeros((1, 5))
 
     ##################################################################################################################
     # if no REMARK 350 provided, then save atoms_dict in atoms directly
     if not sym_dict.keys():
         # print "no 350 found"
-        for chainID in atoms_dict.keys():
-            atoms = np.vstack((atoms, atoms_dict[chainID]))
+        for chain_id in atoms_dict.keys():
+            atoms = np.vstack((atoms, atoms_dict[chain_id]))
 
         x_max = np.max(atoms[:, 0])
         x_min = np.min(atoms[:, 0])
@@ -202,18 +211,18 @@ def symmpdb(fname):
 
     ##################################################################################################################
     # Deal with the case where we have remark 350
-    for chainIDs in sym_dict.keys():
+    for chain_ids in sym_dict.keys():
         atoms_array = []
-        for chainID in chainIDs:
+        for chain_id in chain_ids:
             if len(atoms_array) == 0:
-                atoms_array = atoms_dict[chainID]
+                atoms_array = atoms_dict[chain_id]
             else:
-                atoms_array = np.vstack((atoms_array, atoms_dict[chainID]))
+                atoms_array = np.vstack((atoms_array, atoms_dict[chain_id]))
 
         atoms_array_tmp = np.zeros_like(atoms_array)
         atoms_array_tmp[:, :] = atoms_array[:, :]
-        sym_array = sym_dict[chainIDs]
-        trans_array = trans_dict[chainIDs]
+        sym_array = sym_dict[chain_ids]
+        trans_array = trans_dict[chain_ids]
         for i in range(int(len(sym_array) / 3)):
             sym_op = sym_array[3 * i:3 * (i + 1), :]
             trans = trans_array[3 * i:3 * (i + 1)]
@@ -237,7 +246,3 @@ def symmpdb(fname):
     # sort based on atomtype and charge
     return atom_info[np.lexsort((atom_info[:, 4].astype(int), atom_info[:, 3].astype(int)))]
     # return atom_info, sym_dict, atoms_array
-
-########################################################################################################################
-# For detector.py
-########################################################################################################################
