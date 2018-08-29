@@ -1,175 +1,216 @@
 import h5py
 import numpy as np
 from pysingfel.util import symmpdb
-from pysingfel.geometry import quaternion2rot3D, getRandomRotation
+from pysingfel.geometry import quaternion2rot3d, get_random_rotation
 
 
 class Particle(object):
+    """
+    Class to hold the particle information
+    """
+
     def __init__(self, *fname):
+        """
+        Initialize the particle with the .pdb file specified with fname 
+        :param fname: The frames to read.
+        """
         # Atom positions, types and form factor table
-        self.atomPos = None  # atom position -> N x 3 array, sorted based on atom type id
-        # Index array saving indices that split atomPos to get pos for each atom type
-        # More specifically, let m = SplitIdx[i] and n = SplitIdx[i+1], then
-        # atomPos[m:n] contains all atoms for the ith atom type.
-        self.SplitIdx = None
-        self.numAtomTypes = None  # number of atom types
-        self.ffTable = None  # form factor table -> atomType x qSample
+        self.atom_pos = None  # atom position -> N x 3 array, sorted based on atom type id
+        # Index array saving indices that split atom_pos to get pos for each atom type
+        # More specifically, let m = split_idx[i] and n = split_idx[i+1], then
+        # atom_pos[m:n] contains all atoms for the ith atom type.
+        self.split_idx = None
+        self.num_atom_types = None  # number of atom types
+        self.ff_table = None  # form factor table -> atom_type x qSample
 
         # Scattering
-        self.qSample = None  # q vector sin(theta)/lambda
-        self.numQSamples = None  # number of q samples
+        self.q_sample = None  # q vector sin(theta)/lambda
+        self.num_q_samples = None  # number of q samples
         # Compton scattering
-        self.comptonQSample = None  # Compton: q vector sin(theta)/lambda
-        self.numComptonQSamples = 0  # number of Compton q samples
+        self.compton_q_sample = None  # Compton: q vector sin(theta)/lambda
+        self.num_compton_q_samples = 0  # number of Compton q samples
         self.sBound = None  # Compton: static structure factor S(q)
         self.nFree = None  # Compton: number of free electrons
         if len(fname) != 0:
             # read from pmi file to get info about radiation damage at a certain time slice
             if len(fname) == 1:
                 datasetname = 'data/snp_0000001'  # default dataset name -> set to be initial time
-                self.readh5File(fname[0], datasetname)
+                self.read_h5file(fname[0], datasetname)
             elif len(fname) == 2:
                 # both pmi file and the time slice (dataset) are provided
-                self.readh5File(fname[0], fname[1])
+                self.read_h5file(fname[0], fname[1])
             else:
                 raise ValueError('Wrong number of parameters to construct the particle object!')
 
     # Generate some random rotation in the particle
-    def Rotate(self, quaternion):
-        rot3D = quaternion2rot3D(quaternion)
-        NewPos = np.dot(self.atomPos, rot3D.T)
-        self.set_atomPos(NewPos)
+    def rotate(self, quaternion):
+        """
+        Rotate the particle with the specified quaternion
+        
+        :param quaternion: 
+        :return: None
+        """
+        rot3d = quaternion2rot3d(quaternion)
+        new_pos = np.dot(self.atom_pos, rot3d.T)
+        self.set_atom_pos(new_pos)
 
-    def RotateRandomly(self, axis='y'):
-        quaternion = getRandomRotation(axis)
-        self.Rotate(quaternion)
+    def rotate_randomly(self, axis='y'):
+        """
+        Rotate randomly. 
+        :param axis: 'y' for random rotation around y axis. Anything else for a totally random rotation
+        :return: None
+        """
+        quaternion = get_random_rotation(axis)
+        self.rotate(quaternion)
 
     # setters and getters
-    def set_atomPos(self, pos):
-        self.atomPos = pos
+    def set_atom_pos(self, pos):
+        self.atom_pos = pos
 
-    def get_atomPos(self):
-        return self.atomPos
+    def get_atom_pos(self):
+        return self.atom_pos
 
-    def get_numAtoms(self):
-        return self.atomPos.shape[0]
+    def get_num_atoms(self):
+        return self.atom_pos.shape[0]
 
-    def get_numComptonQSamples(self):
-        return self.numComptonQSamples
+    def get_num_compton_q_samples(self):
+        return self.num_compton_q_samples
 
-    def readh5File(self, fname, datasetname):
+    def read_h5file(self, fname, datasetname):
+        """
+        Parse the h5file to get the particle position and the other information
+
+        :param fname: The file name of the h5file
+        :param datasetname: The dataset name to parse
+        :return:
+        """
         with h5py.File(fname, 'r') as f:
-            atomPos = f.get(datasetname + '/r').value  # atom position -> N x 3 array
-            ionList = f.get(datasetname + '/xyz').value  # length = N, contain atom type id for each atom
-            self.atomPos = atomPos[np.argsort(ionList)]
-            _, idx = np.unique(np.sort(ionList), return_index=True)
-            self.SplitIdx = np.append(idx, [len(ionList)])
+            atom_pos = f.get(datasetname + '/r').value  # atom position -> N x 3 array
+            ion_list = f.get(datasetname + '/xyz').value  # length = N, contain atom type id for each atom
+            self.atom_pos = atom_pos[np.argsort(ion_list)]
+            _, idx = np.unique(np.sort(ion_list), return_index=True)
+            self.split_idx = np.append(idx, [len(ion_list)])
 
             # get atom factor table, sorted by atom type id
-            atomType = f.get(datasetname + '/T').value  # atom type array, each type is represented by an integer
-            self.numAtomTypes = len(atomType)
-            ffTable = f.get(datasetname + '/ff').value
-            self.ffTable = ffTable[np.argsort(atomType)]
+            atom_type = f.get(datasetname + '/T').value  # atom type array, each type is represented by an integer
+            self.num_atom_types = len(atom_type)
+            ff_table = f.get(datasetname + '/ff').value
+            self.ff_table = ff_table[np.argsort(atom_type)]
 
-            self.qSample = f.get(datasetname + '/halfQ').value
-            self.numQSamples = len(self.qSample)
-            self.comptonQSample = f.get(datasetname + '/Sq_halfQ').value
-            self.numComptonQSamples = len(self.comptonQSample)
+            self.q_sample = f.get(datasetname + '/halfQ').value
+            self.num_q_samples = len(self.q_sample)
+            self.compton_q_sample = f.get(datasetname + '/Sq_halfQ').value
+            self.num_compton_q_samples = len(self.compton_q_sample)
             self.sBound = f.get(datasetname + '/Sq_bound').value
             self.nFree = f.get(datasetname + '/Sq_free').value
 
-    def readPDB(self, fname, ff='WK'):
+    def read_pdb(self, fname, ff='WK'):
         """
         Get particle information from reading pdb file.
         Implement the necessary transformation to different chains of the particle based on
         the symmetry specified in the pdb file(REMARK 350 BIOMT).
-        Set the ffTable and qSample manually.
+        Set the ff_table and q_sample manually.
+
+        :param fname: The file name of the pdb file to read
+        :param ff: The form factor table to use
+        :return:
         """
+
         atoms = symmpdb(fname)
-        self.atomPos = atoms[:, 0:3] / 10 ** 10  # convert unit from Angstroms to m
+        self.atom_pos = atoms[:, 0:3] / 10 ** 10  # convert unit from Angstroms to m
         tmp = (100 * atoms[:, 3] + atoms[:, 4]).astype(int)  # hack to get split idx from the sorted atom array
-        atomType, idx = np.unique(np.sort(tmp), return_index=True)
-        self.numAtomTypes = len(atomType)
-        self.SplitIdx = np.append(idx, [len(tmp)])
+        atom_type, idx = np.unique(np.sort(tmp), return_index=True)
+        self.num_atom_types = len(atom_type)
+        self.split_idx = np.append(idx, [len(tmp)])
 
         if ff == 'WK':
             # set up q samples and compton
             qs = np.linspace(0, 10, 101) / (2.0 * np.pi * 0.529177206 * 2.0)
-            self.qSample = qs
-            self.comptonQSample = qs
-            self.numQSamples = len(qs)
-            self.numComptonQSamples = len(qs)
-            self.sBound = np.zeros(self.numQSamples)
-            self.nFree = np.zeros(self.numQSamples)
+            self.q_sample = qs
+            self.compton_q_sample = qs
+            self.num_q_samples = len(qs)
+            self.num_compton_q_samples = len(qs)
+            self.sBound = np.zeros(self.num_q_samples)
+            self.nFree = np.zeros(self.num_q_samples)
 
             # calculate form factor using WaasKirf coeffs table
-            WKdbase = load_WaasKirf_database()
+            wk_dbase = load_waaskirf_database()
             for i in idx:
                 if i == 0:
-                    ZZ = int(atoms[i, 3])  # atom type
+                    zz = int(atoms[i, 3])  # atom type
                     qq = int(atoms[i, 4])  # charge
-                    idx = np.where(WKdbase[:, 0] == ZZ)[0]
+                    idx = np.where(wk_dbase[:, 0] == zz)[0]
                     flag = True
                     for j in idx:
-                        if WKdbase[j, 1] == qq:
-                            [a1, a2, a3, a4, a5, c, b1, b2, b3, b4, b5] = WKdbase[j, 2:]
-                            self.ffTable = c + a1 * np.exp(-b1 * self.qSample ** 2) + a2 * np.exp(
-                                -b2 * self.qSample ** 2) + \
-                                           a3 * np.exp(-b3 * self.qSample ** 2) + a4 * np.exp(-b4 * self.qSample ** 2) + \
-                                           a5 * np.exp(-b5 * self.qSample ** 2)
+                        if wk_dbase[j, 1] == qq:
+                            [a1, a2, a3, a4, a5, c, b1, b2, b3, b4, b5] = wk_dbase[j, 2:]
+                            self.ff_table = (a1 * np.exp(-b1 * self.q_sample ** 2) +
+                                             a2 * np.exp(-b2 * self.q_sample ** 2) +
+                                             a3 * np.exp(-b3 * self.q_sample ** 2) +
+                                             a4 * np.exp(-b4 * self.q_sample ** 2) +
+                                             a5 * np.exp(-b5 * self.q_sample ** 2) + c)
                             flag = False
                             break
                     if flag:
-                        print('Atom number = ' + str(ZZ) + ' with charge ' + str(qq))
+                        print('Atom number = ' + str(zz) + ' with charge ' + str(qq))
                         raise ValueError('Unrecognized atom type!')
                 else:
-                    ZZ = int(atoms[i, 3])  # atom type
+                    zz = int(atoms[i, 3])  # atom type
                     qq = int(atoms[i, 4])  # charge
-                    idx = np.where(WKdbase[:, 0] == ZZ)[0]
+                    idx = np.where(wk_dbase[:, 0] == zz)[0]
                     flag = True
                     for j in idx:
-                        if WKdbase[j, 1] == qq:
-                            [a1, a2, a3, a4, a5, c, b1, b2, b3, b4, b5] = WKdbase[j, 2:]
-                            ff = c + a1 * np.exp(-b1 * self.qSample ** 2) + a2 * np.exp(-b2 * self.qSample ** 2) + \
-                                 a3 * np.exp(-b3 * self.qSample ** 2) + a4 * np.exp(-b4 * self.qSample ** 2) + \
-                                 a5 * np.exp(-b5 * self.qSample ** 2)
-                            self.ffTable = np.vstack((self.ffTable, ff))
+                        if wk_dbase[j, 1] == qq:
+                            [a1, a2, a3, a4, a5, c, b1, b2, b3, b4, b5] = wk_dbase[j, 2:]
+
+                            ff = (a1 * np.exp(-b1 * self.q_sample ** 2) +
+                                  a2 * np.exp(-b2 * self.q_sample ** 2) +
+                                  a3 * np.exp(-b3 * self.q_sample ** 2) +
+                                  a4 * np.exp(-b4 * self.q_sample ** 2) +
+                                  a5 * np.exp(-b5 * self.q_sample ** 2) + c)
+
+                            self.ff_table = np.vstack((self.ff_table, ff))
                             flag = False
                             break
                     if flag:
-                        print('Atom number = ' + str(ZZ) + ' with charge ' + str(qq))
+                        print('Atom number = ' + str(zz) + ' with charge ' + str(qq))
                         raise ValueError('Unrecognized atom type!')
+
         elif ff == 'pmi':
             # set up ff table
             ffdbase = load_ff_database()
             for i in idx:
                 if i == 0:
-                    ZZ = int(atoms[i, 3])  # atom type
+                    zz = int(atoms[i, 3])  # atom type
                     qq = int(atoms[i, 4])  # charge
-                    self.ffTable = ffdbase[:, ZZ] * (ZZ - qq) / (ZZ * 1.0)
+                    self.ff_table = ffdbase[:, zz] * (zz - qq) / (zz * 1.0)
                 else:
-                    ZZ = int(atoms[i, 3])  # atom type
+                    zz = int(atoms[i, 3])  # atom type
                     qq = int(atoms[i, 4])  # charge
-                    self.ffTable = np.vstack((self.ffTable, ffdbase[:, ZZ] * (ZZ - qq) / (ZZ * 1.0)))
+                    self.ff_table = np.vstack((self.ff_table, ffdbase[:, zz] * (zz - qq) / (zz * 1.0)))
 
             # set up q samples and compton
-            self.qSample = ffdbase[:, 0] / (2.0 * np.pi * 0.529177206 * 2.0)
-            self.comptonQSample = ffdbase[:, 0] / (2.0 * np.pi * 0.529177206 * 2.0)
-            self.numQSamples = len(ffdbase[:, 0])
-            self.numComptonQSamples = len(ffdbase[:, 0])
-            self.sBound = np.zeros(self.numQSamples)
-            self.nFree = np.zeros(self.numQSamples)
+            self.q_sample = ffdbase[:, 0] / (2.0 * np.pi * 0.529177206 * 2.0)
+            self.compton_q_sample = ffdbase[:, 0] / (2.0 * np.pi * 0.529177206 * 2.0)
+            self.num_q_samples = len(ffdbase[:, 0])
+            self.num_compton_q_samples = len(ffdbase[:, 0])
+            self.sBound = np.zeros(self.num_q_samples)
+            self.nFree = np.zeros(self.num_q_samples)
         else:
             raise ValueError('Unrecognized form factor source!')
 
 
-def rotateParticle(quaternion, particle):
+def rotate_particle(quaternion, particle):
     """
     Apply one quaternion to rotate the particle.
+
+    :param quaternion:
+    :param particle:
+    :return:
     """
-    rot3D = quaternion2rot3D(quaternion)
-    NewPos = np.dot(particle.atomPos, rot3D.T)
-    particle.set_atomPos(NewPos)
+    rot3d = quaternion2rot3d(quaternion)
+    new_pos = np.dot(particle.atom_pos, rot3d.T)
+    particle.set_atom_pos(new_pos)
 
 
 def load_ff_database():
@@ -1483,7 +1524,7 @@ def load_ff_database():
     return dbase
 
 
-def load_WaasKirf_database():
+def load_waaskirf_database():
     dbase = np.array(
         [
             [1.000000, 0.000000, 0.413048, 0.294953, 0.187491, 0.080701, 0.023736, 0.000049, 15.569946, 32.398468,

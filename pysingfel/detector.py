@@ -119,9 +119,9 @@ class DetectorBase(object):
         """
 
         if device == "cpu":
-            diffraction_pattern = pd.calculate_molecularFormFactorSq(particle,
-                                                                     self.pixel_distance_reciprocal,
-                                                                     self.pixel_position_reciprocal)
+            diffraction_pattern = pd.calculate_molecular_form_factor_square(particle,
+                                                                            self.pixel_distance_reciprocal,
+                                                                            self.pixel_position_reciprocal)
         elif device == "gpu":
             diffraction_pattern = pgd.calculate_diffraction_pattern_gpu(self.pixel_position_reciprocal,
                                                                         particle,
@@ -142,9 +142,9 @@ class DetectorBase(object):
         """
 
         if device == "cpu":
-            diffraction_pattern = pd.calculate_molecularFormFactorSq(particle,
-                                                                     self.pixel_distance_reciprocal,
-                                                                     self.pixel_position_reciprocal)
+            diffraction_pattern = pd.calculate_molecular_form_factor_square(particle,
+                                                                            self.pixel_distance_reciprocal,
+                                                                            self.pixel_position_reciprocal)
         elif device == "gpu":
             diffraction_pattern = pgd.calculate_diffraction_pattern_gpu(self.pixel_position_reciprocal,
                                                                         particle,
