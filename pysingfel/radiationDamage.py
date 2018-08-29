@@ -1,166 +1,205 @@
 from pysingfel.geometry import *
-from pysingfel.util import *
-from pysingfel.particle import rotateParticle, Particle
+from pysingfel.particle import rotate_particle, Particle
 import h5py
 from pysingfel.detector import *
 from pysingfel.beam import *
-from pysingfel.diffraction import calculate_compton, calculate_molecularFormFactorSq
+import pysingfel.util as pu
+from pysingfel.diffraction import calculate_compton, calculate_molecular_form_factor_square
 
 
-def generateRotations(uniformRotation, rotationAxis, numQuaternions):
+def generate_rotations(uniform_rotation, rotation_axis, num_quaternions):
     """
-    Return Quaternions saving the rotations to the particle.
+    Return quaternions saving the rotations to the particle.
+
+    :param uniform_rotation:
+    :param rotation_axis:
+    :param num_quaternions:
+    :return:
     """
 
-    if uniformRotation is None:
+    if uniform_rotation is None:
         # No rotation desired, init quaternions as (1,0,0,0)
-        Quaternions = np.empty((numQuaternions, 4))
-        Quaternions[:, 0] = 1.
-        Quaternions[:, 1:] = 0.
+        quaternions = np.empty((num_quaternions, 4))
+        quaternions[:, 0] = 1.
+        quaternions[:, 1:] = 0.
 
-        return Quaternions
+        return quaternions
 
     # Case uniform:
-    if uniformRotation:
-        if rotationAxis == 'y' or rotationAxis == 'z':
-            return points_on_1sphere(numQuaternions, rotationAxis)
-        elif rotationAxis == 'xyz':
-            return points_on_2sphere(numQuaternions)
+    if uniform_rotation:
+        if rotation_axis == 'y' or rotation_axis == 'z':
+            return points_on_1sphere(num_quaternions, rotation_axis)
+        elif rotation_axis == 'xyz':
+            return points_on_2sphere(num_quaternions)
     else:
         # Case non-uniform:
-        Quaternions = np.zeros((numQuaternions, 4))
-        for i in range(numQuaternions):
-            Quaternions[i, :] = getRandomRotation(rotationAxis)
-        return Quaternions
+        quaternions = np.zeros((num_quaternions, 4))
+        for i in range(num_quaternions):
+            quaternions[i, :] = get_random_rotation(rotation_axis)
+        return quaternions
 
 
-def setEnergyFromFile(fname, beam):
+def set_energy_from_file(fname, beam):
     """
     Set photon energy from pmi file.
+
+    :param fname:
+    :param beam:
+    :return:
     """
+
     with h5py.File(fname, 'r') as f:
         photon_energy = f.get('/history/parent/detail/params/photonEnergy').value
     beam.set_photon_energy(photon_energy)
 
 
-def setFocusFromFile(fname, beam):
+def set_focus_from_file(fname, beam):
     """
     Set beam focus from pmi file.
+
+    :param fname:
+    :param beam:
+    :return:
     """
+
     with h5py.File(fname, 'r') as f:
-        focus_xFWHM = f.get('/history/parent/detail/misc/xFWHM').value
-        focus_yFWHM = f.get('/history/parent/detail/misc/yFWHM').value
-    beam.set_focus(focus_xFWHM, focus_yFWHM, shape='ellipse')
+        focus_xfwhm = f.get('/history/parent/detail/misc/xFWHM').value
+        focus_yfwhm = f.get('/history/parent/detail/misc/yFWHM').value
+    beam.set_focus(focus_xfwhm, focus_yfwhm, shape='ellipse')
 
 
-def setFluenceFromFile(fname, timeSlice, sliceInterval, beam):
+def set_fluence_from_file(fname, time_slice, slice_interval, beam):
     """
     Set beam fluence from pmi file.
+
+    :param fname:
+    :param time_slice:
+    :param slice_interval:
+    :param beam:
+    :return:
     """
+
     n_phot = 0
-    for i in range(sliceInterval):
+    for i in range(slice_interval):
         with h5py.File(fname, 'r') as f:
-            datasetname = '/data/snp_' + '{0:07}'.format(timeSlice - i) + '/Nph'
+            datasetname = '/data/snp_' + '{0:07}'.format(time_slice - i) + '/Nph'
             n_phot += f.get(datasetname).value
-    beam.set_photonsPerPulse(n_phot)
+    beam.set_photons_per_pulse(n_phot)
 
 
-def MakeOneDiffr(myQuaternions, counter, parameters, outputName):
+def make_one_diffr(myquaternions, counter, parameters, output_name):
     """
     Generate one diffraction pattern related to a certain rotation.
     Write results in output hdf5 file.
+
+    :param myquaternions:
+    :param counter:
+    :param parameters:
+    :param output_name:
+    :return:
     """
+
     # Get parameters
-    calculateCompton = parameters['calculateCompton']
-    numDP = int(parameters['numDP'])
-    numSlices = int(parameters['numSlices'])
-    pmiStartID = int(parameters['pmiStartID'])
-    pmiID = pmiStartID + counter / numDP
-    sliceInterval = int(parameters['sliceInterval'])
-    beamFile = parameters['beamFile']
-    geomFile = parameters['geomFile']
-    inputDir = parameters['inputDir']
+    consider_compton = parameters['calculateCompton']
+    num_dp = int(parameters['numDP'])
+    num_slices = int(parameters['numSlices'])
+    pmi_start_id = int(parameters['pmiStartID'])
+    pmi_id = pmi_start_id + counter / num_dp
+    slice_interval = int(parameters['slice_interval'])
+    beamfile = parameters['beamFile']
+    geomfile = parameters['geomFile']
+    input_dir = parameters['inputDir']
 
     # Set up beam and detector from file
-    det = Detector(geomFile)
-    beam = Beam(beamFile)
+    beam = Beam(beamfile)
 
     # If not given, read from pmi file later
-    givenFluence = False
-    if beam.get_photonsPerPulse() > 0:
-        givenFluence = True
-    givenPhotonEnergy = False
+    given_fluence = False
+    if beam.get_photons_per_pulse() > 0:
+        given_fluence = True
+    given_photon_energy = False
     if beam.get_photon_energy() > 0:
-        givenPhotonEnergy = True
-    givenFocusRadius = False
+        given_photon_energy = True
+    given_focus_radius = False
     if beam.get_focus() > 0:
-        givenFocusRadius = True
-
-    # Detector geometry
-    px = det.get_numPix_x()
-    py = det.get_numPix_x()
+        given_focus_radius = True
 
     # Setup quaternion.
-    quaternion = myQuaternions[counter, :]
+    quaternion = myquaternions[counter, :]
 
     # Input file
-    inputName = inputDir + '/pmi_out_' + '{0:07}'.format(pmiID) + '.h5'
+    input_name = input_dir + '/pmi_out_' + '{0:07}'.format(pmi_id) + '.h5'
 
     # Set up diffraction geometry
-    if not givenPhotonEnergy:
-        setEnergyFromFile(inputName, beam)
-    if not givenFocusRadius:
-        setFocusFromFile(inputName, beam)
-    det.init_dp(beam)
+    if not given_photon_energy:
+        set_energy_from_file(input_name, beam)
+    if not given_focus_radius:
+        set_focus_from_file(input_name, beam)
+
+    det = PlainDetector(geom=geomfile, beam=beam)
+    # Detector geometry
+    px = det.detector_pixel_num_x
+    py = det.detector_pixel_num_x
 
     done = False
-    timeSlice = 0
+    time_slice = 0
     total_phot = 0
     detector_intensity = np.zeros((py, px))
     while not done:
         # set time slice to calculate diffraction pattern
-        if timeSlice + sliceInterval >= numSlices:
-            sliceInterval = numSlices - timeSlice
+        if time_slice + slice_interval >= num_slices:
+            slice_interval = num_slices - time_slice
             done = True
-        timeSlice += sliceInterval
+        time_slice += slice_interval
 
         # load particle information
-        datasetname = '/data/snp_' + '{0:07}'.format(timeSlice)
-        particle = Particle(inputName, datasetname)
-        rotateParticle(quaternion, particle)
-        if not givenFluence:
-            # sum up the photon fluence inside a sliceInterval
-            setFluenceFromFile(inputName, timeSlice, sliceInterval, beam)
-        total_phot += beam.get_photonsPerPulse()
+        datasetname = '/data/snp_' + '{0:07}'.format(time_slice)
+        particle = Particle(input_name, datasetname)
+        rotate_particle(quaternion, particle)
+        if not given_fluence:
+            # sum up the photon fluence inside a slice_interval
+            set_fluence_from_file(input_name, time_slice, slice_interval, beam)
+        total_phot += beam.get_photons_per_pulse()
         # Coherent contribution
-        F_hkl_sq = calculate_molecularFormFactorSq(particle, det)
+        f_hkl_sq = calculate_molecular_form_factor_square(particle=particle,
+                                                          q_space=det.pixel_distance_reciprocal,
+                                                          q_position=det.pixel_position_reciprocal)
         # Incoherent contribution
-        if calculateCompton:
-            Compton = calculate_compton(particle, det)
+        if consider_compton:
+            compton = calculate_compton(particle, det)
         else:
-            Compton = np.zeros((py, px))
-        photon_field = F_hkl_sq + Compton
+            compton = np.zeros((py, px))
+        photon_field = f_hkl_sq + compton
         detector_intensity += photon_field
-    detector_intensity *= det.solidAngle * det.PolarCorr * beam.get_photonsPerPulsePerArea()
+    detector_intensity *= (det.solid_angle_per_pixel *
+                           det.polarization_correction *
+                           beam.get_photons_per_pulse_per_area())
+
     detector_counts = np.random.poisson(detector_intensity)
-    saveAsDiffrOutFile(outputName, inputName, counter, detector_counts, detector_intensity, quaternion, det, beam)
+    pu.save_as_diffr_outfile(output_name, input_name, counter,
+                             detector_counts, detector_intensity,
+                             quaternion, det, beam)
 
 
 def diffract(parameters):
     """
     Calculate all the diffraction patterns based on the parameters provided as a dictionary.
     Save all results in one single file. Not used in MPI.
+
+    :param parameters:
+    :return:
     """
-    pmiStartID = int(parameters['pmiStartID'])
-    pmiEndID = int(parameters['pmiEndID'])
-    numDP = int(parameters['numDP'])
-    ntasks = (pmiEndID - pmiStartID + 1) * numDP
-    rotationAxis = parameters['rotationAxis']
-    uniformRotation = parameters['uniformRotation']
-    myQuaternions = generateRotations(uniformRotation, rotationAxis, ntasks)
-    outputName = parameters['outputDir'] + '/diffr_out_0000001.h5'
-    if os.path.exists(outputName):
-        os.remove(outputName)
-    prepH5(outputName)
+
+    pmi_start_id = int(parameters['pmiStartID'])
+    pmi_end_id = int(parameters['pmiEndID'])
+    num_dp = int(parameters['numDP'])
+    ntasks = (pmi_end_id - pmi_start_id + 1) * num_dp
+    rotation_axis = parameters['rotation_axis']
+    uniform_rotation = parameters['uniform_rotation']
+    myquaternions = generate_rotations(uniform_rotation, rotation_axis, ntasks)
+    output_name = parameters['outputDir'] + '/diffr_out_0000001.h5'
+    if os.path.exists(output_name):
+        os.remove(output_name)
+    pu.prep_h5(output_name)
     for ntask in range(ntasks):
-        MakeOneDiffr(myQuaternions, ntask, parameters, outputName)
+        make_one_diffr(myquaternions, ntask, parameters, output_name)
