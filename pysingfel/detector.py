@@ -89,7 +89,7 @@ class DetectorBase(object):
         """
         wavevector = beam.get_wavevector()
         polar = beam.Polarization
-        intensity = beam.get_photonsPerPulse() / (4 * beam.get_focus() ** 2)
+        intensity = beam.get_photonsPerPulse() / beam.get_focus_area()
 
         # Get the reciprocal positions and the corrections
         (self.pixel_position_reciprocal,
@@ -207,7 +207,7 @@ class DetectorBase(object):
         :return: An image stack of adu.
         """
         raw_photon = self.get_photons(particle=particle, device=device)
-        return pc.add_cross_talk_effect_panel(lib_path=path, photons=raw_photon)
+        return pc.add_cross_talk_effect_panel(db_path=path, photons=raw_photon)
 
     ####################################################################################################################
     # For 3D slicing.
