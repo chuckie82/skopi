@@ -3,7 +3,6 @@ import pysingfel.geometry as pg
 import pysingfel.util as pu
 import pysingfel.diffraction as pd
 import pysingfel.crosstalk as pc
-import pysingfel.gpu.diffraction as pgd
 
 import sys
 import os
@@ -123,6 +122,7 @@ class DetectorBase(object):
                                                                             self.pixel_distance_reciprocal,
                                                                             self.pixel_position_reciprocal)
         elif device == "gpu":
+            import pysingfel.gpu.diffraction as pgd
             diffraction_pattern = pgd.calculate_diffraction_pattern_gpu(self.pixel_position_reciprocal,
                                                                         particle,
                                                                         "intensity")
@@ -146,6 +146,7 @@ class DetectorBase(object):
                                                                             self.pixel_distance_reciprocal,
                                                                             self.pixel_position_reciprocal)
         elif device == "gpu":
+            import pysingfel.gpu.diffraction as pgd
             diffraction_pattern = pgd.calculate_diffraction_pattern_gpu(self.pixel_position_reciprocal,
                                                                         particle,
                                                                         "intensity")

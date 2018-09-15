@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="039ff22a-d945-4aee-b14d-32f864fd569b" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pysingfel/geometry.py" beforeDir="false" afterPath="$PROJECT_DIR$/pysingfel/geometry.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pysingfel/detector.py" beforeDir="false" afterPath="$PROJECT_DIR$/pysingfel/detector.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -14,13 +13,17 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="detector.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="detector.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/pysingfel/detector.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="608">
-              <caret line="44" column="52" selection-start-line="44" selection-start-column="52" selection-end-line="44" selection-end-column="52" />
+            <state relative-caret-position="417">
+              <caret line="147" column="51" selection-start-line="147" selection-start-column="51" selection-end-line="147" selection-end-column="51" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
+                <element signature="e#11494#16642#0" />
+                <element signature="e#16684#23155#0" />
+                <element signature="e#23197#29702#0" />
+                <element signature="e#29750#35220#0" />
               </folding>
             </state>
           </provider>
@@ -35,11 +38,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="geometry.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="geometry.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pysingfel/geometry.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="627">
-              <caret line="151" column="12" selection-start-line="151" selection-start-column="12" selection-end-line="151" selection-end-column="12" />
+            <state relative-caret-position="1957">
+              <caret line="151" selection-start-line="151" selection-end-line="151" />
             </state>
           </provider>
         </entry>
@@ -133,13 +136,13 @@
         <option value="$PROJECT_DIR$/pysingfel/diffraction.py" />
         <option value="$PROJECT_DIR$/pysingfel/particle.py" />
         <option value="$PROJECT_DIR$/pysingfel/crosstalk.py" />
-        <option value="$PROJECT_DIR$/pysingfel/detector.py" />
         <option value="$PROJECT_DIR$/pysingfel/beam.py" />
         <option value="$PROJECT_DIR$/pysingfel/radiationDamage.py" />
         <option value="$PROJECT_DIR$/pysingfel/radiationDamageMPI.py" />
         <option value="$PROJECT_DIR$/setup.py" />
         <option value="$PROJECT_DIR$/README.rst" />
         <option value="$PROJECT_DIR$/pysingfel/geometry.py" />
+        <option value="$PROJECT_DIR$/pysingfel/detector.py" />
       </list>
     </option>
   </component>
@@ -247,7 +250,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="1" />
+      <option name="time" value="2" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -455,16 +458,6 @@
     <entry file="file://$PROJECT_DIR$/docs/update_and_make.sh">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/pysingfel/detector.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="608">
-          <caret line="44" column="52" selection-start-line="44" selection-start-column="52" selection-end-line="44" selection-end-column="52" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/pysingfel/particle.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="209">
@@ -474,8 +467,22 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/pysingfel/geometry.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="627">
-          <caret line="151" column="12" selection-start-line="151" selection-start-column="12" selection-end-line="151" selection-end-column="12" />
+        <state relative-caret-position="1957">
+          <caret line="151" selection-start-line="151" selection-end-line="151" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pysingfel/detector.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="417">
+          <caret line="147" column="51" selection-start-line="147" selection-start-column="51" selection-end-line="147" selection-end-column="51" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#11494#16642#0" />
+            <element signature="e#16684#23155#0" />
+            <element signature="e#23197#29702#0" />
+            <element signature="e#29750#35220#0" />
+          </folding>
         </state>
       </provider>
     </entry>
