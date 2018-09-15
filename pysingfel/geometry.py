@@ -124,7 +124,7 @@ def take_one_slice(index_, weight_, volume_, pixel_num_):
     return data_merge_.reshape(index_.shape[:3])
 
 
-def take_n_slice(pattern_shape, pixel_position, volume, voxel_length, orientations):
+def take_n_slice(pattern_shape, pixel_position, volume, voxel_length, orientations, inverse=False):
     """
     Take several different slices.
 
@@ -133,6 +133,7 @@ def take_n_slice(pattern_shape, pixel_position, volume, voxel_length, orientatio
     :param volume: The volume to slice from.
     :param voxel_length: The length unit of the voxel
     :param orientations: The orientation of the slices.
+    :param inverse: Whether to use the inverse of the rotation or not.
     :return: n slices.
     """
     # Preprocess
@@ -146,6 +147,9 @@ def take_n_slice(pattern_shape, pixel_position, volume, voxel_length, orientatio
     for l in range(slice_num):
         # construct the rotation matrix
         rot_mat = quaternion2rot3d(orientations[l, :])
+        if inverse:
+            rot_mat = np.linalg.inv(rot_mat)
+            
         # rotate the pixels in the reciprocal space. Notice that at this time, the pixel position is in 3D
         rotated_pixel_position = rotate_pixels_in_reciprocal_space(rot_mat, pixel_position)
         # calculate the index and weight in 3D
