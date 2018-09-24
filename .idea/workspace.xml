@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="039ff22a-d945-4aee-b14d-32f864fd569b" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pysingfel/geometry.py" beforeDir="false" afterPath="$PROJECT_DIR$/pysingfel/geometry.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -56,8 +55,8 @@
       <file leaf-file-name="geometry.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/pysingfel/geometry.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4104">
-              <caret line="306" lean-forward="true" selection-start-line="306" selection-end-line="306" />
+            <state relative-caret-position="779">
+              <caret line="44" lean-forward="true" selection-start-line="44" selection-end-line="44" />
             </state>
           </provider>
         </entry>
@@ -85,8 +84,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>rotateParticle</find>
-      <find>calculate_molecularFormFactorSq</find>
       <find>calculate_molecular_form_factor_sq</find>
       <find>get_photonsPerPulse</find>
       <find>set_photonsPerPulse</find>
@@ -115,16 +112,10 @@
       <find>index_</find>
       <find>:, :, :,</find>
       <find>pixel_position_reciprocal</find>
+      <find>volume_</find>
+      <find>volume_num_1d_</find>
     </findStrings>
     <replaceStrings>
-      <replace>calculate_compton</replace>
-      <replace>consider</replace>
-      <replace>consider_compton</replace>
-      <replace>num_slices</replace>
-      <replace>pmi_id</replace>
-      <replace>beamfile</replace>
-      <replace>geomfile</replace>
-      <replace>input_dir</replace>
       <replace>parse_boolean</replace>
       <replace>my_quaternion</replace>
       <replace>generate_rotations</replace>
@@ -147,6 +138,14 @@
       <replace>local_index</replace>
       <replace>:,</replace>
       <replace>pixel_position</replace>
+      <replace>local_weight</replace>
+      <replace>data_to_merge</replace>
+      <replace>index</replace>
+      <replace>index_2d</replace>
+      <replace>volume_1d</replace>
+      <replace>weight_2d</replace>
+      <replace>volume</replace>
+      <replace>volume_num_1d</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -513,8 +512,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/pysingfel/geometry.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4104">
-          <caret line="306" lean-forward="true" selection-start-line="306" selection-end-line="306" />
+        <state relative-caret-position="779">
+          <caret line="44" lean-forward="true" selection-start-line="44" selection-end-line="44" />
         </state>
       </provider>
     </entry>

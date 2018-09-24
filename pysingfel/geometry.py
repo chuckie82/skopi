@@ -182,34 +182,34 @@ def get_weight_in_reciprocal_space(pixel_position, voxel_length, voxel_num_1d):
     return indexes, weight
 
 
-def take_one_slice(local_index, weight_, volume_, pixel_num_):
+def take_one_slice(local_index, local_weight, volume, pixel_num):
     """
     Take one slice from the volume given the index and weight and some
     other information.
 
     :param local_index: The index containing values to take.
-    :param weight_: The weight for each index
-    :param volume_: The volume to slice from
-    :param pixel_num_: pixel number.
+    :param local_weight: The weight for each index
+    :param volume: The volume to slice from
+    :param pixel_num: pixel number.
     :return: The slice.
     """
     # Convert the index of the 3D diffraction volume to 1D
-    volume_num_1d_ = volume_.shape[0]
-    convertion_factor = np.array([volume_num_1d_ * volume_num_1d_, volume_num_1d_, 1], dtype=np.int64)
+    volume_num_1d = volume.shape[0]
+    convertion_factor = np.array([volume_num_1d * volume_num_1d, volume_num_1d, 1], dtype=np.int64)
 
-    index_2d_ = np.reshape(local_index, [pixel_num_, 8, 3])
-    index_2d_ = np.matmul(index_2d_, convertion_factor)
+    index_2d = np.reshape(local_index, [pixel_num, 8, 3])
+    index_2d = np.matmul(index_2d, convertion_factor)
 
-    volume_1d_ = np.reshape(volume_, volume_num_1d_ ** 3)
-    weight_2d_ = np.reshape(weight_, [pixel_num_, 8])
+    volume_1d = np.reshape(volume, volume_num_1d ** 3)
+    weight_2d = np.reshape(local_weight, [pixel_num, 8])
 
     # Expand the data to merge
-    data_to_merge_ = volume_1d_[index_2d_]
+    data_to_merge = volume_1d[index_2d]
 
     # Merge the data
-    data_merge_ = np.sum(np.multiply(weight_2d_, data_to_merge_), axis=1)
+    data_merge_ = np.sum(np.multiply(weight_2d, data_to_merge), axis=1)
 
-    return data_merge_.reshape(local_index.shape[:3])
+    return data_merge_.reshape(local_index.shape[:-1])
 
 
 def take_n_slice(pattern_shape, pixel_position, volume, voxel_length, orientations, inverse=False):
@@ -246,9 +246,9 @@ def take_n_slice(pattern_shape, pixel_position, volume, voxel_length, orientatio
                                              voxel_num_1d=volume.shape[0])
         # get one slice
         slices_holder[l] = take_one_slice(local_index=index,
-                                          weight_=weight,
-                                          volume_=volume,
-                                          pixel_num_=pixel_num)
+                                          local_weight=weight,
+                                          volume=volume,
+                                          pixel_num=pixel_num)
 
     toc = time.time()
     print("Finishing constructing %d patterns in %f seconds" % (slice_num, toc - tic))
