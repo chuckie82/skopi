@@ -182,7 +182,7 @@ def get_weight_in_reciprocal_space(pixel_position, voxel_length, voxel_num_1d):
     return indexes, weight
 
 
-def take_one_slice(local_index, local_weight, volume, pixel_num):
+def take_one_slice(local_index, local_weight, volume, pixel_num, pattern_shape):
     """
     Take one slice from the volume given the index and weight and some
     other information.
@@ -191,6 +191,7 @@ def take_one_slice(local_index, local_weight, volume, pixel_num):
     :param local_weight: The weight for each index
     :param volume: The volume to slice from
     :param pixel_num: pixel number.
+    :param pattern_shape: The shape of the pattern
     :return: The slice.
     """
     # Convert the index of the 3D diffraction volume to 1D
@@ -207,9 +208,9 @@ def take_one_slice(local_index, local_weight, volume, pixel_num):
     data_to_merge = volume_1d[index_2d]
 
     # Merge the data
-    data_merge_ = np.sum(np.multiply(weight_2d, data_to_merge), axis=1)
+    data_merged = np.sum(np.multiply(weight_2d, data_to_merge), axis= -1)
 
-    return data_merge_.reshape(local_index.shape[:-1])
+    return np.reshape(data_merged, pattern_shape)
 
 
 def take_n_slice(pattern_shape, pixel_position, volume, voxel_length, orientations, inverse=False):
