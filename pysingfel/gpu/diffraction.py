@@ -1,4 +1,4 @@
-from numba import cuda
+from numba import cuda, float64, int64, int32, complex128
 import pysingfel.diffraction as pd
 import math
 import numpy as np
@@ -56,7 +56,7 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
                                              pixel_num=pixel_number)
 
     # Get atom position
-    atom_position = particle.atom_pos[:]
+    atom_position = np.ascontiguousarray(particle.atom_pos[:])
     atom_type_num = len(particle.split_idx) - 1
 
     # create 
@@ -74,14 +74,14 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
     cuda_form_factor = cuda.to_device(form_factor)
 
     # Calculate the pattern
-    calculate_pattern_gpu_back_engine[(pixel_number + 511) / 512, 512](form_factor=cuda_form_factor,
-                                                                       pixel_position=cuda_reciprocal_position,
-                                                                       atom_position=cuda_atom_position,
-                                                                       pattern_cos=cuda_pattern_cos,
-                                                                       pattern_sin=cuda_pattern_sin,
-                                                                       atom_type_num=atom_type_num,
-                                                                       split_index=cuda_split_index,
-                                                                       pixel_num=pixel_number)
+    calculate_pattern_gpu_back_engine[(pixel_number + 511) / 512, 512](cuda_form_factor,
+                                                                       cuda_reciprocal_position,
+                                                                       cuda_atom_position,
+                                                                       cuda_pattern_cos,
+                                                                       cuda_pattern_sin,
+                                                                       atom_type_num,
+                                                                       cuda_split_index,
+                                                                       pixel_number)
 
     cuda_pattern_cos.to_host()
     cuda_pattern_sin.to_host()
