@@ -149,7 +149,7 @@ def take_n_slice(pattern_shape, pixel_position, volume, voxel_length, orientatio
         rot_mat = quaternion2rot3d(orientations[l, :])
         if inverse:
             rot_mat = np.linalg.inv(rot_mat)
-            
+
         # rotate the pixels in the reciprocal space. Notice that at this time, the pixel position is in 3D
         rotated_pixel_position = rotate_pixels_in_reciprocal_space(rot_mat, pixel_position)
         # calculate the index and weight in 3D
@@ -274,23 +274,29 @@ def solid_angle(pixel_center, pixel_area, orientation):
     :return: Solid angle of each pixel.
     """
 
-    pixel_center_norm = np.sqrt(np.sum(np.square(pixel_center), axis=-1))
+    # Use 1D format
+    pixel_center_1d = reshape_pixels_position_arrays_to_1d(pixel_center)
+    pixel_center_norm_1d = np.sqrt(np.sum(np.square(pixel_center_1d), axis=-1))
+    pixel_area_1d = np.reshape(pixel_area, np.prod(pixel_area.shape))
 
     # Calculate the direction of each pixel.
-    pixel_center_direction = pixel_center / pixel_center_norm[:, np.newaxis]
+    pixel_center_direction_1d = pixel_center_1d / pixel_center_norm_1d[:, np.newaxis]
 
     # Normalize the orientation vector
     orientation_norm = np.sqrt(np.sum(np.square(orientation)))
     orientation_normalized = orientation / orientation_norm
 
     # The correction induced by projection which is a factor of cosine.
-    cosine = np.abs(np.dot(pixel_center_direction, orientation_normalized))
+    cosine_1d = np.abs(np.dot(pixel_center_direction_1d, orientation_normalized))
 
     # Calculate the solid angle ignoring the projection
-    _solid_angle = np.divide(pixel_area, np.square(pixel_center_norm))
-    solid_angle_array = np.multiply(cosine, _solid_angle)
+    solid_angle_1d = np.divide(pixel_area_1d, np.square(pixel_center_norm_1d))
+    solid_angle_1d = np.multiply(cosine_1d, solid_angle_1d)
 
-    return solid_angle_array
+    # Restore the pixel stack format
+    solid_angle_stack = np.reshape(solid_angle_1d, pixel_area.shape)
+    
+    return solid_angle_stack
 
 
 def get_reciprocal_position_and_correction(pixel_position, pixel_area,
