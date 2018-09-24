@@ -249,7 +249,8 @@ def take_n_slice(pattern_shape, pixel_position, volume, voxel_length, orientatio
         slices_holder[l] = take_one_slice(local_index=index,
                                           local_weight=weight,
                                           volume=volume,
-                                          pixel_num=pixel_num)
+                                          pixel_num=pixel_num,
+                                          pattern_shape=pattern_shape)
 
     toc = time.time()
     print("Finishing constructing %d patterns in %f seconds" % (slice_num, toc - tic))
