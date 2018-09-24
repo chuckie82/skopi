@@ -27,7 +27,7 @@ def calculate_compton(particle, detector):
 
     half_q = reshape_pixels_position_arrays_to_1d(detector.pixel_distance_reciprocal * 1e-10 / 2.)
 
-    cs = CubicSpline(particle.comptonQSample, particle.sBound)
+    cs = CubicSpline(particle.compton_q_sample, particle.sBound)
     s_bound = cs(half_q)
     if isinstance(particle.nFree, (list, tuple, np.ndarray)):
         # if iterable, take first element to be number of free electrons
@@ -47,18 +47,18 @@ def calculate_atomic_factor(particle, q_space, pixel_num):
     :param pixel_num: The number of pixels.
     :return:
     """
-    f_hkl = np.zeros((particle.numAtomTypes, pixel_num))
+    f_hkl = np.zeros((particle.num_atom_types, pixel_num))
     q_space_1d = np.reshape(q_space, [pixel_num, ])
 
-    if particle.numAtomTypes == 1:
-        cs = CubicSpline(particle.qSample, particle.ffTable[:])  # Use cubic spline
+    if particle.num_atom_types == 1:
+        cs = CubicSpline(particle.q_sample, particle.ff_table[:])  # Use cubic spline
         f_hkl[0, :] = cs(q_space_1d)  # interpolate
     else:
-        for atm in range(particle.numAtomTypes):
-            cs = CubicSpline(particle.qSample, particle.ffTable[atm, :])  # Use cubic spline
+        for atm in range(particle.num_atom_types):
+            cs = CubicSpline(particle.q_sample, particle.ff_table[atm, :])  # Use cubic spline
             f_hkl[atm, :] = cs(q_space_1d)  # interpolate
 
-    return np.reshape(f_hkl, [particle.numAtomTypes, ] + list(q_space.shape))
+    return np.reshape(f_hkl, [particle.num_atom_types, ] + list(q_space.shape))
 
 
 @jit
@@ -106,7 +106,7 @@ def calculate_molecular_form_factor_square(particle, q_space, q_position):
     q_position_1d = np.reshape(q_position, [pixel_number, 3])
 
     f_hkl = calculate_atomic_factor(particle, q_space_1d, pixel_number)
-    split_index = particle.SplitIdx[:]
+    split_index = particle.split_idx[:]
     xyz_ind = np.zeros(split_index[-1], dtype=int)
     for i in range(len(split_index) - 1):
         xyz_ind[split_index[i]:split_index[i + 1]] = i

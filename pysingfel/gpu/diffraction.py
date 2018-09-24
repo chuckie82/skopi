@@ -1,5 +1,5 @@
 from numba import cuda
-from pysingfel.diffraction import *
+import pysingfel.diffraction as pd
 import math
 import numpy as np
 
@@ -51,18 +51,20 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
     reciprocal_norm_1d = np.sqrt(np.sum(np.square(reciprocal_space_1d), axis=-1))
 
     # Calculate atom form factor for the reciprocal space
-    form_factor = calculate_atomicFactor(particle, reciprocal_norm_1d, pixel_number)
+    form_factor = pd.calculate_atomic_factor(particle=particle,
+                                             q_space=reciprocal_norm_1d,
+                                             pixel_num=pixel_number)
 
     # Get atom position
-    atom_position = particle.atomPos[:]
-    atom_type_num = len(particle.SplitIdx) - 1
+    atom_position = particle.atom_pos[:]
+    atom_type_num = len(particle.split_idx) - 1
 
     # create 
     pattern_cos = np.zeros(pixel_number, dtype=np.float64)
     pattern_sin = np.zeros(pixel_number, dtype=np.float64)
 
     # atom_number = atom_position.shape[0]
-    split_index = np.array(particle.SplitIdx)
+    split_index = np.array(particle.split_idx)
 
     cuda_split_index = cuda.to_device(split_index)
     cuda_atom_position = cuda.to_device(atom_position)
