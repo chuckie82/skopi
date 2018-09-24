@@ -7,7 +7,7 @@ from scipy.stats import special_ortho_group
 ######################################################################
 # The following functions are utilized to rotate the pixels in reciprocal space
 ######################################################################
-#@jit(nopython=True, parallel=True)
+# @jit(nopython=True, parallel=True)
 def rotate_pixels_in_reciprocal_space(rot_mat, pixels_position):
     """
     Rotate the pixel positions according to the rotation matrix
@@ -27,16 +27,18 @@ def rotate_pixels_in_reciprocal_space(rot_mat, pixels_position):
 ######################################################################
 # Take slice from the volume
 ######################################################################
-#@jit(nopython=True, parallel=True)
-def get_weight_in_reciprocal_space(pixel_position_reciprocal, voxel_length):
+# @jit(nopython=True, parallel=True)
+def get_weight_in_reciprocal_space(pixel_position_reciprocal, voxel_length, voxel_num_1d):
     """
     Obtain the weight of the pixel for adjacent voxels.
     :param pixel_position_reciprocal: The position of each pixel in the reciprocal space in
     :param voxel_length:
+    :param voxel_num_1d:
     :return:
     """
+    shift = (voxel_num_1d - 1) / 2
     # convert_to_voxel_unit
-    pixel_position_voxel_unit = pixel_position_reciprocal / voxel_length
+    pixel_position_voxel_unit = pixel_position_reciprocal / voxel_length + shift
 
     # Get the indexes of the eight nearest points.
     num_panel, num_x, num_y, _ = pixel_position_reciprocal.shape
@@ -94,12 +96,12 @@ def get_weight_in_reciprocal_space(pixel_position_reciprocal, voxel_length):
     return indexes, weight
 
 
-def take_one_slice(index_, weight_, volume_, pixel_num_):
+def take_one_slice(local_index, weight_, volume_, pixel_num_):
     """
     Take one slice from the volume given the index and weight and some
     other information.
 
-    :param index_: The index containing values to take.
+    :param local_index: The index containing values to take.
     :param weight_: The weight for each index
     :param volume_: The volume to slice from
     :param pixel_num_: pixel number.
@@ -109,7 +111,7 @@ def take_one_slice(index_, weight_, volume_, pixel_num_):
     volume_num_1d_ = volume_.shape[0]
     convertion_factor = np.array([volume_num_1d_ * volume_num_1d_, volume_num_1d_, 1], dtype=np.int64)
 
-    index_2d_ = np.reshape(index_, [pixel_num_, 8, 3])
+    index_2d_ = np.reshape(local_index, [pixel_num_, 8, 3])
     index_2d_ = np.matmul(index_2d_, convertion_factor)
 
     volume_1d_ = np.reshape(volume_, volume_num_1d_ ** 3)
@@ -121,7 +123,7 @@ def take_one_slice(index_, weight_, volume_, pixel_num_):
     # Merge the data
     data_merge_ = np.sum(np.multiply(weight_2d_, data_to_merge_), axis=1)
 
-    return data_merge_.reshape(index_.shape[:3])
+    return data_merge_.reshape(local_index.shape[:3])
 
 
 def take_n_slice(pattern_shape, pixel_position, volume, voxel_length, orientations, inverse=False):
@@ -153,9 +155,11 @@ def take_n_slice(pattern_shape, pixel_position, volume, voxel_length, orientatio
         # rotate the pixels in the reciprocal space. Notice that at this time, the pixel position is in 3D
         rotated_pixel_position = rotate_pixels_in_reciprocal_space(rot_mat, pixel_position)
         # calculate the index and weight in 3D
-        index, weight = get_weight_in_reciprocal_space(rotated_pixel_position, voxel_length)
+        index, weight = get_weight_in_reciprocal_space(pixel_position_reciprocal=rotated_pixel_position,
+                                                       voxel_length=voxel_length,
+                                                       voxel_num_1d=volume.shape[0])
         # get one slice
-        slices_holder[l, :, :, :] = take_one_slice(index_=index, weight_=weight, volume_=volume, pixel_num_=pixel_num)
+        slices_holder[l, :, :, :] = take_one_slice(local_index=index, weight_=weight, volume_=volume, pixel_num_=pixel_num)
 
     toc = time.time()
     print("Finishing constructing %d patterns in %f seconds" % (slice_num, toc - tic))
@@ -166,7 +170,7 @@ def take_n_slice(pattern_shape, pixel_position, volume, voxel_length, orientatio
 def take_n_random_slices(detector, volume, voxel_length, number):
     """
     Take n slices from n random orientations.
-    
+
     :param detector: The detector object
     :param volume: The volume to slice from
     :param voxel_length: The voxel length of this volume
@@ -187,7 +191,9 @@ def take_n_random_slices(detector, volume, voxel_length, number):
         # rotate the pixels in the reciprocal space. Notice that at this time, the pixel position is in 3D
         pixel_position_new = rotate_pixels_in_reciprocal_space(rotmat, pixel_position_)
         # calculate the index and weight in 3D
-        index, weight_ = get_weight_in_reciprocal_space(pixel_position_new, voxel_length)
+        index, weight_ = get_weight_in_reciprocal_space(pixel_position_reciprocal=pixel_position_new,
+                                                        voxel_length=voxel_length,
+                                                        voxel_num_1d=volume.shape[0])
         # get one slice
         slices[l, :, :, :] = take_one_slice(index, weight_, volume, detector.pix_num_total)
 
