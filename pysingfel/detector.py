@@ -88,7 +88,7 @@ class DetectorBase(object):
         """
         wavevector = beam.get_wavevector()
         polar = beam.Polarization
-        intensity = beam.get_photonsPerPulse() / beam.get_focus_area()
+        intensity = beam.get_photons_per_pulse() / beam.get_focus_area()
 
         # Get the reciprocal positions and the corrections
         (self.pixel_position_reciprocal,
