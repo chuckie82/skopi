@@ -7,7 +7,7 @@ from scipy.stats import special_ortho_group
 ######################################################################
 # The following functions are utilized to rotate the pixels in reciprocal space
 ######################################################################
-
+#@jit(nopython=True, parallel=True)
 def rotate_pixels_in_reciprocal_space(rot_mat, pixels_position):
     """
     Rotate the pixel positions according to the rotation matrix
@@ -27,7 +27,7 @@ def rotate_pixels_in_reciprocal_space(rot_mat, pixels_position):
 ######################################################################
 # Take slice from the volume
 ######################################################################
-@jit(nonpython=True, parallel=True)
+#@jit(nopython=True, parallel=True)
 def get_weight_in_reciprocal_space(pixel_position_reciprocal, voxel_length):
     """
     Obtain the weight of the pixel for adjacent voxels.
@@ -42,14 +42,14 @@ def get_weight_in_reciprocal_space(pixel_position_reciprocal, voxel_length):
     num_panel, num_x, num_y, _ = pixel_position_reciprocal.shape
 
     # Get one nearest neighbor
-    _indexes = np.floor(pixel_position_voxel_unit).astype(np.int64)
+    tmp_indexes = np.floor(pixel_position_voxel_unit).astype(np.int64)
 
     # Generate the holders
     indexes = np.zeros((num_panel, num_x, num_y, 8, 3), dtype=np.int64)
     weight = np.ones((num_panel, num_x, num_y, 8), dtype=np.float64)
 
     # Calculate the floors and the ceilings
-    dfloor = pixel_position_voxel_unit - indexes
+    dfloor = pixel_position_voxel_unit - tmp_indexes
     dceiling = 1 - dfloor
 
     # Assign the correct values to the indexes
