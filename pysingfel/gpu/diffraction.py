@@ -52,7 +52,7 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
 
     # Calculate atom form factor for the reciprocal space
     form_factor = pd.calculate_atomic_factor(particle=particle,
-                                             q_space=reciprocal_norm_1d,
+                                             q_space=reciprocal_norm_1d * (1e-10 / 2.),  # For unit compatibility
                                              pixel_num=pixel_number)
 
     # Get atom position
