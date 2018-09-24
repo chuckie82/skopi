@@ -28,20 +28,106 @@ def rotate_pixels_in_reciprocal_space(rot_mat, pixels_position):
 # Take slice from the volume
 ######################################################################
 # @jit(nopython=True, parallel=True)
-def get_weight_in_reciprocal_space(pixel_position_reciprocal, voxel_length, voxel_num_1d):
+def get_weight_and_index(pixel_position, voxel_length, voxel_num_1d):
     """
     Obtain the weight of the pixel for adjacent voxels.
-    :param pixel_position_reciprocal: The position of each pixel in the reciprocal space in
+    In this function, pixel position is first cast to the shape [pixel number,3].
+
+    :param pixel_position: The position of each pixel in the space.
+    :param voxel_length:
+    :param voxel_num_1d:
+    :return:
+    """
+
+    # Extract the detector shape
+    detector_shape = pixel_position.shape[:-1]
+    pixel_num = np.prod(detector_shape)
+
+    # Cast the position infor to the shape [pixel number, 3]
+    pixel_position_1d = np.reshape(pixel_position, (pixel_num, 3))
+
+    # convert_to_voxel_unit
+    pixel_position_1d_voxel_unit = pixel_position_1d / voxel_length
+
+    # shift the center position
+    shift = (voxel_num_1d - 1) / 2
+    pixel_position_1d_voxel_unit += shift
+
+    # Get one nearest neighbor
+    tmp_index = np.floor(pixel_position_1d_voxel_unit).astype(np.int64)
+
+    # Generate the holders
+    indexes = np.zeros((pixel_num, 8, 3), dtype=np.int64)
+    weight = np.ones((pixel_num, 8), dtype=np.float64)
+
+    # Calculate the floors and the ceilings
+    dfloor = pixel_position_1d_voxel_unit - tmp_index
+    dceiling = 1 - dfloor
+
+    # Assign the correct values to the indexes
+    indexes[:, 0, :] = tmp_index
+
+    indexes[:, 1, 0] = tmp_index[:, 0]
+    indexes[:, 1, 1] = tmp_index[:, 1]
+    indexes[:, 1, 2] = tmp_index[:, 2] + 1
+
+    indexes[:, 2, 0] = tmp_index[:, 0]
+    indexes[:, 2, 1] = tmp_index[:, 1] + 1
+    indexes[:, 2, 2] = tmp_index[:, 2]
+
+    indexes[:, 3, 0] = tmp_index[:, 0]
+    indexes[:, 3, 1] = tmp_index[:, 1] + 1
+    indexes[:, 3, 2] = tmp_index[:, 2] + 1
+
+    indexes[:, 4, 0] = tmp_index[:, 0] + 1
+    indexes[:, 4, 1] = tmp_index[:, 1]
+    indexes[:, 4, 2] = tmp_index[:, 2]
+
+    indexes[:, 5, 0] = tmp_index[:, 0] + 1
+    indexes[:, 5, 1] = tmp_index[:, 1]
+    indexes[:, 5, 2] = tmp_index[:, 2] + 1
+
+    indexes[:, 6, 0] = tmp_index[:, 0] + 1
+    indexes[:, 6, 1] = tmp_index[:, 1] + 1
+    indexes[:, 6, 2] = tmp_index[:, 2]
+
+    indexes[:, 7, :] = tmp_index + 1
+
+    # Assign the correct values to the weight
+    weight[:, 0] = np.prod(dceiling, axis=-1)
+    weight[:, 1] = dceiling[:, 0] * dceiling[:, 1] * dfloor[:, 2]
+    weight[:, 2] = dceiling[:, 0] * dfloor[:, 1] * dceiling[:, 2]
+    weight[:, 3] = dceiling[:, 0] * dfloor[:, 1] * dfloor[:, 2]
+    weight[:, 4] = dfloor[:, 0] * dceiling[:, 1] * dceiling[:, 2]
+    weight[:, 5] = dfloor[:, 0] * dceiling[:, 1] * dfloor[:, 2]
+    weight[:, 6] = dfloor[:, 0] * dfloor[:, 1] * dceiling[:, 2]
+    weight[:, 7] = np.prod(dfloor, axis=-1)
+
+    # Change the shape of the index and weight variable
+    indexes = np.reshape(indexes, detector_shape + (8, 3))
+    weight = np.reshape(weight, detector_shape + (8,))
+
+    return indexes, weight
+
+
+######################################################################
+# Take slice from the volume
+######################################################################
+# @jit(nopython=True, parallel=True)
+def get_weight_in_reciprocal_space(pixel_position, voxel_length, voxel_num_1d):
+    """
+    Obtain the weight of the pixel for adjacent voxels.
+    :param pixel_position: The position of each pixel in the reciprocal space in
     :param voxel_length:
     :param voxel_num_1d:
     :return:
     """
     shift = (voxel_num_1d - 1) / 2
     # convert_to_voxel_unit
-    pixel_position_voxel_unit = pixel_position_reciprocal / voxel_length + shift
+    pixel_position_voxel_unit = pixel_position / voxel_length + shift
 
     # Get the indexes of the eight nearest points.
-    num_panel, num_x, num_y, _ = pixel_position_reciprocal.shape
+    num_panel, num_x, num_y, _ = pixel_position.shape
 
     # Get one nearest neighbor
     tmp_index = np.floor(pixel_position_voxel_unit).astype(np.int64)
@@ -155,11 +241,14 @@ def take_n_slice(pattern_shape, pixel_position, volume, voxel_length, orientatio
         # rotate the pixels in the reciprocal space. Notice that at this time, the pixel position is in 3D
         rotated_pixel_position = rotate_pixels_in_reciprocal_space(rot_mat, pixel_position)
         # calculate the index and weight in 3D
-        index, weight = get_weight_in_reciprocal_space(pixel_position_reciprocal=rotated_pixel_position,
-                                                       voxel_length=voxel_length,
-                                                       voxel_num_1d=volume.shape[0])
+        index, weight = get_weight_and_index(pixel_position=rotated_pixel_position,
+                                             voxel_length=voxel_length,
+                                             voxel_num_1d=volume.shape[0])
         # get one slice
-        slices_holder[l, :, :, :] = take_one_slice(local_index=index, weight_=weight, volume_=volume, pixel_num_=pixel_num)
+        slices_holder[l] = take_one_slice(local_index=index,
+                                          weight_=weight,
+                                          volume_=volume,
+                                          pixel_num_=pixel_num)
 
     toc = time.time()
     print("Finishing constructing %d patterns in %f seconds" % (slice_num, toc - tic))
@@ -191,7 +280,7 @@ def take_n_random_slices(detector, volume, voxel_length, number):
         # rotate the pixels in the reciprocal space. Notice that at this time, the pixel position is in 3D
         pixel_position_new = rotate_pixels_in_reciprocal_space(rotmat, pixel_position_)
         # calculate the index and weight in 3D
-        index, weight_ = get_weight_in_reciprocal_space(pixel_position_reciprocal=pixel_position_new,
+        index, weight_ = get_weight_in_reciprocal_space(pixel_position=pixel_position_new,
                                                         voxel_length=voxel_length,
                                                         voxel_num_1d=volume.shape[0])
         # get one slice
