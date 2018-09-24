@@ -255,7 +255,7 @@ class DetectorBase(object):
         """
         voxel_half_number = int((voxel_number_1d / 2) - 1)
         voxel_length = np.max(self.pixel_distance_reciprocal) / voxel_half_number
-        voxel_number = int(voxel_number_1d) + 4  # Get some more pixels for flexibility
+        voxel_number = int(voxel_number_1d)  # Get some more pixels for flexibility
 
         return pg.get_reciprocal_mesh(voxel_number, voxel_length), voxel_length
 
