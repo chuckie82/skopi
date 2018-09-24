@@ -295,7 +295,7 @@ def solid_angle(pixel_center, pixel_area, orientation):
 
     # Restore the pixel stack format
     solid_angle_stack = np.reshape(solid_angle_1d, pixel_area.shape)
-    
+
     return solid_angle_stack
 
 
