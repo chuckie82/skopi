@@ -422,7 +422,7 @@ class PnccdDetector(DetectorBase):
         temp_index = self.geometry.get_pixel_coord_indexes()
 
         self.panel_num = temp[0].shape[1] * temp[0].shape[2]
-        self.distance = temp[2][0, 0, 0, 0, 0]
+        self.distance = temp[2][0, 0, 0, 0, 0] * 1e-6  # Convert to m
 
         self.pixel_position = np.zeros((self.panel_num, temp[0].shape[3], temp[0].shape[4], 3))
         self.pixel_index_map = np.zeros((self.panel_num, temp[0].shape[3], temp[0].shape[4], 2))
@@ -444,7 +444,7 @@ class PnccdDetector(DetectorBase):
         self.panel_pixel_num_y = np.array([self.pixel_index_map.shape[2], ] * self.panel_num)
         self.pixel_num_total = np.sum(np.multiply(self.panel_pixel_num_x, self.panel_pixel_num_y))
 
-        tmp = float(self.geometry.get_pixel_scale_size())
+        tmp = float(self.geometry.get_pixel_scale_size() * 1e-6)  # Convert to m
         self.pixel_width = np.ones((self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0])) * tmp
         self.pixel_height = np.ones((self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0])) * tmp
 
