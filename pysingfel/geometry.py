@@ -42,44 +42,44 @@ def get_weight_in_reciprocal_space(pixel_position_reciprocal, voxel_length):
     num_panel, num_x, num_y, _ = pixel_position_reciprocal.shape
 
     # Get one nearest neighbor
-    tmp_indexes = np.floor(pixel_position_voxel_unit).astype(np.int64)
+    tmp_index = np.floor(pixel_position_voxel_unit).astype(np.int64)
 
     # Generate the holders
     indexes = np.zeros((num_panel, num_x, num_y, 8, 3), dtype=np.int64)
     weight = np.ones((num_panel, num_x, num_y, 8), dtype=np.float64)
 
     # Calculate the floors and the ceilings
-    dfloor = pixel_position_voxel_unit - tmp_indexes
+    dfloor = pixel_position_voxel_unit - tmp_index
     dceiling = 1 - dfloor
 
     # Assign the correct values to the indexes
-    indexes[:, :, :, 0, :] = _indexes
+    indexes[:, :, :, 0, :] = tmp_index
 
-    indexes[:, :, :, 1, 0] = _indexes[:, :, :, 0]
-    indexes[:, :, :, 1, 1] = _indexes[:, :, :, 1]
-    indexes[:, :, :, 1, 2] = _indexes[:, :, :, 2] + 1
+    indexes[:, :, :, 1, 0] = tmp_index[:, :, :, 0]
+    indexes[:, :, :, 1, 1] = tmp_index[:, :, :, 1]
+    indexes[:, :, :, 1, 2] = tmp_index[:, :, :, 2] + 1
 
-    indexes[:, :, :, 2, 0] = _indexes[:, :, :, 0]
-    indexes[:, :, :, 2, 1] = _indexes[:, :, :, 1] + 1
-    indexes[:, :, :, 2, 2] = _indexes[:, :, :, 2]
+    indexes[:, :, :, 2, 0] = tmp_index[:, :, :, 0]
+    indexes[:, :, :, 2, 1] = tmp_index[:, :, :, 1] + 1
+    indexes[:, :, :, 2, 2] = tmp_index[:, :, :, 2]
 
-    indexes[:, :, :, 3, 0] = _indexes[:, :, :, 0]
-    indexes[:, :, :, 3, 1] = _indexes[:, :, :, 1] + 1
-    indexes[:, :, :, 3, 2] = _indexes[:, :, :, 2] + 1
+    indexes[:, :, :, 3, 0] = tmp_index[:, :, :, 0]
+    indexes[:, :, :, 3, 1] = tmp_index[:, :, :, 1] + 1
+    indexes[:, :, :, 3, 2] = tmp_index[:, :, :, 2] + 1
 
-    indexes[:, :, :, 4, 0] = _indexes[:, :, :, 0] + 1
-    indexes[:, :, :, 4, 1] = _indexes[:, :, :, 1]
-    indexes[:, :, :, 4, 2] = _indexes[:, :, :, 2]
+    indexes[:, :, :, 4, 0] = tmp_index[:, :, :, 0] + 1
+    indexes[:, :, :, 4, 1] = tmp_index[:, :, :, 1]
+    indexes[:, :, :, 4, 2] = tmp_index[:, :, :, 2]
 
-    indexes[:, :, :, 5, 0] = _indexes[:, :, :, 0] + 1
-    indexes[:, :, :, 5, 1] = _indexes[:, :, :, 1]
-    indexes[:, :, :, 5, 2] = _indexes[:, :, :, 2] + 1
+    indexes[:, :, :, 5, 0] = tmp_index[:, :, :, 0] + 1
+    indexes[:, :, :, 5, 1] = tmp_index[:, :, :, 1]
+    indexes[:, :, :, 5, 2] = tmp_index[:, :, :, 2] + 1
 
-    indexes[:, :, :, 6, 0] = _indexes[:, :, :, 0] + 1
-    indexes[:, :, :, 6, 1] = _indexes[:, :, :, 1] + 1
-    indexes[:, :, :, 6, 2] = _indexes[:, :, :, 2]
+    indexes[:, :, :, 6, 0] = tmp_index[:, :, :, 0] + 1
+    indexes[:, :, :, 6, 1] = tmp_index[:, :, :, 1] + 1
+    indexes[:, :, :, 6, 2] = tmp_index[:, :, :, 2]
 
-    indexes[:, :, :, 7, :] = _indexes + 1
+    indexes[:, :, :, 7, :] = tmp_index + 1
 
     # Assign the correct values to the weight
     weight[:, :, :, 0] = np.prod(dceiling, axis=-1)
