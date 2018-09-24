@@ -58,7 +58,8 @@ class Beam(object):
         self.focus_area = 0  # (m^2)
         self.n_phot = 0  # number of photons per pulse
         self.phi_in = 0  # number of photon per pulse per area (m^-2)
-        self.Polarization = 0  # Default polarization angle, requires input from user or file in the future
+        # Default polarization angle, requires input from user or file in the future
+        self.Polarization = np.array([1, 0, 0])
         if fname is not None:
             self.read_beamfile(fname[0])
 
