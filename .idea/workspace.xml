@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="039ff22a-d945-4aee-b14d-32f864fd569b" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/pysingfel/gpu/diffraction.py" beforeDir="false" afterPath="$PROJECT_DIR$/pysingfel/gpu/diffraction.py" afterDir="false" />
-    </list>
+    <list default="true" id="039ff22a-d945-4aee-b14d-32f864fd569b" name="Default" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -47,8 +45,8 @@
       <file leaf-file-name="diffraction.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/pysingfel/gpu/diffraction.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="496">
-              <caret line="54" column="114" selection-start-line="54" selection-start-column="114" selection-end-line="54" selection-end-column="114" />
+            <state relative-caret-position="211">
+              <caret line="39" column="76" lean-forward="true" selection-start-line="39" selection-start-column="76" selection-end-line="39" selection-end-column="76" />
               <folding>
                 <element signature="e#0#22#0" expanded="true" />
               </folding>
@@ -517,8 +515,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/pysingfel/gpu/diffraction.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="496">
-          <caret line="54" column="114" selection-start-line="54" selection-start-column="114" selection-end-line="54" selection-end-column="114" />
+        <state relative-caret-position="211">
+          <caret line="39" column="76" lean-forward="true" selection-start-line="39" selection-start-column="76" selection-end-line="39" selection-end-column="76" />
           <folding>
             <element signature="e#0#22#0" expanded="true" />
           </folding>
