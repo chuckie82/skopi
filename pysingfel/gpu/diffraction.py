@@ -22,14 +22,14 @@ def calculate_pattern_gpu_back_engine(form_factor, pixel_position, atom_position
     """
     row = cuda.grid(1)
     for atom_type in range(atom_type_num):
-        form_factor = form_factor[atom_type, row]
+        local_form_factor = form_factor[atom_type, row]
         for atom_iter in range(split_index[atom_type], split_index[atom_type + 1]):
             if row < pixel_num:
                 holder = 0
                 for l in range(3):
                     holder += pixel_position[row, l] * atom_position[atom_iter, l]
-                pattern_cos[row] += form_factor * math.cos(holder)
-                pattern_sin[row] += form_factor * math.sin(holder)
+                pattern_cos[row] += local_form_factor * math.cos(holder)
+                pattern_sin[row] += local_form_factor * math.sin(holder)
 
 
 def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='intensity'):
