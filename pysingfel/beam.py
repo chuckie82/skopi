@@ -114,7 +114,7 @@ class Beam(object):
         [0, 0, 1 / wavelength]
         :return:
         """
-        return np.array([0, 0, 1. / self.wavelength])
+        return np.array([0, 0, 2 * np.pi / self.wavelength])
 
     def set_focus(self, x, y=None, shape='circle'):
         """
