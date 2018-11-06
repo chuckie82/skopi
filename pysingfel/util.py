@@ -113,7 +113,7 @@ def symmpdb(fname):
     :return: Numpy array containing the type and position of each atom in the pdb file.
     """
 
-    atom_types = {'H': 1, 'C': 6, 'N': 7, 'O': 8, 'P': 15, 'S': 16, 'FE': 26}
+    atom_types = {'H': 1, 'HE': 2, 'C': 6, 'N': 7, 'O': 8, 'P': 15, 'S': 16, 'FE': 26}
 
     fin = open(fname, 'r')
 
