@@ -124,6 +124,12 @@ class Particle(object):
         self.split_idx = np.append(idx, [len(tmp)])
 
         if ff == 'WK':
+            """
+            Here, one tries to calculate the form factor from formula and tables.
+            Therefore, one needs to setup some reference points for interpolation.
+            Here, the qs variable is such a variable containing the momentum length
+            at which one calculate the reference values.
+            """
             # set up q samples and compton
             qs = np.linspace(0, 10, 101) / (2.0 * np.pi * 0.529177206 * 2.0)
             self.q_sample = qs

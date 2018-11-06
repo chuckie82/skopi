@@ -113,7 +113,7 @@ def symmpdb(fname):
     :return: Numpy array containing the type and position of each atom in the pdb file.
     """
 
-    atom_types = {'H': 1, 'C': 6, 'N': 7, 'O': 8, 'P': 15, 'S': 16}
+    atom_types = {'H': 1, 'C': 6, 'N': 7, 'O': 8, 'P': 15, 'S': 16, 'FE': 26}
 
     fin = open(fname, 'r')
 
@@ -131,10 +131,16 @@ def symmpdb(fname):
                 atoms_dict[chain_id] = []
             # occupany > 50 % || one of either if occupany = 50 %
             if (float(line[56:60]) > 0.5) or (float(line[56:60]) == 0.5 and line[16] != 'B'):
+
                 # [x, y, z, atomtype, charge]
+                # Notice tht here, one has set the default charge to be 0
                 tmp = [float(line[30:38].strip()), float(line[38:46].strip()), float(line[46:54].strip()), 0, 0]
+
+                # Get the atom type
                 if line[76:78].strip() in atom_types.keys():
                     tmp[3] = atom_types[line[76:78].strip()]
+
+                    # Get charge info
                     charge = line[78:80].strip()  # charge info, should be in the form of '2+' or '1-' if not blank
                     if len(charge) is not 0:
                         if len(charge) is not 2:
@@ -188,7 +194,7 @@ def symmpdb(fname):
     ##################################################################################################################
     # if no REMARK 350 provided, then save atoms_dict in atoms directly
     if not sym_dict.keys():
-        # print "no 350 found"
+        print("no 350 found")
         for chain_id in atoms_dict.keys():
             atoms = np.vstack((atoms, atoms_dict[chain_id]))
 
