@@ -416,7 +416,9 @@ def get_reciprocal_position_and_correction(pixel_position, pixel_area,
     # Calculate the corrections.
     polarization_correction = get_polarization_correction(pixel_center=pixel_position,
                                                           polarization=polarization)
-    solid_angle_array = solid_angle(pixel_center=pixel_position,
+    
+    # Because the pixel area in this function is measured in m^2, therefore,the distance has to be in m
+    solid_angle_array = solid_angle(pixel_center=pixel_position * 1e-6,
                                     pixel_area=pixel_area,
                                     orientation=orientation)
 
