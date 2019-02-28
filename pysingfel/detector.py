@@ -132,7 +132,7 @@ class DetectorBase(object):
 
         return diffraction_pattern
 
-    def get_diffraction_field(self, particle, device="cpu"):
+    def get_intensity_field(self, particle, device="cpu"):
         """
         Generate a single diffraction pattern without any correction from the particle object.
 
