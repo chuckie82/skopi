@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="039ff22a-d945-4aee-b14d-32f864fd569b" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pysingfel/geometry.py" beforeDir="false" afterPath="$PROJECT_DIR$/pysingfel/geometry.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -64,8 +63,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/pysingfel/geometry.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="506">
-              <caret line="601" column="4" selection-start-line="601" selection-start-column="4" selection-end-line="601" selection-end-column="4" />
+            <state relative-caret-position="-1100">
+              <caret line="690" column="4" selection-start-line="690" selection-start-column="4" selection-end-line="690" selection-end-column="4" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -96,8 +95,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>numSlices</find>
-      <find>geomFile</find>
       <find>inputDir</find>
       <find>p</find>
       <find>pmiEndID</find>
@@ -126,10 +123,10 @@
       <find>12.311098</find>
       <find>2.657506</find>
       <find>26.0000</find>
+      <find>yaw</find>
+      <find>roll</find>
     </findStrings>
     <replaceStrings>
-      <replace>parse_boolean</replace>
-      <replace>my_quaternion</replace>
       <replace>generate_rotations</replace>
       <replace>make_one_diffr</replace>
       <replace>outputName</replace>
@@ -158,6 +155,8 @@
       <replace>weight_2d</replace>
       <replace>volume</replace>
       <replace>volume_num_1d</replace>
+      <replace>psi</replace>
+      <replace>phi</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -263,12 +262,12 @@
       <updated>1533009777888</updated>
       <workItem from="1551334840621" duration="335000" />
       <workItem from="1551380158383" duration="775000" />
-      <workItem from="1551395422464" duration="489000" />
+      <workItem from="1551395422464" duration="656000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1599000" />
+    <option name="totallyTimeSpent" value="1766000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1488" height="878" extended-state="6" />
@@ -424,8 +423,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/pysingfel/geometry.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="506">
-          <caret line="601" column="4" selection-start-line="601" selection-start-column="4" selection-end-line="601" selection-end-column="4" />
+        <state relative-caret-position="-1100">
+          <caret line="690" column="4" selection-start-line="690" selection-start-column="4" selection-end-line="690" selection-end-column="4" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>

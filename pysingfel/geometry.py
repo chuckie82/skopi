@@ -208,7 +208,7 @@ def take_one_slice(local_index, local_weight, volume, pixel_num, pattern_shape):
     data_to_merge = volume_1d[index_2d]
 
     # Merge the data
-    data_merged = np.sum(np.multiply(weight_2d, data_to_merge), axis= -1)
+    data_merged = np.sum(np.multiply(weight_2d, data_to_merge), axis=-1)
 
     return np.reshape(data_merged, pattern_shape)
 
@@ -239,7 +239,8 @@ def take_n_slice(pattern_shape, pixel_position, volume, voxel_length, orientatio
         if inverse:
             rot_mat = np.linalg.inv(rot_mat)
 
-        # rotate the pixels in the reciprocal space. Notice that at this time, the pixel position is in 3D
+        # rotate the pixels in the reciprocal space.
+        # Notice that at this time, the pixel position is in 3D
         rotated_pixel_position = rotate_pixels_in_reciprocal_space(rot_mat, pixel_position)
         # calculate the index and weight in 3D
         index, weight = get_weight_and_index(pixel_position=rotated_pixel_position,
@@ -279,7 +280,8 @@ def take_n_random_slices(detector, volume, voxel_length, number):
     for l in range(number):
         # construct the rotation matrix
         rotmat = quaternion2rot3d(get_random_rotation(rotation_axis='random'))
-        # rotate the pixels in the reciprocal space. Notice that at this time, the pixel position is in 3D
+        # rotate the pixels in the reciprocal space.
+        # Notice that at this time, the pixel position is in 3D
         pixel_position_new = rotate_pixels_in_reciprocal_space(rotmat, pixel_position_)
         # calculate the index and weight in 3D
         index, weight_ = get_weight_in_reciprocal_space(pixel_position=pixel_position_new,
@@ -325,7 +327,8 @@ def get_reciprocal_space_pixel_position(pixel_center, wave_vector):
     pixel_center_norm = np.sqrt(np.sum(np.square(pixel_center_1d), axis=1))
     pixel_center_direction = pixel_center_1d / pixel_center_norm[:, np.newaxis]
 
-    pixel_position_reciprocal_1d = wave_vector_norm * (pixel_center_direction - wave_vector_direction)
+    pixel_position_reciprocal_1d = wave_vector_norm * (
+            pixel_center_direction - wave_vector_direction)
 
     # restore the pixels shape
     pixel_position_reciprocal = np.reshape(pixel_position_reciprocal_1d, pixel_center.shape)
@@ -406,7 +409,8 @@ def get_reciprocal_position_and_correction(pixel_position, pixel_area,
     :param polarization: The polarization vector.
     :param orientation: The normal direction of the detector.
     :param pixel_area: The pixel area for each pixel. In pixel stack format.
-    :return: pixel_position_reciprocal, pixel_position_reciprocal_norm, polarization_correction, geometry_correction
+    :return: pixel_position_reciprocal, pixel_position_reciprocal_norm, polarization_correction,
+            geometry_correction
     """
     # Calculate the position and distance in reciprocal space
     pixel_position_reciprocal = get_reciprocal_space_pixel_position(pixel_center=pixel_position,
@@ -416,13 +420,15 @@ def get_reciprocal_position_and_correction(pixel_position, pixel_area,
     # Calculate the corrections.
     polarization_correction = get_polarization_correction(pixel_center=pixel_position,
                                                           polarization=polarization)
-    
-    # Because the pixel area in this function is measured in m^2, therefore,the distance has to be in m
+
+    # Because the pixel area in this function is measured in m^2,
+    # therefore,the distance has to be in m
     solid_angle_array = solid_angle(pixel_center=pixel_position * 1e-6,
                                     pixel_area=pixel_area,
                                     orientation=orientation)
 
-    return pixel_position_reciprocal, pixel_position_reciprocal_norm, polarization_correction, solid_angle_array
+    return (pixel_position_reciprocal, pixel_position_reciprocal_norm,
+            polarization_correction, solid_angle_array)
 
 
 ######################################################################
@@ -528,9 +534,10 @@ def angle_axis_to_rot3d(axis, theta):
     a_sin_theta = a * sin_theta
     b_sin_theta = b * sin_theta
     c_sin_theta = c * sin_theta
-    rot3d = np.array([[a * a_bracket + cos_theta, a * b_bracket - c_sin_theta, a * c_bracket + b_sin_theta],
-                      [b * a_bracket + c_sin_theta, b * b_bracket + cos_theta, b * c_bracket - a_sin_theta],
-                      [c * a_bracket - b_sin_theta, c * b_bracket + a_sin_theta, c * c_bracket + cos_theta]])
+    rot3d = np.array(
+        [[a * a_bracket + cos_theta, a * b_bracket - c_sin_theta, a * c_bracket + b_sin_theta],
+         [b * a_bracket + c_sin_theta, b * b_bracket + cos_theta, b * c_bracket - a_sin_theta],
+         [c * a_bracket - b_sin_theta, c * b_bracket + a_sin_theta, c * c_bracket + cos_theta]])
     return rot3d
 
 
@@ -621,6 +628,7 @@ def euler_to_quaternion(psi, theta, phi):
     q[3] = sy * cp * cr - cy * sp * sr
     return q
 
+
 def quaternion_to_angle_axis(quaternion):
     """
     Convert quaternion to a right hand rotation theta about certain axis.
@@ -679,7 +687,8 @@ def quaternion2rot3d(quat):
 # Functions to generate rotations for different cases: uniform(1d), uniform(3d), random.
 def points_on_1sphere(num_pts, rotation_axis):
     """
-    Given number of points and axis of rotation, distribute evenly on the surface of a 1-sphere (circle).
+    Given number of points and axis of rotation, distribute
+    evenly on the surface of a 1-sphere (circle).
 
     :param num_pts: Number of points 
     :param rotation_axis: Rotation axis.
