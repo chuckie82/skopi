@@ -716,7 +716,7 @@ def get_random_rotation(rotation_axis):
     """
 
     if rotation_axis == 'y':
-        u = np.random.random() * 2 * np.pi  # random angle between [0, 2pi]
+        u = np.random.rand() * 2 * np.pi  # random angle between [0, 2pi]
         return euler_to_quaternion(0, u, 0)
     else:
         return special_ortho_group.rvs(3)
