@@ -292,7 +292,7 @@ def take_n_random_slices(detector, volume, voxel_length, number):
         slices[l, :, :, :] = take_one_slice(local_index=index,
                                             local_weight=weight_tmp,
                                             volume=volume,
-                                            pixel_num=detector.pix_num_total,
+                                            pixel_num=detector.pixel_num_total,
                                             pattern_shape=detector.pedestal.shape)
 
     toc = time.time()
