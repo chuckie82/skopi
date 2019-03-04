@@ -59,9 +59,11 @@ class DetectorBase(object):
         self.polarization_correction = None  # Polarization correction
 
         """
-        The theoretical differential cross section of an electron ignoring the polarization effect is,
+        The theoretical differential cross section of an electron ignoring the 
+        polarization effect is,
                 do/dO = ( e^2/(4*Pi*epsilon0*m*c^2) )^2  *  ( 1 + cos(xi)^2 )/2 
-        Therefore, one needs to includes the leading constant factor which is the following numerical value.
+        Therefore, one needs to includes the leading constant factor which is the 
+        following numerical value.
         """
         # Tompson Scattering factor
         self.Thomson_factor = 2.817895019671143 * 2.817895019671143 * 1e-30
@@ -94,19 +96,21 @@ class DetectorBase(object):
         (self.pixel_position_reciprocal,
          self.pixel_distance_reciprocal,
          self.polarization_correction,
-         self.solid_angle_per_pixel) = pg.get_reciprocal_position_and_correction(pixel_position=self.pixel_position,
-                                                                                 polarization=polar,
-                                                                                 wave_vector=wavevector,
-                                                                                 pixel_area=self.pixel_area,
-                                                                                 orientation=self.orientation)
+         self.solid_angle_per_pixel) = pg.get_reciprocal_position_and_correction(
+            pixel_position=self.pixel_position,
+            polarization=polar,
+            wave_vector=wavevector,
+            pixel_area=self.pixel_area,
+            orientation=self.orientation)
 
         # Put all the corrections together
-        self.linear_correction = intensity * self.Thomson_factor * np.multiply(self.polarization_correction,
-                                                                               self.solid_angle_per_pixel)
+        self.linear_correction = intensity * self.Thomson_factor * np.multiply(
+            self.polarization_correction,
+            self.solid_angle_per_pixel)
 
-    ####################################################################################################################
+    ###############################################################################################
     # Calculate diffraction patterns
-    ####################################################################################################################
+    ###############################################################################################
 
     def get_pattern_without_corrections(self, particle, device="cpu"):
         """
@@ -118,14 +122,16 @@ class DetectorBase(object):
         """
 
         if device == "cpu":
-            diffraction_pattern = pd.calculate_molecular_form_factor_square(particle,
-                                                                            self.pixel_distance_reciprocal,
-                                                                            self.pixel_position_reciprocal)
+            diffraction_pattern = pd.calculate_molecular_form_factor_square(
+                particle,
+                self.pixel_distance_reciprocal,
+                self.pixel_position_reciprocal)
         elif device == "gpu":
             import pysingfel.gpu.diffraction as pgd
-            diffraction_pattern = pgd.calculate_diffraction_pattern_gpu(self.pixel_position_reciprocal,
-                                                                        particle,
-                                                                        "intensity")
+            diffraction_pattern = pgd.calculate_diffraction_pattern_gpu(
+                self.pixel_position_reciprocal,
+                particle,
+                "intensity")
         else:
             print(" The device parameter can only be set as \"gpu\" or \"cpu\" ")
             raise Exception('Wrong parameter value. device can only be set as \"gpu\" or \"cpu\" ')
@@ -142,14 +148,16 @@ class DetectorBase(object):
         """
 
         if device == "cpu":
-            diffraction_pattern = pd.calculate_molecular_form_factor_square(particle,
-                                                                            self.pixel_distance_reciprocal,
-                                                                            self.pixel_position_reciprocal)
+            diffraction_pattern = pd.calculate_molecular_form_factor_square(
+                particle,
+                self.pixel_distance_reciprocal,
+                self.pixel_position_reciprocal)
         elif device == "gpu":
             import pysingfel.gpu.diffraction as pgd
-            diffraction_pattern = pgd.calculate_diffraction_pattern_gpu(self.pixel_position_reciprocal,
-                                                                        particle,
-                                                                        "intensity")
+            diffraction_pattern = pgd.calculate_diffraction_pattern_gpu(
+                self.pixel_position_reciprocal,
+                particle,
+                "intensity")
         else:
             print(" The device parameter can only be set as \"gpu\" or \"cpu\" ")
             raise Exception('Wrong parameter value. device can only be set as \"gpu\" or \"cpu\" ')
@@ -210,19 +218,20 @@ class DetectorBase(object):
         raw_photon = self.get_photons(particle=particle, device=device)
         return pc.add_cross_talk_effect_panel(db_path=path, photons=raw_photon)
 
-    ####################################################################################################################
+    ###############################################################################################
     # For 3D slicing.
-    ####################################################################################################################
+    ###############################################################################################
     def preferred_voxel_length(self, wave_vector):
         """
-        If one want to put the diffraction pattern into 3D reciprocal space, then one needs to select a
-        proper voxel length for the reciprocal space. This function gives a reasonable estimation of this
-        length
+        If one want to put the diffraction pattern into 3D reciprocal space, then one needs to
+        select a proper voxel length for the reciprocal space. This function gives a reasonable
+        estimation of this length
 
         :param wave_vector: The wavevector of in this experiment.
         :return: voxel_length.
         """
-        # Notice that this voxel length has nothing to do with the voxel length utilized in dragonfly.
+        # Notice that this voxel length has nothing to do with the voxel length
+        # utilized in dragonfly.
         voxel_length = np.sqrt(np.sum(np.square(wave_vector)))
         voxel_length /= self.distance * np.min(self.pixel_width, self.pixel_height)
 
@@ -230,8 +239,8 @@ class DetectorBase(object):
 
     def preferred_reciprocal_mesh_number(self, wave_vector):
         """
-        If one want to put the diffraction pattern into 3D reciprocal space, then one needs to select a
-        proper voxel number for a proper voxel length for the reciprocal space.
+        If one want to put the diffraction pattern into 3D reciprocal space, then one needs to
+        select a proper voxel number for a proper voxel length for the reciprocal space.
         This function gives a reasonable estimation of this length and voxel number
 
         :param wave_vector: The wavevector of in this experiment.
@@ -250,7 +259,8 @@ class DetectorBase(object):
         """
         Get the a proper reciprocal mesh.
 
-        :param voxel_number_1d: The voxel number along 1 dimension. Notice that this number has to be odd.
+        :param voxel_number_1d: The voxel number along 1 dimension. Notice that this number
+                                has to be odd.
         :return: The reciprocal mesh, voxel length.
         """
         voxel_half_number = int((voxel_number_1d / 2) - 1)
@@ -276,15 +286,16 @@ class PlainDetector(DetectorBase):
 
     def initialize(self, geom, beam=None):
         """
-        Initialize the detector with the user-defined geometry file (and perhaps self.initialize_pixels_with_beam).
+        Initialize the detector with the user-defined geometry file (and perhaps
+        self.initialize_pixels_with_beam).
 
         :param geom: The path of the .geom file.
         :param beam: The beam object.
         :return: None
         """
-        ################################################################################################################
+        ###########################################################################################
         # Initialize the geometry configuration
-        ################################################################################################################
+        ###########################################################################################
         geom = pu.read_geomfile(geom)
         self.geometry = geom
 
@@ -298,13 +309,16 @@ class PlainDetector(DetectorBase):
         self.distance = np.array([geom['distance'], ])
 
         self.pixel_width = np.ones((self.panel_num,
-                                    self.panel_pixel_num_x, self.panel_pixel_num_y)) * geom['pixel size x']
+                                    self.panel_pixel_num_x, self.panel_pixel_num_y)) * geom[
+                               'pixel size x']
         self.pixel_height = np.ones((self.panel_num,
-                                     self.panel_pixel_num_x, self.panel_pixel_num_y)) * geom['pixel size y']
+                                     self.panel_pixel_num_x, self.panel_pixel_num_y)) * geom[
+                                'pixel size y']
         self.pixel_area = np.multiply(self.pixel_height, self.pixel_width)
 
         # Calculate real space position
-        self.pixel_position = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y, 3))
+        self.pixel_position = np.zeros(
+            (self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y, 3))
         # z direction position
         self.pixel_position[0, ::, ::, 2] += self.distance
 
@@ -312,9 +326,11 @@ class PlainDetector(DetectorBase):
         total_length_x = (self.panel_pixel_num_x - 1) * self.pixel_width
         total_length_y = (self.panel_pixel_num_y - 1) * self.pixel_height
 
-        x_coordinate_temp = np.linspace(-total_length_x / 2, total_length_x / 2, num=self.panel_pixel_num_x,
+        x_coordinate_temp = np.linspace(-total_length_x / 2, total_length_x / 2,
+                                        num=self.panel_pixel_num_x,
                                         endpoint=True)
-        y_coordinate_temp = np.linspace(-total_length_y / 2, total_length_y / 2, num=self.panel_pixel_num_y,
+        y_coordinate_temp = np.linspace(-total_length_y / 2, total_length_y / 2,
+                                        num=self.panel_pixel_num_y,
                                         endpoint=True)
         mesh_temp = np.meshgrid(x_coordinate_temp, y_coordinate_temp)
 
@@ -322,20 +338,22 @@ class PlainDetector(DetectorBase):
         self.pixel_position[0, ::, ::, 1] = mesh_temp[1][::, ::]
 
         # Calculate the index map for the image
-        mesh_temp = np.meshgrid(np.arange(self.panel_pixel_num_x), np.arange(self.panel_pixel_num_y))
+        mesh_temp = np.meshgrid(np.arange(self.panel_pixel_num_x),
+                                np.arange(self.panel_pixel_num_y))
         self.pixel_index_map[0, :, :, 0] = mesh_temp[0][::, ::]
         self.pixel_index_map[0, :, :, 1] = mesh_temp[1][::, ::]
         self.detector_pixel_num_x = self.panel_pixel_num_x
         self.detector_pixel_num_y = self.panel_pixel_num_y
 
-        ################################################################################################################
+        ##########################################################################################
         # Initialize the pixel effects
-        ################################################################################################################
+        ##########################################################################################
         # Initialize the detector effect parameters
         self.pedestal = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
         self.pixel_rms = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
         self.pixel_bkgd = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
-        self.pixel_status = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
+        self.pixel_status = np.zeros(
+            (self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
         self.pixel_mask = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
         self.pixel_gain = np.ones((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
 
@@ -345,7 +363,8 @@ class PlainDetector(DetectorBase):
     def assemble_image_stack(self, image_stack):
         """
         Assemble the image stack into a 2D diffraction pattern.
-        For this specific object, since it only has one panel, the result is to remove the first dimension.
+        For this specific object, since it only has one panel, the result is to remove the first
+        dimension.
 
         :param image_stack: The [1, num_x, num_y] numpy array.
         :return: The [num_x, num_y] numpy array.
@@ -361,7 +380,8 @@ class PlainDetector(DetectorBase):
         :return: The [stack_num, num_x, num_y] numpy array
         """
         stack_num = image_stack_batch.shape[0]
-        return np.reshape(image_stack_batch, (stack_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
+        return np.reshape(image_stack_batch,
+                          (stack_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
 
 
 class PnccdDetector(DetectorBase):
@@ -375,7 +395,8 @@ class PnccdDetector(DetectorBase):
 
         :param geom: The path to the geometry .data file.
         :param beam: The beam object.
-        :param run_num: The run_num containing the background, rms and gain and the other pixel pixel properties.
+        :param run_num: The run_num containing the background, rms and gain and the other pixel
+        pixel properties.
         """
         super(PnccdDetector, self).__init__()
 
@@ -403,7 +424,8 @@ class PnccdDetector(DetectorBase):
         """
         Initialize the detector as pnccd
         :param geom: The pnccd .data file which characterize the geometry profile.
-        :param run_num: The run_num containing the background, rms and gain and the other pixel pixel properties.
+        :param run_num: The run_num containing the background, rms and gain and the other
+                        pixel pixel properties.
         :return:  None
         """
 
@@ -412,9 +434,9 @@ class PnccdDetector(DetectorBase):
         f = open('Detector_initialization.log', 'w')
         sys.stdout = f
 
-        ################################################################################################################
+        ###########################################################################################
         # Initialize the geometry configuration
-        ################################################################################################################
+        ############################################################################################
         self.geometry = GeometryAccess(geom, 0o377)
 
         # Set coordinate in real space
@@ -430,9 +452,9 @@ class PnccdDetector(DetectorBase):
         for l in range(temp[0].shape[1]):
             for m in range(temp[0].shape[2]):
                 for n in range(3):
-                    self.pixel_position[m + l * temp[0].shape[2], :, :, n] = temp[n][0, l, m, :, :]
+                    self.pixel_position[m + l * temp[0].shape[2], :, :, n] = temp[n][0, l, m]
                 for n in range(2):
-                    self.pixel_index_map[m + l * temp[0].shape[2], :, :, n] = temp_index[n][0, l, m, :, :]
+                    self.pixel_index_map[m + l * temp[0].shape[2], :, :, n] = temp_index[n][0, l, m]
 
         self.pixel_index_map = self.pixel_index_map.astype(np.int64)
 
@@ -445,15 +467,17 @@ class PnccdDetector(DetectorBase):
         self.pixel_num_total = np.sum(np.multiply(self.panel_pixel_num_x, self.panel_pixel_num_y))
 
         tmp = float(self.geometry.get_pixel_scale_size() * 1e-6)  # Convert to m
-        self.pixel_width = np.ones((self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0])) * tmp
-        self.pixel_height = np.ones((self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0])) * tmp
+        self.pixel_width = np.ones(
+            (self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0])) * tmp
+        self.pixel_height = np.ones(
+            (self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0])) * tmp
 
         # Calculate the pixel area
         self.pixel_area = np.multiply(self.pixel_height, self.pixel_width)
 
-        ################################################################################################################
+        ###########################################################################################
         # Initialize the pixel effects
-        ################################################################################################################
+        ###########################################################################################
         # first we should parse the path
         parsed_path = geom.split('/')
 
@@ -480,7 +504,8 @@ class PnccdDetector(DetectorBase):
     def assemble_image_stack(self, image_stack):
         """
         Assemble the image stack into a 2D diffraction pattern.
-        For this specific object, since it only has one panel, the result is to remove the first dimension.
+        For this specific object, since it only has one panel, the result is to remove the
+        first dimension.
 
         :param image_stack: The [1, num_x, num_y] numpy array.
         :return: The [num_x, num_y] numpy array.
@@ -506,7 +531,9 @@ class PnccdDetector(DetectorBase):
         # construct the image holder:
         image = np.zeros((stack_num, self.detector_pixel_num_x, self.detector_pixel_num_y))
         for l in range(self.panel_num):
-            image[:, self.pixel_index_map[l, :, :, 0], self.pixel_index_map[l, :, :, 1]] = image_stack_batch[:, l, :, :]
+            idx_map_1 = self.pixel_index_map[l, :, :, 0]
+            idx_map_2 = self.pixel_index_map[l, :, :, 1]
+            image[:, idx_map_1, idx_map_2] = image_stack_batch[:, l]
 
         return image
 
@@ -522,7 +549,8 @@ class CsPadDetector(DetectorBase):
 
         :param geom: The path to the geometry .data file.
         :param beam: The beam object.
-        :param run_num: The run_num containing the background, rms and gain and the other pixel pixel properties.
+        :param run_num: The run_num containing the background, rms and gain and the other
+                        pixel pixel properties.
         """
         super(CsPadDetector, self).__init__()
 
@@ -550,7 +578,8 @@ class CsPadDetector(DetectorBase):
         """
         Initialize the detector as pnccd
         :param geom: The pnccd .data file which characterize the geometry profile.
-        :param run_num: The run_num containing the background, rms and gain and the other pixel pixel properties.
+        :param run_num: The run_num containing the background, rms and gain and the other pixel
+                        pixel properties.
         :return:  None
         """
 
@@ -559,9 +588,9 @@ class CsPadDetector(DetectorBase):
         f = open('Detector_initialization.log', 'w')
         sys.stdout = f
 
-        ################################################################################################################
+        ###########################################################################################
         # Initialize the geometry configuration
-        ################################################################################################################
+        ###########################################################################################
         self.geometry = GeometryAccess(geom, 0o377)
 
         # Set coordinate in real space
@@ -578,9 +607,9 @@ class CsPadDetector(DetectorBase):
         for l in range(temp[0].shape[1]):
             for m in range(temp[0].shape[2]):
                 for n in range(3):
-                    self.pixel_position[m + l * temp[0].shape[2], :, :, n] = temp[n][0, l, m, :, :]
+                    self.pixel_position[m + l * temp[0].shape[2], :, :, n] = temp[n][0, l, m]
                 for n in range(2):
-                    self.pixel_index_map[m + l * temp[0].shape[2], :, :, n] = temp_index[n][0, l, m, :, :]
+                    self.pixel_index_map[m + l * temp[0].shape[2], :, :, n] = temp_index[n][0, l, m]
 
         self.pixel_index_map = self.pixel_index_map.astype(np.int64)
 
@@ -593,15 +622,17 @@ class CsPadDetector(DetectorBase):
         self.pixel_num_total = np.sum(np.multiply(self.panel_pixel_num_x, self.panel_pixel_num_y))
 
         tmp = float(self.geometry.get_pixel_scale_size())
-        self.pixel_width = np.ones((self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0])) * tmp
-        self.pixel_height = np.ones((self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0])) * tmp
+        self.pixel_width = np.ones(
+            (self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0])) * tmp
+        self.pixel_height = np.ones(
+            (self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0])) * tmp
 
         # Calculate the pixel area
         self.pixel_area = np.multiply(self.pixel_height, self.pixel_width)
 
-        ################################################################################################################
+        ###########################################################################################
         # Initialize the pixel effects
-        ################################################################################################################
+        ###########################################################################################
         # first we should parse the path
         parsed_path = geom.split('/')
 
@@ -628,7 +659,8 @@ class CsPadDetector(DetectorBase):
     def assemble_image_stack(self, image_stack):
         """
         Assemble the image stack into a 2D diffraction pattern.
-        For this specific object, since it only has one panel, the result is to remove the first dimension.
+        For this specific object, since it only has one panel, the result is to remove the
+        first dimension.
 
         :param image_stack: The [1, num_x, num_y] numpy array.
         :return: The [num_x, num_y] numpy array.
@@ -654,7 +686,9 @@ class CsPadDetector(DetectorBase):
         # construct the image holder:
         image = np.zeros((stack_num, self.detector_pixel_num_x, self.detector_pixel_num_y))
         for l in range(self.panel_num):
-            image[:, self.pixel_index_map[l, :, :, 0], self.pixel_index_map[l, :, :, 1]] = image_stack_batch[:, l, :, :]
+            idx_map_1 = self.pixel_index_map[l, :, :, 0]
+            idx_map_2 = self.pixel_index_map[l, :, :, 1]
+            image[:, idx_map_1, idx_map_2] = image_stack_batch[:, l, :, :]
 
         return image
 
@@ -668,7 +702,8 @@ class UserDefinedDetector(DetectorBase):
     def __init__(self, geom, beam):
         """
         Initialize the detector
-        :param geom:  The dictionary containing all the necessary information to initialize the detector.
+        :param geom:  The dictionary containing all the necessary information to initialize
+                        the detector.
         :param beam: The beam object
         """
         super(UserDefinedDetector, self).__init__()
@@ -677,29 +712,35 @@ class UserDefinedDetector(DetectorBase):
     def initialize(self, geom, beam):
         """
         Initialize the detector with user defined parameters
-        :param geom: The dictionary containing all the necessary information to initialized the detector.
+        :param geom: The dictionary containing all the necessary information to initialized the
+                    detector.
         :param beam: The beam object
         :return: None
         """
 
         """
         Doc:
-            To use this class, the user has to provide the necessary information to initialize the detector.
+            To use this class, the user has to provide the necessary information to initialize
+             the detector.
             All the necessary entries are listed in the example notebook.
         """
-        ################################################################################################################
+        ##########################################################################################
         # Extract necessary information
-        ################################################################################################################
+        ##########################################################################################
 
         # Define the hierarchy system. For simplicity, we only use two-layer structure.
         self.panel_num = int(geom['panel number'])
 
         # Define all properties the detector should have
         self.distance = float(geom['detector distance'])  # detector distance in (m)
-        self.pixel_width = geom['pixel width'].astype(np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
-        self.pixel_height = geom['pixel height'].astype(np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
-        self.center_x = geom['pixel center x'].astype(np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
-        self.center_y = geom['pixel center y'].astype(np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
+        self.pixel_width = geom['pixel width'].astype(
+            np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
+        self.pixel_height = geom['pixel height'].astype(
+            np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
+        self.center_x = geom['pixel center x'].astype(
+            np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
+        self.center_y = geom['pixel center y'].astype(
+            np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
         self.orientation = np.array([0, 0, 1])
 
         # construct the the pixel position array
@@ -710,22 +751,25 @@ class UserDefinedDetector(DetectorBase):
         self.pixel_position[:, :, :, 1] = self.center_y
 
         # Pixel map
-        self.pixel_index_map = geom['pixel map'].astype(np.int64)  # [panel number, pixel num x, pixel num y]
+        self.pixel_index_map = geom['pixel map'].astype(
+            np.int64)  # [panel number, pixel num x, pixel num y]
 
         # Detector pixel number info
         self.detector_pixel_num_x = np.max(self.pixel_index_map[:, :, :, 0])
         self.detector_pixel_num_y = np.max(self.pixel_index_map[:, :, :, 1])
 
         # Panel pixel number info
-        self.panel_pixel_num_x = self.pixel_index_map.shape[1]  # number of pixels in each panel in x direction
-        self.panel_pixel_num_y = self.pixel_index_map.shape[2]  # number of pixels in each panel in y direction
+        self.panel_pixel_num_x = self.pixel_index_map.shape[
+            1]  # number of pixels in each panel in x direction
+        self.panel_pixel_num_y = self.pixel_index_map.shape[
+            2]  # number of pixels in each panel in y direction
 
         # total number of pixels (px*py)
         self.pixel_num_total = self.panel_num * self.panel_pixel_num_x * self.panel_pixel_num_y
 
-        ################################################################################################################
+        ###########################################################################################
         # Do necessary calculation to finishes the initialization
-        ################################################################################################################
+        ###########################################################################################
         # self.geometry currently only work for the pre-defined detectors
         self.geometry = geom
 
@@ -735,36 +779,42 @@ class UserDefinedDetector(DetectorBase):
         # Get reciprocal space configurations and corrections.
         self.initialize_pixels_with_beam(beam=beam)
 
-        ################################################################################################################
+        ##########################################################################################
         # Do necessary calculation to finishes the initialization
-        ################################################################################################################
+        ##########################################################################################
         # Detector effects
         if 'pedestal' in geom:
             self.pedestal = geom['pedestal'].astype(np.float64)
         else:
-            self.pedestal = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
+            self.pedestal = np.zeros(
+                (self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
 
         if 'pixel rms' in geom:
             self.pixel_rms = geom['pixel rms'].astype(np.float64)
         else:
-            self.pixel_rms = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
+            self.pixel_rms = np.zeros(
+                (self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
 
         if 'pixel bkgd' in geom:
             self.pixel_bkgd = geom['pixel bkgd'].astype(np.float64)
         else:
-            self.pixel_bkgd = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
+            self.pixel_bkgd = np.zeros(
+                (self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
 
         if 'pixel status' in geom:
             self.pixel_status = geom['pixel status'].astype(np.float64)
         else:
-            self.pixel_status = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
+            self.pixel_status = np.zeros(
+                (self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
 
         if 'pixel mask' in geom:
             self.pixel_mask = geom['pixel mask'].astype(np.float64)
         else:
-            self.pixel_mask = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
+            self.pixel_mask = np.zeros(
+                (self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
 
         if 'pixel gain' in geom:
             self.pixel_gain = geom['pixel gain'].astype(np.float64)
         else:
-            self.pixel_gain = np.ones((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
+            self.pixel_gain = np.ones(
+                (self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
