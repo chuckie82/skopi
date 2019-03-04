@@ -196,6 +196,15 @@ class DetectorBase(object):
         """
         return np.random.poisson(np.multiply(pattern, self.linear_correction))
 
+    def add_correction_and_quantization_batch(self, pattern_batch ):
+        """
+        Add corrections to a batch of image stack and apply quantization to the batch
+
+        :param pattern_batch: [image stack index, image stack shape]
+        :return:
+        """
+        return np.random.poisson(np.multiply(pattern_batch, self.linear_correction[np.newaxis]))
+
     def get_photons(self, particle, device="cpu"):
         """
         Get a simulated photon patterns stack
