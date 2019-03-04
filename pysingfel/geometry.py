@@ -280,7 +280,7 @@ def take_n_random_slices(detector, volume, voxel_length, number):
     tic = time.time()
     for l in range(number):
         # construct the rotation matrix
-        rotmat = quaternion2rot3d(get_random_rotation(rotation_axis='random'))
+        rotmat = get_random_rotation(rotation_axis='random')
         # rotate the pixels in the reciprocal space.
         # Notice that at this time, the pixel position is in 3D
         pixel_position_new = rotate_pixels_in_reciprocal_space(rotmat, pixel_position_)
@@ -652,6 +652,15 @@ def quaternion_to_angle_axis(quaternion):
     return theta, axis
 
 
+def rotmat_to_quaternion(rotmat):
+    """
+    Convert the rotation matrix to a quaternion
+
+    :param rotmat:
+    :return:
+    """
+
+
 @jit
 def quaternion2rot3d(quat):
     """
@@ -766,9 +775,28 @@ def get_random_rotation(rotation_axis):
 
     if rotation_axis == 'y':
         u = np.random.rand() * 2 * np.pi  # random angle between [0, 2pi]
-        return euler_to_quaternion(0, u, 0)
+        return euler_to_rot3d(0, u, 0)
     else:
         return special_ortho_group.rvs(3)
+
+
+def get_random_quat(num_pts):
+    """
+    Get num_pts of unit quaternions on the 4 sphere with a uniform random distribution.
+
+    :param num_pts: The number of quaternions to return
+    :return: Quaternion list of shape [number of quaternion, 4]
+    """
+    u = np.random.rand(3, num_pts)
+    u1, u2, u3 = [u[x] for x in range(3)]
+
+    quat = np.zeros((4, num_pts))
+    quat[0] = np.sqrt(1 - u1) * np.sin(2 * np.pi * u2)
+    quat[1] = np.sqrt(1 - u1) * np.cos(2 * np.pi * u2)
+    quat[2] = np.sqrt(u1) * np.sin(2 * np.pi * u3)
+    quat[3] = np.sqrt(u1) * np.sin(2 * np.pi * u3)
+
+    return np.transpose(quat)
 
 
 def get_uniform_quat(num_pts):

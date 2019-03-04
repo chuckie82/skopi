@@ -33,9 +33,7 @@ def generate_rotations(uniform_rotation, rotation_axis, num_quaternions):
             return points_on_2sphere(num_quaternions)
     else:
         # Case non-uniform:
-        quaternions = np.zeros((num_quaternions, 4))
-        for i in range(num_quaternions):
-            quaternions[i, :] = get_random_rotation(rotation_axis)
+        quaternions = get_random_quat(num_quaternions)
         return quaternions
 
 

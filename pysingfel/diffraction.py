@@ -69,7 +69,9 @@ def get_phase(atom_pos, q_xyz):
     :param q_xyz: The reciprocal space to calculate.
     :return:
     """
-    phase = 2 * np.pi * (atom_pos[0] * q_xyz[:, 0] + atom_pos[1] * q_xyz[:, 1] + atom_pos[2] * q_xyz[:, 2])
+    phase = 2 * np.pi * (atom_pos[0] * q_xyz[:, 0] +
+                         atom_pos[1] * q_xyz[:, 1] +
+                         atom_pos[2] * q_xyz[:, 2])
     return np.exp(1j * phase)
 
 

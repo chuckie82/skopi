@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="039ff22a-d945-4aee-b14d-32f864fd569b" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/pysingfel/detector.py" beforeDir="false" afterPath="$PROJECT_DIR$/pysingfel/detector.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pysingfel/geometry.py" beforeDir="false" afterPath="$PROJECT_DIR$/pysingfel/geometry.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pysingfel/particle.py" beforeDir="false" afterPath="$PROJECT_DIR$/pysingfel/particle.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -15,17 +17,29 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pysingfel/beam.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2552">
+            <state relative-caret-position="682">
               <caret line="116" column="40" selection-start-line="116" selection-start-column="40" selection-end-line="116" selection-end-column="40" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pysingfel/detector.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="660">
-              <caret line="205" column="93" selection-start-line="205" selection-start-column="93" selection-end-line="205" selection-end-column="93" />
+            <state relative-caret-position="211">
+              <caret line="74" column="21" selection-start-line="74" selection-start-column="13" selection-end-line="74" selection-end-column="21" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/pysingfel/geometry.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="506">
+              <caret line="793" column="35" selection-start-line="793" selection-start-column="35" selection-end-line="793" selection-end-column="35" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -36,38 +50,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pysingfel/particle.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="35992">
-              <caret line="1639" column="20" selection-start-line="1639" selection-start-column="13" selection-end-line="1639" selection-end-column="20" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/pysingfel/util.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2508">
-              <caret line="115" column="33" selection-start-line="115" selection-start-column="33" selection-end-line="115" selection-end-column="33" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/pysingfel/gpu/diffraction.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="792">
-              <caret line="39" column="76" selection-start-line="39" selection-start-column="76" selection-end-line="39" selection-end-column="76" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/pysingfel/geometry.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="308">
-              <caret line="217" column="34" lean-forward="true" selection-start-line="217" selection-start-column="34" selection-end-line="217" selection-end-column="34" />
-              <folding>
-                <element signature="e#0#18#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="409">
+              <caret line="58" column="25" lean-forward="true" selection-start-line="58" selection-start-column="25" selection-end-line="58" selection-end-column="25" />
             </state>
           </provider>
         </entry>
@@ -75,11 +59,29 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pysingfel/diffraction.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2288">
+            <state relative-caret-position="674">
               <caret line="107" column="35" selection-start-line="107" selection-start-column="12" selection-end-line="107" selection-end-column="35" />
               <folding>
                 <element signature="e#0#21#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/pysingfel/radiationDamage.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="4224">
+              <caret line="205" lean-forward="true" selection-start-line="205" selection-end-line="205" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/pysingfel/radiationDamageMPI.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="674">
+              <caret line="151" column="5" selection-start-line="151" selection-start-column="5" selection-end-line="151" selection-end-column="5" />
             </state>
           </provider>
         </entry>
@@ -95,10 +97,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>inputDir</find>
-      <find>p</find>
-      <find>pmiEndID</find>
-      <find>myQuaternions</find>
       <find>outputName</find>
       <find>pmiStartID</find>
       <find>numProcesses</find>
@@ -125,6 +123,10 @@
       <find>26.0000</find>
       <find>yaw</find>
       <find>roll</find>
+      <find>pixel_position</find>
+      <find>weight_</find>
+      <find>quaternion2rot3d</find>
+      <find>get_random_rotation</find>
     </findStrings>
     <replaceStrings>
       <replace>generate_rotations</replace>
@@ -176,10 +178,10 @@
         <option value="$PROJECT_DIR$/pysingfel/diffraction.py" />
         <option value="$PROJECT_DIR$/pysingfel/gpu/diffraction.py" />
         <option value="$PROJECT_DIR$/pysingfel/beam.py" />
-        <option value="$PROJECT_DIR$/pysingfel/particle.py" />
         <option value="$PROJECT_DIR$/pysingfel/util.py" />
-        <option value="$PROJECT_DIR$/pysingfel/geometry.py" />
         <option value="$PROJECT_DIR$/pysingfel/detector.py" />
+        <option value="$PROJECT_DIR$/pysingfel/particle.py" />
+        <option value="$PROJECT_DIR$/pysingfel/geometry.py" />
       </list>
     </option>
   </component>
@@ -263,18 +265,18 @@
       <workItem from="1551334840621" duration="335000" />
       <workItem from="1551380158383" duration="775000" />
       <workItem from="1551395422464" duration="656000" />
-      <workItem from="1551722653825" duration="2766000" />
+      <workItem from="1551722653825" duration="5256000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="4532000" />
+    <option name="totallyTimeSpent" value="7022000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1488" height="878" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.11904762" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.11904762" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -328,20 +330,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/pysingfel/radiationDamage.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="779">
-          <caret line="205" lean-forward="true" selection-start-line="205" selection-end-line="205" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pysingfel/radiationDamageMPI.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2869">
-          <caret line="151" column="5" selection-start-line="151" selection-start-column="5" selection-end-line="151" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/bin/radiationDamageMPI">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -374,20 +362,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/pysingfel/beam.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2552">
-          <caret line="116" column="40" selection-start-line="116" selection-start-column="40" selection-end-line="116" selection-end-column="40" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pysingfel/particle.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="35992">
-          <caret line="1639" column="20" selection-start-line="1639" selection-start-column="13" selection-end-line="1639" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/pysingfel/util.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2508">
@@ -397,14 +371,31 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/pysingfel/gpu/diffraction.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="792">
+        <state relative-caret-position="682">
           <caret line="39" column="76" selection-start-line="39" selection-start-column="76" selection-end-line="39" selection-end-column="76" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pysingfel/beam.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="682">
+          <caret line="116" column="40" selection-start-line="116" selection-start-column="40" selection-end-line="116" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pysingfel/detector.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="211">
+          <caret line="74" column="21" selection-start-line="74" selection-start-column="13" selection-end-line="74" selection-end-column="21" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/pysingfel/diffraction.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2288">
+        <state relative-caret-position="674">
           <caret line="107" column="35" selection-start-line="107" selection-start-column="12" selection-end-line="107" selection-end-column="35" />
           <folding>
             <element signature="e#0#21#0" expanded="true" />
@@ -412,20 +403,31 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/pysingfel/geometry.py">
+    <entry file="file://$PROJECT_DIR$/pysingfel/radiationDamageMPI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="308">
-          <caret line="217" column="34" lean-forward="true" selection-start-line="217" selection-start-column="34" selection-end-line="217" selection-end-column="34" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="674">
+          <caret line="151" column="5" selection-start-line="151" selection-start-column="5" selection-end-line="151" selection-end-column="5" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/pysingfel/detector.py">
+    <entry file="file://$PROJECT_DIR$/pysingfel/particle.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="660">
-          <caret line="205" column="93" selection-start-line="205" selection-start-column="93" selection-end-line="205" selection-end-column="93" />
+        <state relative-caret-position="409">
+          <caret line="58" column="25" lean-forward="true" selection-start-line="58" selection-start-column="25" selection-end-line="58" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pysingfel/radiationDamage.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4224">
+          <caret line="205" lean-forward="true" selection-start-line="205" selection-end-line="205" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pysingfel/geometry.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="506">
+          <caret line="793" column="35" selection-start-line="793" selection-start-column="35" selection-end-line="793" selection-end-column="35" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
