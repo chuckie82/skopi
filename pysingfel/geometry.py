@@ -713,7 +713,6 @@ def points_on_2sphere(num_pts):
     """
     Given number of points, distribute evenly on hyper surface of a 4-sphere.
 
-    
     :param num_pts: Number of points 
     :return: Quaternion list of shape [number of quaternion, 4]
     """
@@ -765,3 +764,13 @@ def get_random_rotation(rotation_axis):
         return euler_to_quaternion(0, u, 0)
     else:
         return special_ortho_group.rvs(3)
+
+
+def get_uniform_quat(num_pts):
+    """
+    Get num_pts of unit quaternions evenly distributed on the 4 sphere.
+
+    :param num_pts: The number of quaternions to return
+    :return: Quaternion list of shape [number of quaternion, 4]
+    """
+    return points_on_2sphere(num_pts)
