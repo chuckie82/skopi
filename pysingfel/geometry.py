@@ -659,6 +659,44 @@ def rotmat_to_quaternion(rotmat):
     :param rotmat:
     :return:
     """
+    r00 = rotmat[0,0]
+    r01 = rotmat[0,1]
+    r02 = rotmat[0,2]
+    r10 = rotmat[1,0]
+    r11 = rotmat[1,1]
+    r12 = rotmat[1,2]
+    r20 = rotmat[2,0]
+    r21 = rotmat[2,1]
+    r22 = rotmat[2,2]
+    
+    tr = r00 + r11 + r22
+    quat = np.zeros((4,1))
+    if tr > 0:
+        S = np.sqrt(tr+1.0) * 2.   # S=4*qw
+        quat[0] = (r21 - r12) / S
+        quat[1] = (r02 - r20) / S
+        quat[2] = (r10 - r01) / S
+        quat[3] = 0.25 * S
+    elif (r00 > r11) and (r00 > r22):
+        S = np.sqrt(1.0 + r00 - r11 - r22) * 2. # S=4*qx
+        quat[0] = 0.25 * S
+        quat[1] = (r01 + r10) / S
+        quat[2] = (r02 + r20) / S
+        quat[3] = (r21 - r12) / S
+    elif r11 > r22:
+        S = np.sqrt(1.0 + r11 - r00 - r22) * 2. # S=4*qy
+        quat[0] = (r01 + r10) / S
+        quat[1] = 0.25 * S
+        quat[2] = (r12 + r21) / S
+        quat[3] = (r02 - r20) / S
+    else:
+        S = np.sqrt(1.0 + r22 - r00 - r11) * 2. # S=4*qz
+        quat[0] = (r02 + r20) / S
+        quat[1] = (r12 + r21) / S
+        quat[2] = 0.25 * S
+        quat[3] = (r10 - r01) / S
+
+    return quat
 
 
 @jit
