@@ -260,7 +260,10 @@ def take_n_slice(pattern_shape, pixel_momentum,
     return slices_holder
 
 
-def take_n_random_slices(detector, volume, voxel_length, number):
+
+
+def take_n_random_slices(detector, volume, voxel_length, orientations):
+#def take_n_random_slices(detector, volume, voxel_length, number):
     """
     Take n slices from n random orientations.
 
@@ -270,6 +273,7 @@ def take_n_random_slices(detector, volume, voxel_length, number):
     :param number: The number of patterns to slice from.
     :return: [number, panel number, panel pixel number x, panel pixel number y]
     """
+    number = length(orientations)
     # Preprocess
     pattern_shape_ = detector.pixel_rms.shape
     pixel_position_ = detector.pixel_position_reciprocal.copy()
@@ -280,7 +284,8 @@ def take_n_random_slices(detector, volume, voxel_length, number):
     tic = time.time()
     for l in range(number):
         # construct the rotation matrix
-        rotmat = get_random_rotation(rotation_axis='random')
+        rotmat = quat2rot3d(orientations[l])
+        # rotmat = get_random_rotation(rotation_axis='random')
         # rotate the pixels in the reciprocal space.
         # Notice that at this time, the pixel position is in 3D
         pixel_position_new = rotate_pixels_in_reciprocal_space(rotmat, pixel_position_)
@@ -845,3 +850,9 @@ def get_uniform_quat(num_pts):
     :return: Quaternion list of shape [number of quaternion, 4]
     """
     return points_on_2sphere(num_pts)
+
+def get_random_orientations(num_pts):
+    
+    orientations = np.zeros(npts,4)
+    orientations = get_random_quat(num_pts)
+    return orientations
