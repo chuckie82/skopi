@@ -2749,6 +2749,11 @@ def load_ff_database():
 
 
 def load_waaskirf_database():
+    # Waasmaier-Kirfel tables of coefficients for calculating the Thomson (kinematical) scattering factors of the elements 
+    # and common valence states. The coefficients are for an Aikman expansion, which is of this form:
+    #       5
+    # ff = sum [ a_i*exp(-b_i*s^2) ] + c
+    #      i=1
     # atom type, charge, a1, a2, a3, a4, a5, c, b1, b2, b3, b4, b5
     dbase = np.array(
         [
