@@ -2749,6 +2749,7 @@ def load_ff_database():
 
 
 def load_waaskirf_database():
+    # atom type, charge, a1, a2, a3, a4, a5, c, b1, b2, b3, b4, b5
     dbase = np.array(
         [
             [1.000000, 0.000000, 0.413048, 0.294953, 0.187491, 0.080701, 0.023736, 0.000049,
