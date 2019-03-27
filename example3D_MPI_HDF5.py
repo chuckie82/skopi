@@ -9,7 +9,7 @@ import numpy as np
 
 def main():
     
-    number = 1000
+    number = 100
     orient = 'uniform'
 
     
@@ -67,86 +67,61 @@ def main():
        dat1 = ff.create_dataset('img',shape=(number,pattern_shape[0],pattern_shape[1],pattern_shape[2]),dtype=np.int32,compression="gzip", compression_opts=4)
 
        dat2 = ff.create_dataset('imgOrient',shape=(number,pattern_shape[0]),dtype=np.float32,compression="gzip", compression_opts=4)
-    # task processing steps
-    if rank == 0: # master
-       for task in range(number):
+       dat3 = ff.create_dataset('imgIndex',shape=(number,1),dtype=np.int32,compression="gzip", compression_opts=4)
+       # task processing steps
+    
+       c = 0
+          
+    
+       while True:
            
-
-           #  master receives signal from slave with completed task, send new task
            status1 = MPI.Status()
-	   comm.recv(source=MPI.ANY_SOURCE,tag=2,status=status1)
-
-           rnk = status1.Get_source()
-           print("Rank 0 received done status from rank %d" % rnk)           
-           comm.send(task,dest=rnk)
-           print("Rank 0 sending task %d to rank %d" % (task,rnk))
-           
-
-           # master receives image
-           status2 = MPI.Status()
-           #1i = status2.Get_source()
-           img = comm.recv(source=MPI.ANY_SOURCE,tag=1,status=status2)
-           i = status2.Get_source()
-           print("Rank 0: Received image from rank %d" % i)
-           
+           task = comm.recv(source=MPI.ANY_SOURCE,tag=2,status=status1)
+           i = status1.Get_source()
+           #print("Rank 0: Received image %d from rank %d", (task,i))
            # put processed image and orientation into dataset
-           dat1[task,:,:,:] = img
-           dat2[task,:] = orientations[task,:]
-           print("Task %d writing image and orientation to HDF5 dataset" % task)
-       
-       # when all tasks complete, send kill signal from master to each slave processss      
-       for k in range(1,comm.size):
-           comm.send(-1,dest=k)
-           print("Rank 0 sending kill signal to rank %d" % k)
+           if task != -1:
+              img = comm.recv(source=MPI.ANY_SOURCE,tag=1)
+              print("Rank 0: Received image %d from rank %d" % (task,i)) 
+              dat1[task,:,:,:] = img
+              dat2[task,:] = orientations[task,:]
+              dat3[task,:] = task
+           else:
+              c += 1
+              print("Kill signal %d" % c)
+           if c== sz-1:
+              break
+           #print("Task %d writing image and orientation to HDF5 dataset" % task)
+           
 
     else: # slave
+        
         # initial calculations
         slices_num = ori.shape[0]
         pattern_shape = d.pedestal.shape
         pixel_momentum = d.pixel_position_reciprocal
-        #pixel_num = np.prod(pattern_shape)
         sliceOne = np.zeros((pattern_shape))
-        #rotated_pixel_position = np.zeros((1,pattern_shape[0],pattern_shape[1],pattern_shape[2],3))
         mesh_length = 128
         mesh,voxel_length = d.get_reciprocal_mesh(voxel_number_1d=mesh_length)
         volume = pg.diffraction.calculate_diffraction_pattern_gpu(mesh, p,return_type='intensity')
         
-        counter = 0
-        comm.send(counter,dest=0,tag=2)
-        print("Sent counter, rank=%d" % rank)
-        while True:
-           counter = comm.recv(source=0)
-           print("Received counter, rank %d" % rank)
-           if counter < 0:
-               print("rank %d received kill signal" % rank)
-               # end of simulation
-               break
+        
+
+        for counter in range((rank-1),number,sz-1):
            
            # transform quaternion (set of orientations) into 3D rotation  
            rotmat = ps.geometry.quaternion2rot3d(ori[counter,:])
            
            oneSlice = slave_calc_pattern(rot3d=rotmat,pixel_momentum=pixel_momentum,pattern_shape=pattern_shape,volume=volume,voxel_length=voxel_length)
-           # new pixel position in reciprocal space
-           #rotated_pixel_position = ps.geometry.rotate_pixels_in_reciprocal_space(rotmat, pixel_momentum)
-
-           # generate indices and weights
-           #index, weight = ps.geometry.get_weight_and_index(pixel_position=rotated_pixel_position,
-           #                                  voxel_length=voxel_length,
-           #                                  voxel_num_1d=volume.shape[0])
-           # take one slice
-           #sliceOne = ps.geometry.take_one_slice(local_index=index,
-           #                              local_weight=weight,
-           #                               volume=volume,
-           #                               pixel_num=pixel_num,
-           #                              pattern_shape=pattern_shape)
 
            print("Sending slice %d from rank %d" % (counter,rank))
-    
+           comm.send(counter,dest=0,tag=2)
            comm.send(sliceOne,dest=0,tag=1)
            print("Sending counter from rank %d" % rank)
-           comm.send(counter,dest=0, tag=2)
-
-    comm.Barrier()
+           #comm.send(counter,dest=0, tag=2)
+        counter = -1
+        comm.send(counter,tag=2,dest=0)
+    #comm.Barrier()
     if rank==0:
        t_end = MPI.Wtime()
        print("Finishing constructing %d patterns in %f seconds" % (number,t_end - t_start ))
@@ -183,3 +158,4 @@ def parse_input_arguments(args):
 if __name__ == '__main__':
     main()
    
+
