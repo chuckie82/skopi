@@ -44,10 +44,10 @@ def main():
           orientations = None
 
        print("Reading PDB file...")
-       particle.read_pdb('examples/input/3iyf.pdb',ff='WK')
+       particle.read_pdb('../input/3iyf.pdb',ff='WK')
        # reading beam and detector files
-       beam= ps.Beam('examples/input/exp_chuck.beam')
-       det = ps.PnccdDetector(geom='examples/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data',beam=beam)
+       beam= ps.Beam('../input/exp_chuck.beam')
+       det = ps.PnccdDetector(geom='../lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data',beam=beam)
        print("Broadcasting input to processes...")
     
        data = {'particle': particle, 'orientations': orientations,'detector': det}
