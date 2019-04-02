@@ -1,4 +1,4 @@
-import sys
+import os, sys
 import h5py as h5
 import time
 import pysingfel as ps
@@ -16,7 +16,8 @@ def main():
     geom = params['geom']
     beam = params['beam']
     orient = int(params['UniformOrientation'])
-    number = int(params['numSlices'])  
+    number = int(params['numSlices'])
+    outDir = params['outDir']
  
     # Initialize MPI
     comm = MPI.COMM_WORLD
@@ -53,7 +54,7 @@ def main():
     
     if rank==0:
        pattern_shape = det.pedestal.shape  
-       f = h5.File('saveHDF5_parallel.h5','w')
+       f = h5.File(os.path.join(outDir,'saveHDF5_parallel.h5'),'w')
        dset = f.create_dataset('img', shape=(number,)+pattern_shape,dtype=np.int32,compression="gzip", compression_opts=4)
        f.create_dataset('orientation', data=orientations, compression="gzip", compression_opts=4)
        print("Done creating HDF5 file and datasets...")
@@ -103,7 +104,7 @@ def main():
        import matplotlib.pyplot as plt
        # Display first diffraction image
        photImgAssem = det.assemble_image_stack(image_stack=f['img'][0,:,:,:])
-       plt.imshow(photImgAssem, interpolation='none', vmin=0)
+       plt.imshow(photImgAssem, interpolation='none', vmin=0,vmax=4)
        plt.colorbar()
        plt.show()
        f.close()
@@ -141,11 +142,12 @@ def slave_calc_intensity(rot3d, pixel_momentum, pattern_shape, volume, voxel_len
 def parse_input_arguments(args):
     del args[0]
     parse = argparse.ArgumentParser()
-    parse.add_argument('--pdb', type=str, help='PDB file')
-    parse.add_argument('--geom', type=str, help='Psana geometry file')
-    parse.add_argument('--beam', type=str, help='Beam file defining X-ray beam')
-    parse.add_argument('--numSlices',type=int, help='Number of slices/diffraction patterns')
-    parse.add_argument('--UniformOrientation', type=int, help='Uniform (1), random (0)')
+    parse.add_argument('-p', '--pdb', type=str, help='PDB file')
+    parse.add_argument('-g', '--geom', type=str, help='Psana geometry file')
+    parse.add_argument('-b', '--beam', type=str, help='Beam file defining X-ray beam')
+    parse.add_argument('-n', '--numSlices',type=int, help='Number of slices/diffraction patterns')
+    parse.add_argument('-u', '--UniformOrientation', type=int, help='Uniform (1), random (0)')
+    parse.add_argument('-o', '--outDir', default='', type=str, help='output directory')
     # convert argparse to dict
     return vars(parse.parse_args(args))
 
