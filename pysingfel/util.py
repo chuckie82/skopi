@@ -194,7 +194,7 @@ def symmpdb(fname):
     ##################################################################################################################
     # if no REMARK 350 provided, then save atoms_dict in atoms directly
     if not sym_dict.keys():
-        print("no 350 found")
+        print("no symmetry REMARK 350 found")
         for chain_id in atoms_dict.keys():
             atoms = np.vstack((atoms, atoms_dict[chain_id]))
 
