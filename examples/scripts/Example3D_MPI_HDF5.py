@@ -55,7 +55,7 @@ def main():
     if rank==0:
        pattern_shape = det.pedestal.shape  
        f = h5.File(os.path.join(outDir,'saveHDF5_parallel.h5'),'w')
-       dset = f.create_dataset('img', shape=(number,)+pattern_shape,dtype=np.int32,compression="gzip", compression_opts=4)
+       dset = f.create_dataset('img', shape=(number,)+pattern_shape,dtype=np.int32, chunks=(1,)+pattern_shape, compression="gzip", compression_opts=4)
        f.create_dataset('orientation', data=orientations, compression="gzip", compression_opts=4)
        print("Done creating HDF5 file and datasets...")
 
