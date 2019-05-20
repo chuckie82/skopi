@@ -850,9 +850,3 @@ def get_uniform_quat(num_pts):
     :return: Quaternion list of shape [number of quaternion, 4]
     """
     return points_on_2sphere(num_pts)
-
-def get_random_orientations(num_pts):
-    
-    orientations = np.zeros(npts,4)
-    orientations = get_random_quat(num_pts)
-    return orientations
