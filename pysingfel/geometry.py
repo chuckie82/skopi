@@ -713,21 +713,34 @@ def quaternion2rot3d(quat):
     """
     Convert the quaternion to rotation matrix.
 
+    This function was originally adopted from
+    https://github.com/duaneloh/Dragonfly/blob/master/src/interp.c
+    It has been modified from the original.
+
     :param quat: The quaterion.
     :return: The 3D rotation matrix
     """
-    q = np.outer(quat, quat)
+    q01 = quat[0] * quat[1]
+    q02 = quat[0] * quat[2]
+    q03 = quat[0] * quat[3]
+    q11 = quat[1] * quat[1]
+    q12 = quat[1] * quat[2]
+    q13 = quat[1] * quat[3]
+    q22 = quat[2] * quat[2]
+    q23 = quat[2] * quat[3]
+    q33 = quat[3] * quat[3]
 
+    # Obtain the rotation matrix
     rotation = np.zeros((3, 3))
-    rotation[0, 0] = (1. - 2. * (q[2, 2] + q[3, 3]))
-    rotation[0, 1] = 2. * (q[1, 2] - q[0, 3])
-    rotation[0, 2] = 2. * (q[1, 3] + q[0, 2])
-    rotation[1, 0] = 2. * (q[1, 2] + q[0, 3])
-    rotation[1, 1] = (1. - 2. * (q[1, 1] + q[3, 3]))
-    rotation[1, 2] = 2. * (q[2, 3] - q[0, 1])
-    rotation[2, 0] = 2. * (q[1, 3] - q[0, 2])
-    rotation[2, 1] = 2. * (q[2, 3] + q[0, 1])
-    rotation[2, 2] = (1. - 2. * (q[1, 1] + q[2, 2]))
+    rotation[0, 0] = (1. - 2. * (q22 + q33))
+    rotation[0, 1] = 2. * (q12 - q03)
+    rotation[0, 2] = 2. * (q13 + q02)
+    rotation[1, 0] = 2. * (q12 + q03)
+    rotation[1, 1] = (1. - 2. * (q11 + q33))
+    rotation[1, 2] = 2. * (q23 - q01)
+    rotation[2, 0] = 2. * (q13 - q02)
+    rotation[2, 1] = 2. * (q23 + q01)
+    rotation[2, 2] = (1. - 2. * (q11 + q22))
 
     return rotation
 
@@ -828,7 +841,7 @@ def get_random_quat(num_pts):
     quat[0] = np.sqrt(1 - u1) * np.sin(2 * np.pi * u2)
     quat[1] = np.sqrt(1 - u1) * np.cos(2 * np.pi * u2)
     quat[2] = np.sqrt(u1) * np.sin(2 * np.pi * u3)
-    quat[3] = np.sqrt(u1) * np.sin(2 * np.pi * u3)
+    quat[3] = np.sqrt(u1) * np.cos(2 * np.pi * u3)
 
     return np.transpose(quat)
 
