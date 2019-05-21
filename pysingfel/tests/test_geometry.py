@@ -1,3 +1,4 @@
+import itertools
 import numpy as np
 
 from pysingfel import geometry
@@ -277,6 +278,37 @@ def test_points_on_1sphere_8x():
     assert np.allclose(points[0], np.array([1., 0., 0., 0.]))
     assert np.allclose(points[2], quatx90)
     assert np.allclose(points[4], np.array([0., 1., 0., 0.]))
+
+
+def test_points_on_2sphere_moment_1():
+    """Test points_on_2sphere for moments of order 1."""
+    n_points = 1000
+    thresh = 2.5e-3  # Lower limit for original implementation (1000)
+    points = geometry.points_on_2sphere(n_points)
+    W, X, Y, Z = points.mean(axis=0)
+    assert abs(W) < thresh
+    assert abs(X) < thresh
+    assert abs(Y) < thresh
+    assert abs(Z) < thresh
+
+
+def test_points_on_2sphere_moment_2():
+    """Test points_on_2sphere for moments of order 2."""
+    n_points = 1000
+    thresh_xx = 0.34  # Lower limit for original implementation (1000)
+    thresh_xy = 1.16  # Lower limit for original implementation (1000)
+    points = geometry.points_on_2sphere(n_points)
+    moments_xx = []
+    moments_xy = []
+    for (i, j) in itertools.product(*(range(4),)*2):
+        M2 = np.dot(points[:,i], points[:,j])
+        if i == j:
+            moments_xx.append(M2)
+        else:
+            moments_xy.append(M2)
+    moments_xx = np.array(moments_xx)
+    assert np.all(np.abs(moments_xx-moments_xx.mean()) < thresh_xx)
+    assert np.all(np.abs(moments_xy) < thresh_xy)
 
 
 # Replacement test
