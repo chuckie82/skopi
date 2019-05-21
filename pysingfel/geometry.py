@@ -525,12 +525,22 @@ def angle_axis_to_rot3d(axis, theta):
     Convert rotation with angle theta around a certain axis to a rotation matrix in 3D.
 
     :param axis: A numpy array for the rotation axis.
+        Axis names 'x', 'y', and 'z' are also accepted.
     :param theta: Rotation angle.
     :return:
     """
-
-    if len(axis) is not 3:
-        raise ValueError('Number of axis element must be 3!')
+    if isinstance(axis, basestring):
+        axis = axis.lower()
+        if axis == 'x':
+            axis = np.array([1., 0., 0.])
+        elif axis == 'y':
+            axis = np.array([0., 1., 0.])
+        elif axis == 'z':
+            axis = np.array([0., 0., 1.])
+        else:
+            raise ValueError("Axis should be 'x', 'y', 'z' or a 3D vector.")
+    elif len(axis) is not 3:
+        raise ValueError("Axis should be 'x', 'y', 'z' or a 3D vector.")
     axis = axis.astype(float)
     axis /= np.linalg.norm(axis)
     a = axis[0]

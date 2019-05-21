@@ -46,6 +46,27 @@ def test_angle_axis_to_rot3d_z():
     assert np.allclose(rot90, Rz90)
 
 
+def test_angle_axis_to_rot3d_x_name():
+    """Test angle_axis_to_rot3d for 90deg rotations along x, by name."""
+    theta = np.pi/2
+    rot90 = geometry.angle_axis_to_rot3d('x', theta)
+    assert np.allclose(rot90, Rx90)
+
+
+def test_angle_axis_to_rot3d_y_name():
+    """Test angle_axis_to_rot3d for 90deg rotations along y, by name."""
+    theta = np.pi/2
+    rot90 = geometry.angle_axis_to_rot3d('y', theta)
+    assert np.allclose(rot90, Ry90)
+
+
+def test_angle_axis_to_rot3d_z_name():
+    """Test angle_axis_to_rot3d for 90deg rotations along z, by name."""
+    theta = np.pi/2
+    rot90 = geometry.angle_axis_to_rot3d('Z', theta)  # Caps should work too
+    assert np.allclose(rot90, Rz90)
+
+
 def test_angle_axis_to_rot3d_invariant():
     """Test the invariance of angle_axis_to_rot3d.
 
