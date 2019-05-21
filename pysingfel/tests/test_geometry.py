@@ -314,6 +314,19 @@ def test_points_on_2sphere_moment_2():
     assert np.all(np.abs(moments_xy) < thresh_xy)
 
 
+def test_points_on_2sphere_angle():
+    """Test points_on_2sphere for angle between elements."""
+    n_points = 1000
+    thresh = 0.11  # Lower limit for original implementation (1000)
+    points = geometry.points_on_2sphere(n_points)
+    dotprod = np.dot(points, points.T)
+    assert dotprod.shape == (1000, 1000)
+    assert np.allclose(dotprod.diagonal(), 1.)
+    np.fill_diagonal(dotprod, 0.)
+    min_angle = np.arccos(np.abs(dotprod).max())
+    assert min_angle < thresh  # Abs is for double-cover
+
+
 # Replacement test
 def test_euler_to_rot3d_equiv_angle_axis_to_rot3d_2():
     """Test equivalence betwen euler_ and angle_axis_ for axis y.
