@@ -7,6 +7,7 @@ from scipy.stats import special_ortho_group
 ######################################################################
 # The following functions are utilized to rotate the pixels in reciprocal space
 ######################################################################
+
 # @jit(nopython=True, parallel=True)
 def rotate_pixels_in_reciprocal_space(rot_mat, pixels_position):
     """
@@ -27,6 +28,7 @@ def rotate_pixels_in_reciprocal_space(rot_mat, pixels_position):
 ######################################################################
 # Take slice from the volume
 ######################################################################
+
 # @jit(nopython=True, parallel=True)
 def get_weight_and_index(pixel_position, voxel_length, voxel_num_1d):
     """
@@ -113,6 +115,7 @@ def get_weight_and_index(pixel_position, voxel_length, voxel_num_1d):
 ######################################################################
 # Take slice from the volume
 ######################################################################
+
 # @jit(nopython=True, parallel=True)
 def get_weight_in_reciprocal_space(pixel_position, voxel_length, voxel_num_1d):
     """
@@ -258,8 +261,6 @@ def take_n_slice(pattern_shape, pixel_momentum,
     print("Finishing constructing %d patterns in %f seconds" % (slice_num, toc - tic))
 
     return slices_holder
-
-
 
 
 def take_n_random_slices(detector, volume, voxel_length, orientations):
@@ -688,7 +689,7 @@ def rotmat_to_quaternion(rotmat):
     r22 = rotmat[2,2]
 
     tr = r00 + r11 + r22
-    quat = np.zeros((4,))
+    quat = np.zeros(4)
     if tr > 0:
         S = np.sqrt(tr+1.0) * 2.   # S=4*qw
         quat[0] = 0.25 * S
@@ -764,7 +765,6 @@ def points_on_1sphere(num_pts, rotation_axis):
     :param rotation_axis: Rotation axis.
     :return: Quaternion list of shape [number of quaternion, 4]
     """
-
     points = np.zeros((num_pts, 4))
     inc_ang = 360. / num_pts
     my_ang = 0
@@ -786,7 +786,6 @@ def points_on_2sphere(num_pts):
     :param num_pts: Number of points
     :return: Quaternion list of shape [number of quaternion, 4]
     """
-
     points = np.zeros((2 * num_pts, 4))
     dim_num = 4
     # Surface area for unit sphere when dim_num is even
@@ -828,7 +827,6 @@ def get_random_rotation(rotation_axis):
                           Otherwise the rotation is totally random.
     :return: A rotation matrix
     """
-
     if rotation_axis == 'y':
         u = np.random.rand() * 2 * np.pi  # random angle between [0, 2pi]
         return euler_to_rot3d(0, u, 0)
