@@ -287,10 +287,8 @@ class TestPointsOn2Sphere(object):
         cls.n_points = 1000
         cls.points = geometry.points_on_2sphere(cls.n_points)
 
-    def test_points_on_2sphere_moment_1(self):
-        """Test points_on_2sphere for moments of order 1."""
-        thresh = 2.3e-3  # Lower limit for original implementation (1000)
-        points = self.points.copy()
+    def _test_points_on_2sphere_moment_1(self, points, thresh):
+        """Utility to test points_on_2sphere for moments of order 1."""
         # Normalize real part to be positive because of double-cover
         for i in range(self.n_points):
             points[i] *= np.sign(points[i,0])
@@ -299,11 +297,14 @@ class TestPointsOn2Sphere(object):
         assert abs(Y) < thresh
         assert abs(Z) < thresh
 
-    def test_points_on_2sphere_moment_2(self):
-        """Test points_on_2sphere for moments of order 2."""
-        thresh_xx = 0.34  # Lower limit for original implementation (1000)
-        thresh_xy = 1.16  # Lower limit for original implementation (1000)
+    def test_points_on_2sphere_moment_1(self):
+        """Test points_on_2sphere for moments of order 1."""
+        thresh = 2.3e-3  # Lower limit for original implementation (1000)
         points = self.points.copy()
+        self._test_points_on_2sphere_moment_1(points, thresh)
+
+    def _test_points_on_2sphere_moment_2(self, points, thresh_xx, thresh_xy):
+        """Utilisty to test points_on_2sphere for moments of order 2."""
         # No need to normalize for double-cover because for even order
         moments_xx = []
         moments_xy = []
@@ -317,16 +318,27 @@ class TestPointsOn2Sphere(object):
         assert np.all(np.abs(moments_xx-moments_xx.mean()) < thresh_xx)
         assert np.all(np.abs(moments_xy) < thresh_xy)
 
-    def test_points_on_2sphere_angle(self):
-        """Test points_on_2sphere for angle between elements."""
-        thresh = 0.11  # Lower limit for original implementation (1000)
+    def test_points_on_2sphere_moment_2(self):
+        """Test points_on_2sphere for moments of order 2."""
+        thresh_xx = 0.34  # Lower limit for original implementation (1000)
+        thresh_xy = 1.16  # Lower limit for original implementation (1000)
         points = self.points.copy()
+        self._test_points_on_2sphere_moment_2(points, thresh_xx, thresh_xy)
+
+    def _test_points_on_2sphere_angle(self, points, thresh):
+        """Utility to test points_on_2sphere for angle between elements."""
         dotprod = np.dot(points, points.T)
         assert dotprod.shape == (1000, 1000)
         assert np.allclose(dotprod.diagonal(), 1.)
         np.fill_diagonal(dotprod, 0.)
         min_angle = np.arccos(np.abs(dotprod).max())
         assert min_angle < thresh  # Abs is for double-cover
+
+    def test_points_on_2sphere_angle(self):
+        """Test points_on_2sphere for angle between elements."""
+        thresh = 0.11  # Lower limit for original implementation (1000)
+        points = self.points.copy()
+        self._test_points_on_2sphere_angle(points, thresh)
 
 
 # Replacement test
