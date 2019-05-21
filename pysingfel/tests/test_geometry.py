@@ -63,19 +63,19 @@ def test_angle_axis_to_rot3d_invariant():
         assert np.allclose(rotated, orientation)
 
 
-def test_euler_to_rot3d_yaw():
+def test_euler_to_rot3d_1():
     """Test euler_to_quaternion for 90deg rotations along 1st axis."""
     rot90 = geometry.euler_to_rot3d(np.pi/2, 0., 0.)
     assert np.allclose(rot90, Rz90)
 
 
-def test_euler_to_rot3d_pitch():
+def test_euler_to_rot3d_2():
     """Test euler_to_quaternion for 90deg rotations along 2nd axis."""
     rot90 = geometry.euler_to_rot3d(0., np.pi/2, 0.)
     assert np.allclose(rot90, Ry90)
 
 
-def test_euler_to_rot3d_roll():
+def test_euler_to_rot3d_3():
     """Test euler_to_quaternion for 90deg rotations along 3rd axis."""
     rot90 = geometry.euler_to_rot3d(0., 0., np.pi/2)
     assert np.allclose(rot90, Rz90)
