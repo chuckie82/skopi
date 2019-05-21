@@ -1,5 +1,6 @@
 import itertools
 import numpy as np
+import pytest
 
 from pysingfel import geometry
 
@@ -302,6 +303,8 @@ class TestPointsOn2Sphere(object):
         thresh = 2.3e-3  # Lower limit for original implementation (1000)
         points = self.points.copy()
         self._test_points_on_2sphere_moment_1(points, thresh)
+        with pytest.raises(AssertionError):
+            self._test_points_on_2sphere_moment_1(points, thresh*.95)
 
     def _test_points_on_2sphere_moment_2(self, points, thresh_xx, thresh_xy):
         """Utilisty to test points_on_2sphere for moments of order 2."""
@@ -324,6 +327,9 @@ class TestPointsOn2Sphere(object):
         thresh_xy = 1.16  # Lower limit for original implementation (1000)
         points = self.points.copy()
         self._test_points_on_2sphere_moment_2(points, thresh_xx, thresh_xy)
+        with pytest.raises(AssertionError):
+            self._test_points_on_2sphere_moment_2(
+                points, thresh_xx*.95, thresh_xy*.95)
 
     def _test_points_on_2sphere_angle(self, points, thresh):
         """Utility to test points_on_2sphere for angle between elements."""
@@ -336,9 +342,11 @@ class TestPointsOn2Sphere(object):
 
     def test_points_on_2sphere_angle(self):
         """Test points_on_2sphere for angle between elements."""
-        thresh = 0.11  # Lower limit for original implementation (1000)
+        thresh = 0.105  # Lower limit for original implementation (1000)
         points = self.points.copy()
         self._test_points_on_2sphere_angle(points, thresh)
+        with pytest.raises(AssertionError):
+            self._test_points_on_2sphere_angle(points, thresh*.95)
 
 
 # Replacement test
