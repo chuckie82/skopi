@@ -263,6 +263,22 @@ def test_quat2rot2quat():
         # quaternions doulbe-cover 3D rotations
 
 
+def test_points_on_1sphere_4y():
+    """Test points_on_1sphere for 4 points on axis 'y'."""
+    points = geometry.points_on_1sphere(4, 'y')
+    assert np.allclose(points[0], np.array([1., 0., 0., 0.]))
+    assert np.allclose(points[1], quaty90)
+    assert np.allclose(points[2], np.array([0., 0., 1., 0.]))
+
+
+def test_points_on_1sphere_8x():
+    """Test points_on_1sphere for 8 points on axis 'x'."""
+    points = geometry.points_on_1sphere(8, 'z')  # Current mismatch
+    assert np.allclose(points[0], np.array([1., 0., 0., 0.]))
+    assert np.allclose(points[2], quatx90)
+    assert np.allclose(points[4], np.array([0., 1., 0., 0.]))
+
+
 # Replacement test
 def test_euler_to_rot3d_equiv_angle_axis_to_rot3d_2():
     """Test equivalence betwen euler_ and angle_axis_ for axis y.
