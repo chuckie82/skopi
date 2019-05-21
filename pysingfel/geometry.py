@@ -841,7 +841,7 @@ def get_random_quat(num_pts):
     quat[0] = np.sqrt(1 - u1) * np.sin(2 * np.pi * u2)
     quat[1] = np.sqrt(1 - u1) * np.cos(2 * np.pi * u2)
     quat[2] = np.sqrt(u1) * np.sin(2 * np.pi * u3)
-    quat[3] = np.sqrt(u1) * np.sin(2 * np.pi * u3)
+    quat[3] = np.sqrt(u1) * np.cos(2 * np.pi * u3)
 
     return np.transpose(quat)
 
