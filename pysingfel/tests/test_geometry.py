@@ -11,14 +11,19 @@ Ry90 = np.array([
     [0., 0., 1.],
     [0., 1., 0.],
     [-1., 0., 0.]])
+Rz90 = np.array([
+    [0., -1., 0.],
+    [1., 0., 0.],
+    [0., 0., 1.]])
 
 
 quatx90 = np.array([1., 1., 0., 0.]) / np.sqrt(2)
 quaty90 = np.array([1., 0., 1., 0.]) / np.sqrt(2)
+quatz90 = np.array([1., 0., 0., 1.]) / np.sqrt(2)
 
 
 def test_angle_axis_to_rot3d_x():
-    """Test angle_axis_to_rot3d for 90° rotations along x."""
+    """Test angle_axis_to_rot3d for 90deg rotations along x."""
     axis = np.array([1., 0., 0.])
     theta = np.pi/2
     rot90 = geometry.angle_axis_to_rot3d(axis, theta)
@@ -26,11 +31,19 @@ def test_angle_axis_to_rot3d_x():
 
 
 def test_angle_axis_to_rot3d_y():
-    """Test angle_axis_to_rot3d for 90° rotations along y."""
+    """Test angle_axis_to_rot3d for 90deg rotations along y."""
     axis = np.array([0., 1., 0.])
     theta = np.pi/2
     rot90 = geometry.angle_axis_to_rot3d(axis, theta)
     assert np.allclose(rot90, Ry90)
+
+
+def test_angle_axis_to_rot3d_z():
+    """Test angle_axis_to_rot3d for 90deg rotations along z."""
+    axis = np.array([0., 0., 1.])
+    theta = np.pi/2
+    rot90 = geometry.angle_axis_to_rot3d(axis, theta)
+    assert np.allclose(rot90, Rz90)
 
 
 def test_angle_axis_to_rot3d_invariant():
@@ -51,15 +64,21 @@ def test_angle_axis_to_rot3d_invariant():
 
 
 def test_quaternion2rot3d_x():
-    """Test quaternion2rot3d for 90° rotations along x."""
+    """Test quaternion2rot3d for 90deg rotations along x."""
     rot90 = geometry.quaternion2rot3d(quatx90)
     assert np.allclose(rot90, Rx90)
 
 
 def test_quaternion2rot3d_y():
-    """Test quaternion2rot3d for 90° rotations along y."""
+    """Test quaternion2rot3d for 90deg rotations along y."""
     rot90 = geometry.quaternion2rot3d(quaty90)
     assert np.allclose(rot90, Ry90)
+
+
+def test_quaternion2rot3d_z():
+    """Test quaternion2rot3d for 90deg rotations along z."""
+    rot90 = geometry.quaternion2rot3d(quatz90)
+    assert np.allclose(rot90, Rz90)
 
 
 def test_quaternion2rot3d_invariant():
@@ -78,15 +97,21 @@ def test_quaternion2rot3d_invariant():
 
 
 def test_rotmat_to_quaternion_x():
-    """Test rotmat_to_quaternion for 90° rotations along x."""
+    """Test rotmat_to_quaternion for 90deg rotations along x."""
     quat = geometry.rotmat_to_quaternion(Rx90)
     assert np.allclose(quat, quatx90)
 
 
 def test_rotmat_to_quaternion_y():
-    """Test rotmat_to_quaternion for 90° rotations along y."""
+    """Test rotmat_to_quaternion for 90deg rotations along y."""
     quat = geometry.rotmat_to_quaternion(Ry90)
     assert np.allclose(quat, quaty90)
+
+
+def test_rotmat_to_quaternion_z():
+    """Test rotmat_to_quaternion for 90deg rotations along z."""
+    quat = geometry.rotmat_to_quaternion(Rz90)
+    assert np.allclose(quat, quatz90)
 
 
 def test_quat2rot2quat():
