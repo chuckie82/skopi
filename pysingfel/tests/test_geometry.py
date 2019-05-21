@@ -273,7 +273,7 @@ def test_points_on_1sphere_4y():
 
 def test_points_on_1sphere_8x():
     """Test points_on_1sphere for 8 points on axis 'x'."""
-    points = geometry.points_on_1sphere(8, 'z')  # Current mismatch
+    points = geometry.points_on_1sphere(8, 'x')
     assert np.allclose(points[0], np.array([1., 0., 0., 0.]))
     assert np.allclose(points[2], quatx90)
     assert np.allclose(points[4], np.array([0., 1., 0., 0.]))

@@ -805,16 +805,11 @@ def points_on_1sphere(num_pts, rotation_axis):
     :return: Quaternion list of shape [number of quaternion, 4]
     """
     points = np.zeros((num_pts, 4))
-    inc_ang = 360. / num_pts
+    inc_ang = 2 * np.pi / num_pts
     my_ang = 0
-    if rotation_axis == 'y':
-        for i in range(num_pts):
-            points[i, :] = angle_axis_to_quaternion('y', my_ang * np.pi / 180)
-            my_ang += inc_ang
-    elif rotation_axis == 'z':
-        for i in range(num_pts):
-            points[i, :] = angle_axis_to_quaternion('x', my_ang * np.pi / 180)
-            my_ang += inc_ang
+    for i in range(num_pts):
+        points[i, :] = angle_axis_to_quaternion(rotation_axis, my_ang)
+        my_ang += inc_ang
     return points
 
 
