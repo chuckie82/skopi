@@ -283,10 +283,12 @@ def test_points_on_1sphere_8x():
 def test_points_on_2sphere_moment_1():
     """Test points_on_2sphere for moments of order 1."""
     n_points = 1000
-    thresh = 2.5e-3  # Lower limit for original implementation (1000)
+    thresh = 2.3e-3  # Lower limit for original implementation (1000)
     points = geometry.points_on_2sphere(n_points)
+    # Normalize real part to be positive because of double-cover
+    for i in range(n_points):
+        points[i] *= np.sign(points[i,0])
     W, X, Y, Z = points.mean(axis=0)
-    assert abs(W) < thresh
     assert abs(X) < thresh
     assert abs(Y) < thresh
     assert abs(Z) < thresh
@@ -298,6 +300,7 @@ def test_points_on_2sphere_moment_2():
     thresh_xx = 0.34  # Lower limit for original implementation (1000)
     thresh_xy = 1.16  # Lower limit for original implementation (1000)
     points = geometry.points_on_2sphere(n_points)
+    # No need to normalize for double-cover because for even order
     moments_xx = []
     moments_xy = []
     for (i, j) in itertools.product(*(range(4),)*2):
