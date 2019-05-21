@@ -853,17 +853,19 @@ def points_on_2sphere(num_pts):
     return points[0:num_pts, :]
 
 
-def get_random_rotation(rotation_axis):
+def get_random_rotation(rotation_axis=None):
     """
     Generate a random rotation matrix.
 
-    :param rotation_axis: The rotation axis. If it's 'y', then the rotation is around y axis.
-                          Otherwise the rotation is totally random.
+    :param rotation_axis: The rotation axis.
+        If it's 'x', 'y', or 'z', then the rotation is around that axis.
+        Otherwise the rotation is totally random.
     :return: A rotation matrix
     """
-    if rotation_axis == 'y':
+    rotation_axis = rotation_axis.lower()
+    if rotation_axis in ('x', 'y', 'z'):
         u = np.random.rand() * 2 * np.pi  # random angle between [0, 2pi]
-        return angle_axis_to_rot3d('y', u)
+        return angle_axis_to_rot3d(rotation_axis, u)
     else:
         return special_ortho_group.rvs(3)
 
