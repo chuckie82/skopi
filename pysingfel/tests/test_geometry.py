@@ -84,6 +84,51 @@ def test_angle_axis_to_rot3d_invariant():
         assert np.allclose(rotated, orientation)
 
 
+def test_angle_axis_to_quaternion_x():
+    """Test angle_axis_to_quaternion for 90deg rotations along x."""
+    axis = np.array([1., 0., 0.])
+    theta = np.pi/2
+    quat = geometry.angle_axis_to_quaternion(axis, theta)
+    assert np.allclose(quat, quatx90)
+
+
+def test_angle_axis_to_quaternion_y():
+    """Test angle_axis_to_quaternion for 90deg rotations along y."""
+    axis = np.array([0., 1., 0.])
+    theta = np.pi/2
+    quat = geometry.angle_axis_to_quaternion(axis, theta)
+    assert np.allclose(quat, quaty90)
+
+
+def test_angle_axis_to_quaternion_z():
+    """Test angle_axis_to_quaternion for 90deg rotations along z."""
+    axis = np.array([0., 0., 1.])
+    theta = np.pi/2
+    quat = geometry.angle_axis_to_quaternion(axis, theta)
+    assert np.allclose(quat, quatz90)
+
+
+def test_angle_axis_to_quaternion_x_name():
+    """Test angle_axis_to_quaternion for 90deg rotations along x, by name."""
+    theta = np.pi/2
+    quat = geometry.angle_axis_to_quaternion('x', theta)
+    assert np.allclose(quat, quatx90)
+
+
+def test_angle_axis_to_quaternion_y_name():
+    """Test angle_axis_to_quaternion for 90deg rotations along y, by name."""
+    theta = np.pi/2
+    quat = geometry.angle_axis_to_quaternion('y', theta)
+    assert np.allclose(quat, quaty90)
+
+
+def test_angle_axis_to_quaternion_z_name():
+    """Test angle_axis_to_quaternion for 90deg rotations along z, by name."""
+    theta = np.pi/2
+    quat = geometry.angle_axis_to_quaternion('Z', theta)  # Caps should work too
+    assert np.allclose(quat, quatz90)
+
+
 def test_euler_to_rot3d_1():
     """Test euler_to_quaternion for 90deg rotations along 1st axis."""
     rot90 = geometry.euler_to_rot3d(np.pi/2, 0., 0.)
@@ -118,6 +163,40 @@ def test_euler_to_quaternion_roll():
     """Test euler_to_quaternion for 90deg rotations along roll axis."""
     quat = geometry.euler_to_quaternion(0., 0., np.pi/2)
     assert np.allclose(quat, quatx90)
+
+
+def test_quaternion_to_angle_axis_x():
+    """Test quaternion_to_angle_axis for 90deg rotations along x."""
+    theta, axis = geometry.quaternion_to_angle_axis(quatx90)
+    assert np.isclose(theta, np.pi/2)
+    assert np.allclose(axis, np.array([1., 0., 0.]))
+
+
+def test_quaternion_to_angle_axis_y():
+    """Test quaternion_to_angle_axis for 90deg rotations along y."""
+    theta, axis = geometry.quaternion_to_angle_axis(quaty90)
+    assert np.isclose(theta, np.pi/2)
+    assert np.allclose(axis, np.array([0., 1., 0.]))
+
+
+def test_quaternion_to_angle_axis_z():
+    """Test quaternion_to_angle_axis for 90deg rotations along z."""
+    theta, axis = geometry.quaternion_to_angle_axis(quatz90)
+    assert np.isclose(theta, np.pi/2)
+    assert np.allclose(axis, np.array([0., 0., 1.]))
+
+
+def test_quaternion_to_angle_axis_to_quaternion():
+    """Test quaternion_to_angle_axis and reverse for consistency."""
+    n = 1000
+    orientations = geometry.get_random_quat(n)
+    for i in range(n):
+        orientation = orientations[i]
+        theta, axis = geometry.quaternion_to_angle_axis(orientation)
+        quat = geometry.angle_axis_to_quaternion(axis, theta)
+        assert np.allclose(orientation, quat) \
+            or np.allclose(orientation, -quat)
+        # quaternions doulbe-cover 3D rotations
 
 
 def test_quaternion2rot3d_x():

@@ -562,6 +562,36 @@ def angle_axis_to_rot3d(axis, theta):
     return rot3d
 
 
+def angle_axis_to_quaternion(axis, theta):
+    """
+    Convert rotation with angle around an axis to a quaternion.
+
+    :param axis: A numpy array for the rotation axis.
+        Axis names 'x', 'y', and 'z' are also accepted.
+    :param theta: Rotation angle.
+    :return:
+    """
+    if isinstance(axis, basestring):
+        axis = axis.lower()
+        if axis == 'x':
+            axis = np.array([1., 0., 0.])
+        elif axis == 'y':
+            axis = np.array([0., 1., 0.])
+        elif axis == 'z':
+            axis = np.array([0., 0., 1.])
+        else:
+            raise ValueError("Axis should be 'x', 'y', 'z' or a 3D vector.")
+    elif len(axis) is not 3:
+        raise ValueError("Axis should be 'x', 'y', 'z' or a 3D vector.")
+    axis /= np.linalg.norm(axis)
+    quat = np.zeros(4)
+    angle = theta/2
+    quat[0] = np.cos(angle)
+    quat[1:] = np.sin(angle) * axis
+
+    return quat
+
+
 def euler_to_rot3d(psi, theta, phi):
     """
     Convert rotation with euler angle (psi, theta, phi) to a rotation
@@ -666,7 +696,6 @@ def quaternion_to_angle_axis(quaternion):
     :param quaternion:
     :return:  angle, axis
     """
-
     ha = np.arccos(quaternion[0])
     theta = 2 * ha
     if theta < np.finfo(float).eps:
