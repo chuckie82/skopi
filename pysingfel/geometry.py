@@ -839,7 +839,7 @@ def get_random_rotation(rotation_axis):
     """
     if rotation_axis == 'y':
         u = np.random.rand() * 2 * np.pi  # random angle between [0, 2pi]
-        return euler_to_rot3d(0, u, 0)
+        return angle_axis_to_rot3d('y', u)
     else:
         return special_ortho_group.rvs(3)
 
