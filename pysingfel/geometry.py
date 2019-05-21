@@ -553,22 +553,25 @@ def angle_axis_to_rot3d(axis, theta):
 
 def euler_to_rot3d(psi, theta, phi):
     """
-    Convert rotation with euler angle (psi, theta, phi) to a rotation matrix in 3D.
+    Convert rotation with euler angle (psi, theta, phi) to a rotation
+    matrix in 3D, following a Body 3-2-3 sequence.
 
     :param psi:
     :param theta:
     :param phi:
     :return:
     """
-
-    rphi = np.array([[np.cos(phi), np.sin(phi), 0],
-                     [-np.sin(phi), np.cos(phi), 0],
+    DeprecationWarning("Euler angles conventions are used inconsistently "
+        "and might be removed in the future. "
+        "Please consider another method.")
+    rphi = np.array([[np.cos(phi), -np.sin(phi), 0],
+                     [np.sin(phi), np.cos(phi), 0],
                      [0, 0, 1]])
-    rtheta = np.array([[np.cos(theta), 0, -np.sin(theta)],
+    rtheta = np.array([[np.cos(theta), 0, np.sin(theta)],
                        [0, 1, 0],
-                       [np.sin(theta), 0, np.cos(theta)]])
-    rpsi = np.array([[np.cos(psi), np.sin(psi), 0],
-                     [-np.sin(psi), np.cos(psi), 0],
+                       [-np.sin(theta), 0, np.cos(theta)]])
+    rpsi = np.array([[np.cos(psi), -np.sin(psi), 0],
+                     [np.sin(psi), np.cos(psi), 0],
                      [0, 0, 1]])
     return np.dot(rpsi, np.dot(rtheta, rphi))
 
@@ -604,9 +607,12 @@ def euler_to_rot3d(psi, theta, phi):
 #         quaternion *= -1
 #     return quaternion
 
+
 def euler_to_quaternion(psi, theta, phi):
     """
-    Convert rotation with euler angle (psi, theta, phi) to quaternion description.
+    Convert rotation with euler angle (psi, theta, phi) to quaternion
+    description, following a Body 3-2-1 sequence
+    (a.k.a. pitch - roll - yaw convention).
 
     To understand this function, please see the wiki
     https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
@@ -623,6 +629,9 @@ def euler_to_quaternion(psi, theta, phi):
     :param phi:
     :return:
     """
+    DeprecationWarning("Euler angles conventions are used inconsistently "
+    "and might be removed in the future. "
+    "Please consider another method.")
     # Abbreviations for the various angular functions
     cy = np.cos(psi * 0.5)
     sy = np.sin(psi * 0.5)

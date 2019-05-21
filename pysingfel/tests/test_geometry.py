@@ -63,6 +63,42 @@ def test_angle_axis_to_rot3d_invariant():
         assert np.allclose(rotated, orientation)
 
 
+def test_euler_to_rot3d_yaw():
+    """Test euler_to_quaternion for 90deg rotations along 1st axis."""
+    rot90 = geometry.euler_to_rot3d(np.pi/2, 0., 0.)
+    assert np.allclose(rot90, Rz90)
+
+
+def test_euler_to_rot3d_pitch():
+    """Test euler_to_quaternion for 90deg rotations along 2nd axis."""
+    rot90 = geometry.euler_to_rot3d(0., np.pi/2, 0.)
+    assert np.allclose(rot90, Ry90)
+
+
+def test_euler_to_rot3d_roll():
+    """Test euler_to_quaternion for 90deg rotations along 3rd axis."""
+    rot90 = geometry.euler_to_rot3d(0., 0., np.pi/2)
+    assert np.allclose(rot90, Rz90)
+
+
+def test_euler_to_quaternion_yaw():
+    """Test euler_to_quaternion for 90deg rotations along yaw axis."""
+    quat = geometry.euler_to_quaternion(np.pi/2, 0., 0.)
+    assert np.allclose(quat, quatz90)
+
+
+def test_euler_to_quaternion_pitch():
+    """Test euler_to_quaternion for 90deg rotations along pitch axis."""
+    quat = geometry.euler_to_quaternion(0., np.pi/2, 0.)
+    assert np.allclose(quat, quaty90)
+
+
+def test_euler_to_quaternion_roll():
+    """Test euler_to_quaternion for 90deg rotations along roll axis."""
+    quat = geometry.euler_to_quaternion(0., 0., np.pi/2)
+    assert np.allclose(quat, quatx90)
+
+
 def test_quaternion2rot3d_x():
     """Test quaternion2rot3d for 90deg rotations along x."""
     rot90 = geometry.quaternion2rot3d(quatx90)
