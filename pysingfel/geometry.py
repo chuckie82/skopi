@@ -809,11 +809,11 @@ def points_on_1sphere(num_pts, rotation_axis):
     my_ang = 0
     if rotation_axis == 'y':
         for i in range(num_pts):
-            points[i, :] = euler_to_quaternion(0, my_ang * np.pi / 180, 0)
+            points[i, :] = angle_axis_to_quaternion('y', my_ang * np.pi / 180)
             my_ang += inc_ang
     elif rotation_axis == 'z':
         for i in range(num_pts):
-            points[i, :] = euler_to_quaternion(0, 0, my_ang * np.pi / 180)
+            points[i, :] = angle_axis_to_quaternion('x', my_ang * np.pi / 180)
             my_ang += inc_ang
     return points
 
