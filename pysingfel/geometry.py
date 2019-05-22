@@ -273,50 +273,6 @@ def take_n_slice(pattern_shape, pixel_momentum,
     return slices_holder
 
 
-def take_n_random_slices(detector, volume, voxel_length, orientations):
-#def take_n_random_slices(detector, volume, voxel_length, number):
-    """
-    Take n slices from n random orientations.
-
-    :param detector: The detector object
-    :param volume: The volume to slice from
-    :param voxel_length: The voxel length of this volume
-    :param number: The number of patterns to slice from.
-    :return: [number, panel number, panel pixel number x, panel pixel number y]
-    """
-    number = length(orientations)
-    # Preprocess
-    pattern_shape_ = detector.pixel_rms.shape
-    pixel_position_ = detector.pixel_position_reciprocal.copy()
-
-    # Create variable to hold the slices
-    slices = np.zeros((number, pattern_shape_[0], pattern_shape_[1], pattern_shape_[2]))
-
-    tic = time.time()
-    for l in range(number):
-        # construct the rotation matrix
-        rotmat = quat2rot3d(orientations[l])
-        # rotmat = get_random_rotation(rotation_axis='random')
-        # rotate the pixels in the reciprocal space.
-        # Notice that at this time, the pixel position is in 3D
-        pixel_position_new = rotate_pixels_in_reciprocal_space(rotmat, pixel_position_)
-        # calculate the index and weight in 3D
-        index, weight_tmp = get_weight_in_reciprocal_space(pixel_position=pixel_position_new,
-                                                           voxel_length=voxel_length,
-                                                           voxel_num_1d=volume.shape[0])
-        # get one slice
-        slices[l, :, :, :] = take_one_slice(local_index=index,
-                                            local_weight=weight_tmp,
-                                            volume=volume,
-                                            pixel_num=detector.pixel_num_total,
-                                            pattern_shape=detector.pedestal.shape)
-
-    toc = time.time()
-    print("Finishing constructing %d patterns in %f seconds" % (number, toc - tic))
-
-    return slices
-
-
 ######################################################################
 # The following functions are utilized to get corrections
 ######################################################################
