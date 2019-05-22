@@ -4,6 +4,16 @@ from numba import jit
 from scipy.stats import special_ortho_group
 
 
+def deprecated(reason):
+    """Decorator to deprecate a function."""
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            print(reason)
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
 ######################################################################
 # The following functions are utilized to rotate the pixels in reciprocal space
 ######################################################################
@@ -592,6 +602,9 @@ def angle_axis_to_quaternion(axis, theta):
     return quat
 
 
+@deprecated("Euler angles conventions are used inconsistently "
+    "and might be removed in the future. "
+    "Please consider another method.")
 def euler_to_rot3d(psi, theta, phi):
     """
     Convert rotation with euler angle (psi, theta, phi) to a rotation
@@ -602,9 +615,6 @@ def euler_to_rot3d(psi, theta, phi):
     :param phi:
     :return:
     """
-    DeprecationWarning("Euler angles conventions are used inconsistently "
-        "and might be removed in the future. "
-        "Please consider another method.")
     rphi = np.array([[np.cos(phi), -np.sin(phi), 0],
                      [np.sin(phi), np.cos(phi), 0],
                      [0, 0, 1]])
@@ -649,6 +659,10 @@ def euler_to_rot3d(psi, theta, phi):
 #     return quaternion
 
 
+@deprecated("Euler angles conventions are used inconsistently "
+    "and might be removed in the future. "
+    "Please consider another method.")
+@jit
 def euler_to_quaternion(psi, theta, phi):
     """
     Convert rotation with euler angle (psi, theta, phi) to quaternion
@@ -670,9 +684,6 @@ def euler_to_quaternion(psi, theta, phi):
     :param phi:
     :return:
     """
-    DeprecationWarning("Euler angles conventions are used inconsistently "
-    "and might be removed in the future. "
-    "Please consider another method.")
     # Abbreviations for the various angular functions
     cy = np.cos(psi * 0.5)
     sy = np.sin(psi * 0.5)
@@ -812,10 +823,10 @@ def points_on_1sphere(num_pts, rotation_axis):
     return points
 
 
+@deprecated("The function points_on_2sphere actually generates "
+    "points on a 3-sphere, in 4D. "
+    "Please call points_on_3sphere instead.")
 def points_on_2sphere(num_pts):
-    DeprecationWarning("The function points_on_2sphere actually generates "
-        "points on a 3-sphere, in 4D. "
-        "Please call points_on_3sphere instead.")
     return points_on_3sphere(num_pts)
 
 
