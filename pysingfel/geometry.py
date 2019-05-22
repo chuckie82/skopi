@@ -797,8 +797,7 @@ def quaternion2rot3d(quat):
 # Functions to generate rotations for different cases: uniform(1d), uniform(3d), random.
 def points_on_1sphere(num_pts, rotation_axis):
     """
-    Given number of points and axis of rotation, distribute
-    evenly on the surface of a 1-sphere (circle).
+    Distribute points evenly on a 1-sphere (circle) in 4D.
 
     :param num_pts: Number of points
     :param rotation_axis: Rotation axis.
@@ -814,8 +813,15 @@ def points_on_1sphere(num_pts, rotation_axis):
 
 
 def points_on_2sphere(num_pts):
+    DeprecationWarning("The function points_on_2sphere actually generates "
+        "points on a 3-sphere, in 4D. "
+        "Please call points_on_3sphere instead.")
+    return points_on_3sphere(num_pts)
+
+
+def points_on_3sphere(num_pts):
     """
-    Given number of points, distribute evenly on hyper surface of a 4-sphere.
+    Distribute points evenly on a 3-sphere in 4D.
 
     :param num_pts: Number of points
     :return: Quaternion list of shape [number of quaternion, 4]
@@ -891,9 +897,9 @@ def get_random_quat(num_pts):
 
 def get_uniform_quat(num_pts):
     """
-    Get num_pts of unit quaternions evenly distributed on the 4 sphere.
+    Get num_pts of unit quaternions evenly distributed on the 3-sphere.
 
     :param num_pts: The number of quaternions to return
     :return: Quaternion list of shape [number of quaternion, 4]
     """
-    return points_on_2sphere(num_pts)
+    return points_on_3sphere(num_pts)
