@@ -7,7 +7,7 @@ from pysingfel.util import deprecated
 from .convert import *
 from .generate import *
 from .mapping import *
-from .slice import *
+from .slice_ import *
 
 
 ######################################################################

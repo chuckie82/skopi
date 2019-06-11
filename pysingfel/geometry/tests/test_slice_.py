@@ -5,7 +5,7 @@ import h5py as h5
 import time
 
 import pysingfel as ps
-import pysingfel.gpu as pg
+from pysingfel.geometry import slice_
 
 
 def test_take_n_slice():
@@ -29,7 +29,7 @@ def test_take_n_slice():
         slices_in = f['imUniform'][:]
         orientations_in = f['imOrientations'][:]
 
-    slices_rec = ps.geometry.take_n_slice(
+    slices_rec = slice_.take_n_slice(
         pattern_shape = det.pedestal.shape,
         pixel_momentum = det.pixel_position_reciprocal,
         volume = volume_in,
