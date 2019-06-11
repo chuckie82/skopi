@@ -2,6 +2,16 @@ import h5py
 import numpy as np
 
 
+def deprecated(reason):
+    """Decorator to deprecate a function."""
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            print(reason)
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
 def prep_h5(output_name):
     """
     Create output file, prepare top level groups, write metadata.
@@ -105,7 +115,7 @@ def read_geomfile(fname):
     return geom
 
 
-# Read pdb file and return atom position and type            
+# Read pdb file and return atom position and type
 def symmpdb(fname):
     """
     Parse the pdb file. This function can handle the REMARK 350 correctly.
