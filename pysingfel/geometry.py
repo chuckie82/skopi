@@ -4,9 +4,20 @@ from numba import jit
 from scipy.stats import special_ortho_group
 
 
+def deprecated(reason):
+    """Decorator to deprecate a function."""
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            print(reason)
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
 ######################################################################
 # The following functions are utilized to rotate the pixels in reciprocal space
 ######################################################################
+
 # @jit(nopython=True, parallel=True)
 def rotate_pixels_in_reciprocal_space(rot_mat, pixels_position):
     """
@@ -27,6 +38,7 @@ def rotate_pixels_in_reciprocal_space(rot_mat, pixels_position):
 ######################################################################
 # Take slice from the volume
 ######################################################################
+
 # @jit(nopython=True, parallel=True)
 def get_weight_and_index(pixel_position, voxel_length, voxel_num_1d):
     """
@@ -113,6 +125,7 @@ def get_weight_and_index(pixel_position, voxel_length, voxel_num_1d):
 ######################################################################
 # Take slice from the volume
 ######################################################################
+
 # @jit(nopython=True, parallel=True)
 def get_weight_in_reciprocal_space(pixel_position, voxel_length, voxel_num_1d):
     """
@@ -258,52 +271,6 @@ def take_n_slice(pattern_shape, pixel_momentum,
     print("Finishing constructing %d patterns in %f seconds" % (slice_num, toc - tic))
 
     return slices_holder
-
-
-
-
-def take_n_random_slices(detector, volume, voxel_length, orientations):
-#def take_n_random_slices(detector, volume, voxel_length, number):
-    """
-    Take n slices from n random orientations.
-
-    :param detector: The detector object
-    :param volume: The volume to slice from
-    :param voxel_length: The voxel length of this volume
-    :param number: The number of patterns to slice from.
-    :return: [number, panel number, panel pixel number x, panel pixel number y]
-    """
-    number = length(orientations)
-    # Preprocess
-    pattern_shape_ = detector.pixel_rms.shape
-    pixel_position_ = detector.pixel_position_reciprocal.copy()
-
-    # Create variable to hold the slices
-    slices = np.zeros((number, pattern_shape_[0], pattern_shape_[1], pattern_shape_[2]))
-
-    tic = time.time()
-    for l in range(number):
-        # construct the rotation matrix
-        rotmat = quat2rot3d(orientations[l])
-        # rotmat = get_random_rotation(rotation_axis='random')
-        # rotate the pixels in the reciprocal space.
-        # Notice that at this time, the pixel position is in 3D
-        pixel_position_new = rotate_pixels_in_reciprocal_space(rotmat, pixel_position_)
-        # calculate the index and weight in 3D
-        index, weight_tmp = get_weight_in_reciprocal_space(pixel_position=pixel_position_new,
-                                                           voxel_length=voxel_length,
-                                                           voxel_num_1d=volume.shape[0])
-        # get one slice
-        slices[l, :, :, :] = take_one_slice(local_index=index,
-                                            local_weight=weight_tmp,
-                                            volume=volume,
-                                            pixel_num=detector.pixel_num_total,
-                                            pattern_shape=detector.pedestal.shape)
-
-    toc = time.time()
-    print("Finishing constructing %d patterns in %f seconds" % (number, toc - tic))
-
-    return slices
 
 
 ######################################################################
@@ -522,12 +489,22 @@ def angle_axis_to_rot3d(axis, theta):
     Convert rotation with angle theta around a certain axis to a rotation matrix in 3D.
 
     :param axis: A numpy array for the rotation axis.
+        Axis names 'x', 'y', and 'z' are also accepted.
     :param theta: Rotation angle.
     :return:
     """
-
-    if len(axis) is not 3:
-        raise ValueError('Number of axis element must be 3!')
+    if isinstance(axis, basestring):
+        axis = axis.lower()
+        if axis == 'x':
+            axis = np.array([1., 0., 0.])
+        elif axis == 'y':
+            axis = np.array([0., 1., 0.])
+        elif axis == 'z':
+            axis = np.array([0., 0., 1.])
+        else:
+            raise ValueError("Axis should be 'x', 'y', 'z' or a 3D vector.")
+    elif len(axis) is not 3:
+        raise ValueError("Axis should be 'x', 'y', 'z' or a 3D vector.")
     axis = axis.astype(float)
     axis /= np.linalg.norm(axis)
     a = axis[0]
@@ -549,24 +526,57 @@ def angle_axis_to_rot3d(axis, theta):
     return rot3d
 
 
+def angle_axis_to_quaternion(axis, theta):
+    """
+    Convert rotation with angle around an axis to a quaternion.
+
+    :param axis: A numpy array for the rotation axis.
+        Axis names 'x', 'y', and 'z' are also accepted.
+    :param theta: Rotation angle.
+    :return:
+    """
+    if isinstance(axis, basestring):
+        axis = axis.lower()
+        if axis == 'x':
+            axis = np.array([1., 0., 0.])
+        elif axis == 'y':
+            axis = np.array([0., 1., 0.])
+        elif axis == 'z':
+            axis = np.array([0., 0., 1.])
+        else:
+            raise ValueError("Axis should be 'x', 'y', 'z' or a 3D vector.")
+    elif len(axis) is not 3:
+        raise ValueError("Axis should be 'x', 'y', 'z' or a 3D vector.")
+    axis /= np.linalg.norm(axis)
+    quat = np.zeros(4)
+    angle = theta/2
+    quat[0] = np.cos(angle)
+    quat[1:] = np.sin(angle) * axis
+
+    return quat
+
+
+@deprecated("Euler angles conventions are used inconsistently "
+    "and might be removed in the future. "
+    "Please consider another method.")
 def euler_to_rot3d(psi, theta, phi):
     """
-    Convert rotation with euler angle (psi, theta, phi) to a rotation matrix in 3D.
-    
-    :param psi: 
-    :param theta: 
-    :param phi: 
-    :return: 
-    """
+    Convert rotation with euler angle (psi, theta, phi) to a rotation
+    matrix in 3D, following a Body 3-2-3 sequence.
 
-    rphi = np.array([[np.cos(phi), np.sin(phi), 0],
-                     [-np.sin(phi), np.cos(phi), 0],
+    :param psi:
+    :param theta:
+    :param phi:
+    :return:
+    """
+    rphi = np.array([[np.cos(phi), -np.sin(phi), 0],
+                     [np.sin(phi), np.cos(phi), 0],
                      [0, 0, 1]])
-    rtheta = np.array([[np.cos(theta), 0, -np.sin(theta)],
+    rtheta = np.array([[np.cos(theta), 0, np.sin(theta)],
                        [0, 1, 0],
-                       [np.sin(theta), 0, np.cos(theta)]])
-    rpsi = np.array([[np.cos(psi), np.sin(psi), 0],
-                     [-np.sin(psi), np.cos(psi), 0],
+                       [-np.sin(theta), 0, np.cos(theta)]])
+    rpsi = np.array([[np.cos(psi), -np.sin(psi), 0],
+                     [np.sin(psi), np.cos(psi), 0],
                      [0, 0, 1]])
     return np.dot(rpsi, np.dot(rtheta, rphi))
 
@@ -602,9 +612,16 @@ def euler_to_rot3d(psi, theta, phi):
 #         quaternion *= -1
 #     return quaternion
 
+
+@deprecated("Euler angles conventions are used inconsistently "
+    "and might be removed in the future. "
+    "Please consider another method.")
+@jit
 def euler_to_quaternion(psi, theta, phi):
     """
-    Convert rotation with euler angle (psi, theta, phi) to quaternion description.
+    Convert rotation with euler angle (psi, theta, phi) to quaternion
+    description, following a Body 3-2-1 sequence
+    (a.k.a. pitch - roll - yaw convention).
 
     To understand this function, please see the wiki
     https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
@@ -644,7 +661,6 @@ def quaternion_to_angle_axis(quaternion):
     :param quaternion:
     :return:  angle, axis
     """
-
     ha = np.arccos(quaternion[0])
     theta = 2 * ha
     if theta < np.finfo(float).eps:
@@ -655,9 +671,13 @@ def quaternion_to_angle_axis(quaternion):
     return theta, axis
 
 
+@jit
 def rotmat_to_quaternion(rotmat):
     """
-    Convert the rotation matrix to a quaternion
+    Convert the rotation matrix to a quaternion.
+
+    This function is adopted form
+    http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
 
     :param rotmat:
     :return:
@@ -671,33 +691,33 @@ def rotmat_to_quaternion(rotmat):
     r20 = rotmat[2,0]
     r21 = rotmat[2,1]
     r22 = rotmat[2,2]
-    
+
     tr = r00 + r11 + r22
-    quat = np.zeros((4,1))
+    quat = np.zeros(4)
     if tr > 0:
         S = np.sqrt(tr+1.0) * 2.   # S=4*qw
-        quat[0] = (r21 - r12) / S
-        quat[1] = (r02 - r20) / S
-        quat[2] = (r10 - r01) / S
-        quat[3] = 0.25 * S
+        quat[0] = 0.25 * S
+        quat[1] = (r21 - r12) / S
+        quat[2] = (r02 - r20) / S
+        quat[3] = (r10 - r01) / S
     elif (r00 > r11) and (r00 > r22):
         S = np.sqrt(1.0 + r00 - r11 - r22) * 2. # S=4*qx
-        quat[0] = 0.25 * S
-        quat[1] = (r01 + r10) / S
-        quat[2] = (r02 + r20) / S
-        quat[3] = (r21 - r12) / S
+        quat[0] = (r21 - r12) / S
+        quat[1] = 0.25 * S
+        quat[2] = (r01 + r10) / S
+        quat[3] = (r02 + r20) / S
     elif r11 > r22:
         S = np.sqrt(1.0 + r11 - r00 - r22) * 2. # S=4*qy
-        quat[0] = (r01 + r10) / S
-        quat[1] = 0.25 * S
-        quat[2] = (r12 + r21) / S
-        quat[3] = (r02 - r20) / S
+        quat[0] = (r02 - r20) / S
+        quat[1] = (r01 + r10) / S
+        quat[2] = 0.25 * S
+        quat[3] = (r12 + r21) / S
     else:
         S = np.sqrt(1.0 + r22 - r00 - r11) * 2. # S=4*qz
-        quat[0] = (r02 + r20) / S
-        quat[1] = (r12 + r21) / S
-        quat[2] = 0.25 * S
-        quat[3] = (r10 - r01) / S
+        quat[0] = (r10 - r01) / S
+        quat[1] = (r02 + r20) / S
+        quat[2] = (r12 + r21) / S
+        quat[3] = 0.25 * S
 
     return quat
 
@@ -707,13 +727,13 @@ def quaternion2rot3d(quat):
     """
     Convert the quaternion to rotation matrix.
 
-    This function is adopted from
+    This function was originally adopted from
     https://github.com/duaneloh/Dragonfly/blob/master/src/interp.c
+    It has been modified from the original.
 
     :param quat: The quaterion.
     :return: The 3D rotation matrix
     """
-
     q01 = quat[0] * quat[1]
     q02 = quat[0] * quat[2]
     q03 = quat[0] * quat[3]
@@ -727,13 +747,13 @@ def quaternion2rot3d(quat):
     # Obtain the rotation matrix
     rotation = np.zeros((3, 3))
     rotation[0, 0] = (1. - 2. * (q22 + q33))
-    rotation[0, 1] = 2. * (q12 + q03)
-    rotation[0, 2] = 2. * (q13 - q02)
-    rotation[1, 0] = 2. * (q12 - q03)
+    rotation[0, 1] = 2. * (q12 - q03)
+    rotation[0, 2] = 2. * (q13 + q02)
+    rotation[1, 0] = 2. * (q12 + q03)
     rotation[1, 1] = (1. - 2. * (q11 + q33))
-    rotation[1, 2] = 2. * (q01 + q23)
-    rotation[2, 0] = 2. * (q02 + q13)
-    rotation[2, 1] = 2. * (q23 - q01)
+    rotation[1, 2] = 2. * (q23 - q01)
+    rotation[2, 0] = 2. * (q13 - q02)
+    rotation[2, 1] = 2. * (q23 + q01)
     rotation[2, 2] = (1. - 2. * (q11 + q22))
 
     return rotation
@@ -742,36 +762,35 @@ def quaternion2rot3d(quat):
 # Functions to generate rotations for different cases: uniform(1d), uniform(3d), random.
 def points_on_1sphere(num_pts, rotation_axis):
     """
-    Given number of points and axis of rotation, distribute
-    evenly on the surface of a 1-sphere (circle).
+    Distribute points evenly on a 1-sphere (circle) in 4D.
 
-    :param num_pts: Number of points 
+    :param num_pts: Number of points
     :param rotation_axis: Rotation axis.
     :return: Quaternion list of shape [number of quaternion, 4]
     """
-
     points = np.zeros((num_pts, 4))
-    inc_ang = 360. / num_pts
+    inc_ang = 2 * np.pi / num_pts
     my_ang = 0
-    if rotation_axis == 'y':
-        for i in range(num_pts):
-            points[i, :] = euler_to_quaternion(0, my_ang * np.pi / 180, 0)
-            my_ang += inc_ang
-    elif rotation_axis == 'z':
-        for i in range(num_pts):
-            points[i, :] = euler_to_quaternion(0, 0, my_ang * np.pi / 180)
-            my_ang += inc_ang
+    for i in range(num_pts):
+        points[i, :] = angle_axis_to_quaternion(rotation_axis, my_ang)
+        my_ang += inc_ang
     return points
 
 
+@deprecated("The function points_on_2sphere actually generates "
+    "points on a 3-sphere, in 4D. "
+    "Please call points_on_3sphere instead.")
 def points_on_2sphere(num_pts):
-    """
-    Given number of points, distribute evenly on hyper surface of a 4-sphere.
+    return points_on_3sphere(num_pts)
 
-    :param num_pts: Number of points 
+
+def points_on_3sphere(num_pts):
+    """
+    Distribute points evenly on a 3-sphere in 4D.
+
+    :param num_pts: Number of points
     :return: Quaternion list of shape [number of quaternion, 4]
     """
-
     points = np.zeros((2 * num_pts, 4))
     dim_num = 4
     # Surface area for unit sphere when dim_num is even
@@ -805,18 +824,19 @@ def points_on_2sphere(num_pts):
     return points[0:num_pts, :]
 
 
-def get_random_rotation(rotation_axis):
+def get_random_rotation(rotation_axis=None):
     """
     Generate a random rotation matrix.
 
-    :param rotation_axis: The rotation axis. If it's 'y', then the rotation is around y axis.
-                          Otherwise the rotation is totally random.
+    :param rotation_axis: The rotation axis.
+        If it's 'x', 'y', or 'z', then the rotation is around that axis.
+        Otherwise the rotation is totally random.
     :return: A rotation matrix
     """
-
-    if rotation_axis == 'y':
+    rotation_axis = rotation_axis.lower()
+    if rotation_axis in ('x', 'y', 'z'):
         u = np.random.rand() * 2 * np.pi  # random angle between [0, 2pi]
-        return euler_to_rot3d(0, u, 0)
+        return angle_axis_to_rot3d(rotation_axis, u)
     else:
         return special_ortho_group.rvs(3)
 
@@ -835,19 +855,20 @@ def get_random_quat(num_pts):
     quat[0] = np.sqrt(1 - u1) * np.sin(2 * np.pi * u2)
     quat[1] = np.sqrt(1 - u1) * np.cos(2 * np.pi * u2)
     quat[2] = np.sqrt(u1) * np.sin(2 * np.pi * u3)
-    quat[3] = np.sqrt(u1) * np.sin(2 * np.pi * u3)
+    quat[3] = np.sqrt(u1) * np.cos(2 * np.pi * u3)
 
     return np.transpose(quat)
 
 
 def get_uniform_quat(num_pts):
     """
-    Get num_pts of unit quaternions evenly distributed on the 4 sphere.
+    Get num_pts of unit quaternions evenly distributed on the 3-sphere.
 
     :param num_pts: The number of quaternions to return
     :return: Quaternion list of shape [number of quaternion, 4]
     """
-    return points_on_2sphere(num_pts)
+    return points_on_3sphere(num_pts)
+
 
 def get_random_orientations(num_pts):
     
