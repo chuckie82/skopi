@@ -367,8 +367,6 @@ def get_polarization_correction(pixel_center, polarization):
     polarization_correction_1d = np.sum(np.square(np.cross(pixel_center_direction,
                                                            polarization_direction)), axis=1)
 
-    # print polarization_correction_1d.shape
-
     polarization_correction = np.reshape(polarization_correction_1d, pixel_center.shape[0:-1])
 
     return polarization_correction
@@ -856,3 +854,30 @@ def get_random_orientations(num_pts):
     orientations = np.zeros(npts,4)
     orientations = get_random_quat(num_pts)
     return orientations
+
+
+def get_random_translations(atom_pos, beam_focus_size):
+    """
+    Get translations in real space
+    
+    :param num_particles: Number of particles
+    :param beam_focus: Radius within which we want the translations
+    :return: List of dictionaries containing translations of all particles within the beam focus
+    """
+
+    N = len(atom_pos)
+        
+    flag = True
+    while(flag):
+        x_trans = beam_focus_size*np.random.uniform(-1, 1)
+        y_trans = beam_focus_size*np.random.uniform(-1, 1)
+        trans = [[x_trans, y_trans, 0]]*N
+        trans = np.asarray(trans)
+        new_pos = atom_pos + trans
+        for i in range(N):
+            if (np.sqrt(new_pos[i][0]**2 + new_pos[i][1]**2) >= beam_focus_size):
+                flag = False
+                break
+            else:
+                flag = False
+    return new_pos

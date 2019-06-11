@@ -112,7 +112,7 @@ class DetectorBase(object):
     # Calculate diffraction patterns
     ###############################################################################################
 
-    def get_pattern_without_corrections(self, particle, device="cpu"):
+    def get_pattern_without_corrections(self, particle, device="cpu", return_type="intensity"):
         """
         Generate a single diffraction pattern without any correction from the particle object.
 
@@ -122,6 +122,7 @@ class DetectorBase(object):
         """
 
         if device == "cpu":
+            assert return_type == "intensity"   # Need to add a function below for complex fieldds
             diffraction_pattern = pd.calculate_molecular_form_factor_square(
                 particle,
                 self.pixel_distance_reciprocal,
@@ -131,7 +132,7 @@ class DetectorBase(object):
             diffraction_pattern = pgd.calculate_diffraction_pattern_gpu(
                 self.pixel_position_reciprocal,
                 particle,
-                "intensity")
+                return_type)
         else:
             print(" The device parameter can only be set as \"gpu\" or \"cpu\" ")
             raise Exception('Wrong parameter value. device can only be set as \"gpu\" or \"cpu\" ')
@@ -194,6 +195,9 @@ class DetectorBase(object):
         :param pattern: The image stack.
         :return:
         """
+        print(pattern.shape)
+        print(self.linear_correction.shape)
+        print(np.multiply(pattern, self.linear_correction).shape)
         return np.random.poisson(np.multiply(pattern, self.linear_correction))
 
     def add_correction_and_quantization_batch(self, pattern_batch ):
@@ -213,6 +217,7 @@ class DetectorBase(object):
         :return: A image stack of photons
         """
         raw_data = self.get_pattern_without_corrections(particle=particle, device=device)
+        #print raw_data
         return self.add_correction_and_quantization(raw_data)
 
     def get_adu(self, particle, path, device="cpu"):
