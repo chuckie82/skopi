@@ -9,7 +9,7 @@ import pysingfel.gpu as pg
 
 
 def test_take_n_slice():
-    dir_ = os.path.dirname(__file__)
+    dir_ = os.path.dirname(__file__) + '/..'
 
     # Load beam
     beam = ps.Beam(dir_+'/../../examples/input/exp_chuck.beam')
