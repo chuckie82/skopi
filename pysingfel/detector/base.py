@@ -257,14 +257,10 @@ class DetectorBase(object):
 
     def get_reciprocal_mesh(self, voxel_number_1d):
         """
-        Get the a proper reciprocal mesh.
+        Get the proper reciprocal mesh.
 
-        :param voxel_number_1d: The voxel number along 1 dimension. Notice that this number
-                                has to be odd.
+        :param voxel_number_1d: The voxel number along 1 dimension.
         :return: The reciprocal mesh, voxel length.
         """
-        voxel_half_number = int((voxel_number_1d / 2) - 1)
-        voxel_length = np.max(self.pixel_distance_reciprocal) / voxel_half_number
-        voxel_number = int(voxel_number_1d)  # Get some more pixels for flexibility
-
-        return pg.get_reciprocal_mesh(voxel_number, voxel_length), voxel_length
+        dist_max = np.max(self.pixel_distance_reciprocal)
+        return pg.get_reciprocal_mesh(voxel_number_1d, dist_max)

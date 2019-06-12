@@ -149,24 +149,19 @@ def get_reciprocal_position_and_correction(pixel_position, pixel_area,
 # The following functions are utilized to get reciprocal space grid mesh
 ######################################################################
 
-def get_reciprocal_mesh(voxel_num_1d, voxel_length):
+def get_reciprocal_mesh(voxel_number_1d, max_value):
     """
-    Get a symmetric reciprocal coordinate mesh.
+    Get a centered, symetric mesh of given dimensions.
 
-    :param voxel_num_1d: An positive odd integer.
-    :param voxel_length: The length of the voxel.
-    :return: The mesh.
+    :param voxel_number_1d: Number of voxel per axis.
+    :param max_value: Max (absolute) value on each axis.
+    :return: The mesh grid, the voxel lenght.
     """
-    voxel_half_num_1d = (voxel_num_1d - 1) / 2
-
-    x_meshgrid = (np.array(range(voxel_num_1d)) - voxel_half_num_1d) * voxel_length
-    reciprocal_mesh_stack = np.meshgrid(x_meshgrid, x_meshgrid, x_meshgrid)
-
-    reciprocal_mesh = np.zeros((voxel_num_1d, voxel_num_1d, voxel_num_1d, 3))
-    for l in range(3):
-        reciprocal_mesh[:, :, :, l] = reciprocal_mesh_stack[l][:, :, :]
-
-    return reciprocal_mesh
+    linspace = np.linspace(-max_value, max_value, voxel_number_1d)
+    reciprocal_mesh_stack = np.meshgrid(linspace, linspace, linspace)
+    reciprocal_mesh = np.moveaxis(reciprocal_mesh_stack, 0, -1)
+    voxel_length = 2 * max_value / (voxel_number_1d - 1)
+    return reciprocal_mesh, voxel_length
 
 
 ######################################################################
