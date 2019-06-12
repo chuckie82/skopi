@@ -104,7 +104,7 @@ class DetectorBase(object):
     # Calculate diffraction patterns
     ###############################################################################################
 
-    def get_pattern_without_corrections(self, particle, device=None):
+    def get_pattern_without_corrections(self, particle, device=None, return_type="intensity"):
         """
         Generate a single diffraction pattern without any correction from the particle object.
 
@@ -119,7 +119,7 @@ class DetectorBase(object):
         diffraction_pattern = pgd.calculate_diffraction_pattern_gpu(
             self.pixel_position_reciprocal,
             particle,
-            "intensity")
+            return_type)
 
         return diffraction_pattern
 
