@@ -8,8 +8,9 @@ from PSCalib.GeometryAccess import GeometryAccess, img_from_pixel_arrays
 
 import pysingfel.geometry as pg
 import pysingfel.util as pu
-import pysingfel.diffraction as pd
 import pysingfel.crosstalk as pc
+import pysingfel.gpu.diffraction as pgd
+from pysingfel.util import deprecation_message
 
 
 class DetectorBase(object):
@@ -103,55 +104,41 @@ class DetectorBase(object):
     # Calculate diffraction patterns
     ###############################################################################################
 
-    def get_pattern_without_corrections(self, particle, device="cpu"):
+    def get_pattern_without_corrections(self, particle, device=None):
         """
         Generate a single diffraction pattern without any correction from the particle object.
 
-        :param particle: The particle object
-        :param device: 'cpu' or 'gpu'
+        :param particle: The particle object.
         :return: A diffraction pattern.
         """
+        if device:
+            deprecation_message(
+                "Device option is deprecated. "
+                "Everything now runs on the GPU.")
 
-        if device == "cpu":
-            diffraction_pattern = pd.calculate_molecular_form_factor_square(
-                particle,
-                self.pixel_distance_reciprocal,
-                self.pixel_position_reciprocal)
-        elif device == "gpu":
-            import pysingfel.gpu.diffraction as pgd
-            diffraction_pattern = pgd.calculate_diffraction_pattern_gpu(
-                self.pixel_position_reciprocal,
-                particle,
-                "intensity")
-        else:
-            print(" The device parameter can only be set as \"gpu\" or \"cpu\" ")
-            raise Exception('Wrong parameter value. device can only be set as \"gpu\" or \"cpu\" ')
+        diffraction_pattern = pgd.calculate_diffraction_pattern_gpu(
+            self.pixel_position_reciprocal,
+            particle,
+            "intensity")
 
         return diffraction_pattern
 
-    def get_intensity_field(self, particle, device="cpu"):
+    def get_intensity_field(self, particle, device=None):
         """
         Generate a single diffraction pattern without any correction from the particle object.
 
-        :param particle: The particle object
-        :param device: 'cpu' or 'gpu'
+        :param particle: The particle object.
         :return: A diffraction pattern.
         """
+        if device:
+            deprecation_message(
+                "Device option is deprecated. "
+                "Everything now runs on the GPU.")
 
-        if device == "cpu":
-            diffraction_pattern = pd.calculate_molecular_form_factor_square(
-                particle,
-                self.pixel_distance_reciprocal,
-                self.pixel_position_reciprocal)
-        elif device == "gpu":
-            import pysingfel.gpu.diffraction as pgd
-            diffraction_pattern = pgd.calculate_diffraction_pattern_gpu(
-                self.pixel_position_reciprocal,
-                particle,
-                "intensity")
-        else:
-            print(" The device parameter can only be set as \"gpu\" or \"cpu\" ")
-            raise Exception('Wrong parameter value. device can only be set as \"gpu\" or \"cpu\" ')
+        diffraction_pattern = pgd.calculate_diffraction_pattern_gpu(
+            self.pixel_position_reciprocal,
+            particle,
+            "intensity")
 
         return np.multiply(diffraction_pattern, self.linear_correction)
 
@@ -196,17 +183,22 @@ class DetectorBase(object):
         """
         return np.random.poisson(np.multiply(pattern_batch, self.linear_correction[np.newaxis]))
 
-    def get_photons(self, particle, device="cpu"):
+    def get_photons(self, particle, device=None):
         """
         Get a simulated photon patterns stack
         :param particle: The paticle object
         :param device: 'cpu' or 'gpu'
         :return: A image stack of photons
         """
-        raw_data = self.get_pattern_without_corrections(particle=particle, device=device)
+        if device:
+            deprecation_message(
+                "Device option is deprecated. "
+                "Everything now runs on the GPU.")
+
+        raw_data = self.get_pattern_without_corrections(particle=particle)
         return self.add_correction_and_quantization(raw_data)
 
-    def get_adu(self, particle, path, device="cpu"):
+    def get_adu(self, particle, path, device=None):
         """
         Get a simulated adu pattern stack
 
@@ -215,12 +207,18 @@ class DetectorBase(object):
         :param device: 'cpu' or 'gpu'
         :return: An image stack of adu.
         """
-        raw_photon = self.get_photons(particle=particle, device=device)
+        if device:
+            deprecation_message(
+                "Device option is deprecated. "
+                "Everything now runs on the GPU.")
+
+        raw_photon = self.get_photons(particle=particle)
         return pc.add_cross_talk_effect_panel(db_path=path, photons=raw_photon)
 
     ###############################################################################################
     # For 3D slicing.
     ###############################################################################################
+
     def preferred_voxel_length(self, wave_vector):
         """
         If one want to put the diffraction pattern into 3D reciprocal space, then one needs to

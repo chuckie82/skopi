@@ -8,7 +8,6 @@ from PSCalib.GeometryAccess import GeometryAccess, img_from_pixel_arrays
 
 import pysingfel.geometry as pg
 import pysingfel.util as pu
-import pysingfel.diffraction as pd
 import pysingfel.crosstalk as pc
 
 from .base import DetectorBase

@@ -2,11 +2,20 @@ import h5py
 import numpy as np
 
 
+def deprecation_message(message):
+    """Print a deprecation message.
+
+    This function can be used to more easily locate deprecated areas
+    in the code.
+    """
+    print("Deprecation warning: " + message)
+
+
 def deprecated(reason):
     """Decorator to deprecate a function."""
     def decorator(func):
         def wrapper(*args, **kwargs):
-            print(reason)
+            deprecation_message(reason)
             return func(*args, **kwargs)
         return wrapper
     return decorator
