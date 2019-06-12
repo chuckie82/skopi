@@ -22,7 +22,6 @@ def rotate_pixels_in_reciprocal_space(rot_mat, pixels_position):
     :param pixels_position: [the other dimensions,  3 for x,y,z]
     :return: np.dot(pixels_position, rot_mat.T)
     """
-
     return np.dot(pixels_position, rot_mat.T)
 
 
@@ -53,7 +52,7 @@ def get_weight_and_index(pixel_position, voxel_length, voxel_num_1d):
     pixel_position_1d_voxel_unit = pixel_position_1d / voxel_length
 
     # shift the center position
-    shift = (voxel_num_1d - 1) / 2
+    shift = (voxel_num_1d - 1) / 2.
     pixel_position_1d_voxel_unit += shift
 
     # Get one nearest neighbor
