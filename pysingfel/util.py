@@ -1,6 +1,6 @@
 import h5py
 import numpy as np
-
+from pysingfel.ff_waaskirf_database import load_waaskirf_database
 
 def deprecated(reason):
     """Decorator to deprecate a function."""
@@ -123,7 +123,7 @@ def symmpdb(fname):
     :return: Numpy array containing the type and position of each atom in the pdb file.
     """
 
-    atom_types = {'H': 1, 'HE': 2, 'C': 6, 'N': 7, 'O': 8, 'P': 15, 'S': 16, 'FE': 26}
+    atom_types = {'H': 1, 'HE': 2, 'C': 6, 'N1+': 6, 'N': 7, 'O': 8, 'O1-': 9, 'P': 15, 'S': 16, 'CL': 18, 'FE': 26}
 
     fin = open(fname, 'r')
 
@@ -132,6 +132,9 @@ def symmpdb(fname):
     trans_dict = {}  # dict to save the symmetry translations and chain id
     atom_count = 0
     line = fin.readline()
+    dbase = load_waaskirf_database()
+    list1 = [atomType[0] for atomType in dbase]
+    # list2 = [charges[0] for charges in dbase]
     while line:
         # read atom coordinates
         if line[0:4] == 'ATOM' or line[0:6] == 'HETATM':
@@ -143,13 +146,17 @@ def symmpdb(fname):
             if (float(line[56:60]) > 0.5) or (float(line[56:60]) == 0.5 and line[16] != 'B'):
 
                 # [x, y, z, atomtype, charge]
-                # Notice tht here, one has set the default charge to be 0
+                # Notice that here, one has set the default charge to be 0
                 tmp = [float(line[30:38].strip()), float(line[38:46].strip()), float(line[46:54].strip()), 0, 0]
 
                 # Get the atom type
                 if line[76:78].strip() in atom_types.keys():
                     tmp[3] = atom_types[line[76:78].strip()]
-
+                    idxs = [i for i in range(len(list1)) if list1[i] == tmp[3]]
+                    dbase_charges = []
+                    for j in idxs:
+                        np.append(dbase_charges, dbase[j][1])
+                     
                     # Get charge info
                     charge = line[78:80].strip()  # charge info, should be in the form of '2+' or '1-' if not blank
                     if len(charge) is not 0:
@@ -157,7 +164,8 @@ def symmpdb(fname):
                             print('Could not interpret the charge information!\n', line)
                         else:
                             charge = int(charge[1] + charge[0])  # swap the order to be '+2' or '-1' and convert to int
-                            tmp[4] = charge
+                            if charge in dbase_charges:
+                                tmp[4] = charge
                     atoms_dict[chain_id].append(tmp)
 
                     """if test <= 10:
@@ -193,9 +201,11 @@ def symmpdb(fname):
 
     fin.close()
 
+    
     # convert atom positions in numpy array
     for chain_id in atoms_dict.keys():
         atoms_dict[chain_id] = np.asarray(atoms_dict[chain_id])
+        
 
     # To define a fake atom to initialize the variable
     # When return, this atom is not returned

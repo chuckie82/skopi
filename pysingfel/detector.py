@@ -112,7 +112,7 @@ class DetectorBase(object):
     # Calculate diffraction patterns
     ###############################################################################################
 
-    def get_pattern_without_corrections(self, particle, device="cpu"):
+    def get_pattern_without_corrections(self, particle, device="cpu", return_type="intensity"):
         """
         Generate a single diffraction pattern without any correction from the particle object.
 
@@ -122,6 +122,7 @@ class DetectorBase(object):
         """
 
         if device == "cpu":
+            assert return_type == "intensity"   # Need to add a function below for complex fieldds
             diffraction_pattern = pd.calculate_molecular_form_factor_square(
                 particle,
                 self.pixel_distance_reciprocal,
@@ -131,7 +132,7 @@ class DetectorBase(object):
             diffraction_pattern = pgd.calculate_diffraction_pattern_gpu(
                 self.pixel_position_reciprocal,
                 particle,
-                "intensity")
+                return_type)
         else:
             print(" The device parameter can only be set as \"gpu\" or \"cpu\" ")
             raise Exception('Wrong parameter value. device can only be set as \"gpu\" or \"cpu\" ')

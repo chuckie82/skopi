@@ -13,6 +13,7 @@ from .slice import *
 ######################################################################
 # The following functions are utilized to get corrections
 ######################################################################
+
 def reshape_pixels_position_arrays_to_1d(array):
     """
     Only an abbreviation.
@@ -216,3 +217,33 @@ def assemble_image_stack_batch(image_stack, index_map):
         image[:, index_map[l, :, :, 0], index_map[l, :, :, 1]] = image_stack[:, l, :, :]
 
     return image
+
+
+######################################################################
+# The following functions are utilized to work on the particles
+######################################################################
+
+def get_random_translations(atom_pos, beam_focus_size):
+    """
+    Get translations in real space
+
+    :param num_particles: Number of particles
+    :param beam_focus: Radius within which we want the translations
+    :return: List of dictionaries containing translations of all particles within the beam focus
+    """
+    N = len(atom_pos)
+
+    flag = True
+    while(flag):
+        x_trans = beam_focus_size*np.random.uniform(-1, 1)
+        y_trans = beam_focus_size*np.random.uniform(-1, 1)
+        trans = [[x_trans, y_trans, 0]]*N
+        trans = np.asarray(trans)
+        new_pos = atom_pos + trans
+        for i in range(N):
+            if (np.sqrt(new_pos[i][0]**2 + new_pos[i][1]**2) >= beam_focus_size):
+                flag = False
+                break
+            else:
+                flag = False
+    return new_pos
