@@ -77,6 +77,15 @@ def test_get_reciprocal_mesh_center_odd():
     assert np.isclose(mesh[0, 0, 0, 2] + mesh[-1, -1, -1, 2], 0.)
 
 
+def test_get_reciprocal_mesh_orientation():
+    """Test get_reciprocal_mesh centering for x, y, z orientation."""
+    voxel_num = 9
+    mesh, voxel_length = geometry.get_reciprocal_mesh(voxel_num, 1.)
+    assert np.all(mesh[0, :, :, 0] < mesh[-1, :, :, 0])
+    assert np.all(mesh[:, 0, :, 1] < mesh[:, -1, :, 1])
+    assert np.all(mesh[:, :, 0, 2] < mesh[:, :, -1, 2])
+
+
 # Replacement test
 def test_euler_to_rot3d_equiv_angle_axis_to_rot3d_2():
     """Test equivalence betwen euler_ and angle_axis_ for axis y.
