@@ -9,14 +9,14 @@ from pysingfel.geometry import slice_
 
 
 def test_take_n_slice():
-    dir_ = os.path.dirname(__file__) + '/..'
+    ex_dir_ = os.path.dirname(__file__) + '/../../../examples'
 
     # Load beam
-    beam = ps.Beam(dir_+'/../../examples/input/exp_chuck.beam')
+    beam = ps.Beam(ex_dir_+'/input/exp_chuck.beam')
 
     # Load and initialize the detector
     det = ps.PnccdDetector(
-        geom=dir_+'/../../examples/lcls/amo86615/'
+        geom=ex_dir_+'/lcls/amo86615/'
              'PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data',
         beam=beam)
 
@@ -29,12 +29,11 @@ def test_take_n_slice():
         slices_in = f['imUniform'][:]
         orientations_in = f['imOrientations'][:]
 
-    slices_rec = slice_.take_n_slice(
-        pattern_shape = det.pedestal.shape,
-        pixel_momentum = det.pixel_position_reciprocal,
-        volume = volume_in,
-        voxel_length = voxel_length,
-        orientations = orientations_in)
+    slices_rec = slice_.take_n_slices(
+        volume=volume_in,
+        voxel_length=voxel_length,
+        pixel_momentum=det.pixel_position_reciprocal,
+        orientations=orientations_in)
 
     # Note: This does not work if orientations is stored as float32
     assert np.allclose(slices_in, slices_rec)
