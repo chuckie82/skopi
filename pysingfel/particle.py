@@ -153,6 +153,8 @@ class Particle(object):
         tmp = (100 * atoms[:, 3] + atoms[:, 4]).astype(
             int)  # hack to get split idx from the sorted atom array
         atom_type, idx = np.unique(np.sort(tmp), return_index=True)
+        print(atom_type)
+        print(idx)
         self.num_atom_types = len(atom_type)
         self.split_idx = np.append(idx, [len(tmp)])
 
