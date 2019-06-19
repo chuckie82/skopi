@@ -245,6 +245,78 @@ class Particle(object):
             self.nFree = np.zeros(self.num_q_samples)
         else:
             raise ValueError('Unrecognized form factor source!')
+            
+    def get_particle_as_list(self, atoms):
+        atom_types = {'H': 1, 'HE': 2, 'C': 6, 'N1+': 6, 'N': 7, 'O': 8, 'O1-': 9, 'P': 15, 'S': 16, 'CL': 18, 'FE': 26}
+        all_atoms = []
+        for atom_info in atoms:
+            for info in atom_info:
+                if type(info) == str:
+                    atom = info
+                elif len(info) == 3:
+                    coordinates = info
+                else:
+                    raise ValueError('Invalid atom information!')
+            atomic_number = atom_types[atom]
+            total_atom = [coordinates[0], coordinates[1], coordinates[2], atomic_number, 0]
+            all_atoms.append(total_atom)                                      # charge = 0 (by default)
+        atoms = np.asarray(all_atoms)
+
+        self.atom_pos = atoms[:, 0:3] * 1e-10
+        tmp = (100 * atoms[:, 3] + atoms[:, 4]).astype(int)
+        atom_type, idx = np.unique(np.sort(tmp), return_index=True)
+        self.num_atom_types = len(atom_type)
+        self.split_idx = np.append(idx, [len(tmp)])
+        qs = np.linspace(0, 10, 101) / (2.0 * np.pi * 0.529177206 * 2.0)
+        self.q_sample = qs
+        self.compton_q_sample = qs
+        self.num_q_samples = len(qs)
+        self.sBound = np.zeros(particle.num_q_samples)
+        self.nFree = np.zeros(particle.num_q_samples)
+
+        wk_dbase = load_waaskirf_database()
+        for i in idx:
+            if i == 0:
+                zz = atoms[i, 3]
+                qq = atoms[i, 4]
+                idx1 = np.where(wk_dbase[:, 0] == zz)[0]
+                flag = True
+                for j in idx1:
+                    if int(wk_dbase[j, 1]) == qq:
+                        [a1, a2, a3, a4, a5, c, b1, b2, b3, b4, b5] = wk_dbase[j, 2:]
+                        self.ff_table = (a1 * np.exp(-b1 * self.q_sample ** 2) +
+                                         a2 * np.exp(-b2 * self.q_sample ** 2) +
+                                         a3 * np.exp(-b3 * self.q_sample ** 2) +
+                                         a4 * np.exp(-b4 * self.q_sample ** 2) +
+                                         a5 * np.exp(-b5 * self.q_sample ** 2) + c)
+                        flag = False
+                        break
+                        if flag:
+                            print('Atom number = ' + str(zz) + ' with charge ' + str(qq))
+                            raise ValueError('Unrecognized atom type!')
+            else:
+                zz = int(atoms[i, 3])  # atom type
+                qq = int(atoms[i, 4])  # charge
+                idx1 = np.where(wk_dbase[:, 0] == zz)[0]
+                flag = True
+                for j in idx1:
+                    if int(wk_dbase[j, 1]) == qq:
+                        # print "Enter: ", j
+                        [a1, a2, a3, a4, a5, c, b1, b2, b3, b4, b5] = wk_dbase[j, 2:]
+
+                        ff = (a1 * np.exp(-b1 * self.q_sample ** 2) +
+                              a2 * np.exp(-b2 * self.q_sample ** 2) +
+                              a3 * np.exp(-b3 * self.q_sample ** 2) +
+                              a4 * np.exp(-b4 * self.q_sample ** 2) +
+                              a5 * np.exp(-b5 * self.q_sample ** 2) + c)
+                        self.ff_table = np.vstack((self.ff_table, ff))
+                        flag = False
+                        break
+                    if flag:
+                        print('Atom number = ' + str(zz) + ' with charge ' + str(qq))
+                        raise ValueError('Unrecognized atom type!')
+
+
 
 
 def rotate_particle(quaternion, particle):
