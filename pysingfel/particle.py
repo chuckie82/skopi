@@ -240,7 +240,7 @@ class Particle(object):
         else:
             raise ValueError('Unrecognized form factor source!')
 
-    def get_particle_as_list(self, atoms):
+    def create_from_atoms(self, atoms):
         atom_types = {'H': 1, 'HE': 2, 'C': 6, 'N1+': 6, 'N': 7, 'O': 8, 'O1-': 9, 'P': 15, 'S': 16, 'CL': 18, 'FE': 26}
         all_atoms = []
         for atom_info in atoms:
