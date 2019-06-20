@@ -3,26 +3,7 @@ import numpy as np
 import pytest
 
 from pysingfel import geometry
-
-
-Rx90 = np.array([
-    [1., 0., 0.],
-    [0., 0., -1.],
-    [0., 1., 0.]])
-Ry90 = np.array([
-    [0., 0., 1.],
-    [0., 1., 0.],
-    [-1., 0., 0.]])
-Rz90 = np.array([
-    [0., -1., 0.],
-    [1., 0., 0.],
-    [0., 0., 1.]])
-
-
-quatx90 = np.array([1., 1., 0., 0.]) / np.sqrt(2)
-quaty90 = np.array([1., 0., 1., 0.]) / np.sqrt(2)
-quatz90 = np.array([1., 0., 0., 1.]) / np.sqrt(2)
-
+import pysingfel.constants as cst
 
 
 def test_get_reciprocal_mesh_shape_even():

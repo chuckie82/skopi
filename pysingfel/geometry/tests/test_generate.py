@@ -3,32 +3,14 @@ import numpy as np
 import pytest
 
 from pysingfel.geometry import generate
-
-
-Rx90 = np.array([
-    [1., 0., 0.],
-    [0., 0., -1.],
-    [0., 1., 0.]])
-Ry90 = np.array([
-    [0., 0., 1.],
-    [0., 1., 0.],
-    [-1., 0., 0.]])
-Rz90 = np.array([
-    [0., -1., 0.],
-    [1., 0., 0.],
-    [0., 0., 1.]])
-
-
-quatx90 = np.array([1., 1., 0., 0.]) / np.sqrt(2)
-quaty90 = np.array([1., 0., 1., 0.]) / np.sqrt(2)
-quatz90 = np.array([1., 0., 0., 1.]) / np.sqrt(2)
+import pysingfel.constants as cst
 
 
 def test_points_on_1sphere_4y():
     """Test points_on_1sphere for 4 points on axis 'y'."""
     points = generate.points_on_1sphere(4, 'y')
     assert np.allclose(points[0], np.array([1., 0., 0., 0.]))
-    assert np.allclose(points[1], quaty90)
+    assert np.allclose(points[1], cst.quaty90)
     assert np.allclose(points[2], np.array([0., 0., 1., 0.]))
 
 
@@ -36,7 +18,7 @@ def test_points_on_1sphere_8x():
     """Test points_on_1sphere for 8 points on axis 'x'."""
     points = generate.points_on_1sphere(8, 'x')
     assert np.allclose(points[0], np.array([1., 0., 0., 0.]))
-    assert np.allclose(points[2], quatx90)
+    assert np.allclose(points[2], cst.quatx90)
     assert np.allclose(points[4], np.array([0., 1., 0., 0.]))
 
 
