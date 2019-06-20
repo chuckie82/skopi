@@ -8,46 +8,38 @@ import pysingfel.constants as cst
 
 def test_angle_axis_to_rot3d_x():
     """Test angle_axis_to_rot3d for 90deg rotations along x."""
-    axis = np.array([1., 0., 0.])
-    theta = np.pi/2
-    rot90 = convert.angle_axis_to_rot3d(axis, theta)
+    rot90 = convert.angle_axis_to_rot3d(cst.vecx, np.pi/2)
     assert np.allclose(rot90, cst.Rx90)
 
 
 def test_angle_axis_to_rot3d_y():
     """Test angle_axis_to_rot3d for 90deg rotations along y."""
-    axis = np.array([0., 1., 0.])
-    theta = np.pi/2
-    rot90 = convert.angle_axis_to_rot3d(axis, theta)
+    rot90 = convert.angle_axis_to_rot3d(cst.vecy, np.pi/2)
     assert np.allclose(rot90, cst.Ry90)
 
 
 def test_angle_axis_to_rot3d_z():
     """Test angle_axis_to_rot3d for 90deg rotations along z."""
-    axis = np.array([0., 0., 1.])
-    theta = np.pi/2
-    rot90 = convert.angle_axis_to_rot3d(axis, theta)
+    rot90 = convert.angle_axis_to_rot3d(cst.vecz, np.pi/2)
     assert np.allclose(rot90, cst.Rz90)
 
 
 def test_angle_axis_to_rot3d_x_name():
     """Test angle_axis_to_rot3d for 90deg rotations along x, by name."""
-    theta = np.pi/2
-    rot90 = convert.angle_axis_to_rot3d('x', theta)
+    rot90 = convert.angle_axis_to_rot3d('x', np.pi/2)
     assert np.allclose(rot90, cst.Rx90)
 
 
 def test_angle_axis_to_rot3d_y_name():
     """Test angle_axis_to_rot3d for 90deg rotations along y, by name."""
-    theta = np.pi/2
-    rot90 = convert.angle_axis_to_rot3d('y', theta)
+    rot90 = convert.angle_axis_to_rot3d('y', np.pi/2)
     assert np.allclose(rot90, cst.Ry90)
 
 
 def test_angle_axis_to_rot3d_z_name():
     """Test angle_axis_to_rot3d for 90deg rotations along z, by name."""
-    theta = np.pi/2
-    rot90 = convert.angle_axis_to_rot3d('Z', theta)  # Caps should work too
+    # Caps should work too
+    rot90 = convert.angle_axis_to_rot3d('Z', np.pi/2)
     assert np.allclose(rot90, cst.Rz90)
 
 
@@ -70,46 +62,38 @@ def test_angle_axis_to_rot3d_invariant():
 
 def test_angle_axis_to_quaternion_x():
     """Test angle_axis_to_quaternion for 90deg rotations along x."""
-    axis = np.array([1., 0., 0.])
-    theta = np.pi/2
-    quat = convert.angle_axis_to_quaternion(axis, theta)
+    quat = convert.angle_axis_to_quaternion(cst.vecx, np.pi/2)
     assert np.allclose(quat, cst.quatx90)
 
 
 def test_angle_axis_to_quaternion_y():
     """Test angle_axis_to_quaternion for 90deg rotations along y."""
-    axis = np.array([0., 1., 0.])
-    theta = np.pi/2
-    quat = convert.angle_axis_to_quaternion(axis, theta)
+    quat = convert.angle_axis_to_quaternion(cst.vecy, np.pi/2)
     assert np.allclose(quat, cst.quaty90)
 
 
 def test_angle_axis_to_quaternion_z():
     """Test angle_axis_to_quaternion for 90deg rotations along z."""
-    axis = np.array([0., 0., 1.])
-    theta = np.pi/2
-    quat = convert.angle_axis_to_quaternion(axis, theta)
+    quat = convert.angle_axis_to_quaternion(cst.vecz, np.pi/2)
     assert np.allclose(quat, cst.quatz90)
 
 
 def test_angle_axis_to_quaternion_x_name():
     """Test angle_axis_to_quaternion for 90deg rotations along x, by name."""
-    theta = np.pi/2
-    quat = convert.angle_axis_to_quaternion('x', theta)
+    quat = convert.angle_axis_to_quaternion('x', np.pi/2)
     assert np.allclose(quat, cst.quatx90)
 
 
 def test_angle_axis_to_quaternion_y_name():
     """Test angle_axis_to_quaternion for 90deg rotations along y, by name."""
-    theta = np.pi/2
-    quat = convert.angle_axis_to_quaternion('y', theta)
+    quat = convert.angle_axis_to_quaternion('y', np.pi/2)
     assert np.allclose(quat, cst.quaty90)
 
 
 def test_angle_axis_to_quaternion_z_name():
     """Test angle_axis_to_quaternion for 90deg rotations along z, by name."""
-    theta = np.pi/2
-    quat = convert.angle_axis_to_quaternion('Z', theta)  # Caps should work too
+    # Caps should work too
+    quat = convert.angle_axis_to_quaternion('Z', np.pi/2)
     assert np.allclose(quat, cst.quatz90)
 
 
@@ -153,21 +137,21 @@ def test_quaternion_to_angle_axis_x():
     """Test quaternion_to_angle_axis for 90deg rotations along x."""
     theta, axis = convert.quaternion_to_angle_axis(cst.quatx90)
     assert np.isclose(theta, np.pi/2)
-    assert np.allclose(axis, np.array([1., 0., 0.]))
+    assert np.allclose(axis, cst.vecx)
 
 
 def test_quaternion_to_angle_axis_y():
     """Test quaternion_to_angle_axis for 90deg rotations along y."""
     theta, axis = convert.quaternion_to_angle_axis(cst.quaty90)
     assert np.isclose(theta, np.pi/2)
-    assert np.allclose(axis, np.array([0., 1., 0.]))
+    assert np.allclose(axis, cst.vecy)
 
 
 def test_quaternion_to_angle_axis_z():
     """Test quaternion_to_angle_axis for 90deg rotations along z."""
     theta, axis = convert.quaternion_to_angle_axis(cst.quatz90)
     assert np.isclose(theta, np.pi/2)
-    assert np.allclose(axis, np.array([0., 0., 1.]))
+    assert np.allclose(axis, cst.vecz)
 
 
 def test_quaternion_to_angle_axis_to_quaternion():

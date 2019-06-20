@@ -9,17 +9,17 @@ import pysingfel.constants as cst
 def test_points_on_1sphere_4y():
     """Test points_on_1sphere for 4 points on axis 'y'."""
     points = generate.points_on_1sphere(4, 'y')
-    assert np.allclose(points[0], np.array([1., 0., 0., 0.]))
+    assert np.allclose(points[0], cst.quat1)
     assert np.allclose(points[1], cst.quaty90)
-    assert np.allclose(points[2], np.array([0., 0., 1., 0.]))
+    assert np.allclose(points[2], cst.quaty)
 
 
 def test_points_on_1sphere_8x():
     """Test points_on_1sphere for 8 points on axis 'x'."""
     points = generate.points_on_1sphere(8, 'x')
-    assert np.allclose(points[0], np.array([1., 0., 0., 0.]))
+    assert np.allclose(points[0], cst.quat1)
     assert np.allclose(points[2], cst.quatx90)
-    assert np.allclose(points[4], np.array([0., 1., 0., 0.]))
+    assert np.allclose(points[4], cst.quatx)
 
 
 class TestPointsOn2Sphere(object):
