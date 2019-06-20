@@ -4,7 +4,7 @@ import sys
 
 from PSCalib.GenericCalibPars import GenericCalibPars
 from PSCalib.CalibParsBasePnccdV1 import CalibParsBasePnccdV1
-from PSCalib.GeometryAccess import GeometryAccess, img_from_pixel_arrays
+from PSCalib.GeometryAccess import GeometryAccess
 
 import pysingfel.geometry as pg
 import pysingfel.util as pu

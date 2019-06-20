@@ -2,10 +2,6 @@ import numpy as np
 import os
 import sys
 
-from PSCalib.GenericCalibPars import GenericCalibPars
-from PSCalib.CalibParsBasePnccdV1 import CalibParsBasePnccdV1
-from PSCalib.GeometryAccess import GeometryAccess, img_from_pixel_arrays
-
 import pysingfel.geometry as pg
 import pysingfel.util as pu
 import pysingfel.crosstalk as pc
