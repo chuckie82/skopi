@@ -1,10 +1,14 @@
 import numpy as np
 import os
+import six
 import sys
 
-from PSCalib.GenericCalibPars import GenericCalibPars
-from PSCalib.CalibParsBasePnccdV1 import CalibParsBasePnccdV1
-from PSCalib.GeometryAccess import GeometryAccess
+if six.PY2:
+    from PSCalib.GenericCalibPars import GenericCalibPars
+    from PSCalib.CalibParsBasePnccdV1 import CalibParsBasePnccdV1
+    from PSCalib.GeometryAccess import GeometryAccess
+else:
+    from psana.pscalib.geometry.GeometryAccess import GeometryAccess
 
 import pysingfel.geometry as pg
 import pysingfel.util as pu
@@ -110,20 +114,29 @@ class PnccdDetector(DetectorBase):
         # first we should parse the path
         parsed_path = geom.split('/')
 
-        cbase = CalibParsBasePnccdV1()
-        calibdir = '/'.join(parsed_path[:-4])
-        group = parsed_path[-4]
-        source = parsed_path[-3]
-        runnum = run_num
-        pbits = 255
-        gcp = GenericCalibPars(cbase, calibdir, group, source, runnum, pbits)
+        if six.PY2:
+            cbase = CalibParsBasePnccdV1()
+            calibdir = '/'.join(parsed_path[:-4])
+            group = parsed_path[-4]
+            source = parsed_path[-3]
+            runnum = run_num
+            pbits = 255
+            gcp = GenericCalibPars(cbase, calibdir, group, source, runnum, pbits)
 
-        self.pedestal = gcp.pedestals()
-        self.pixel_rms = gcp.pixel_rms()
-        self.pixel_mask = gcp.pixel_mask()
-        self.pixel_bkgd = gcp.pixel_bkgd()
-        self.pixel_status = gcp.pixel_status()
-        self.pixel_gain = gcp.pixel_gain()
+            self.pedestal = gcp.pedestals()
+            self.pixel_rms = gcp.pixel_rms()
+            self.pixel_mask = gcp.pixel_mask()
+            self.pixel_bkgd = gcp.pixel_bkgd()
+            self.pixel_status = gcp.pixel_status()
+            self.pixel_gain = gcp.pixel_gain()
+        else:
+            # Currently not implemented in Python 3
+            self.pedestal = None
+            self.pixel_rms = None
+            self.pixel_mask = None
+            self.pixel_bkgd = None
+            self.pixel_status = None
+            self.pixel_gain = None
 
         # Redirect the output stream
         sys.stdout = old_stdout
