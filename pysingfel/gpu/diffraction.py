@@ -69,18 +69,13 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
     cuda_split_index = cuda.to_device(split_index)
     cuda_atom_position = cuda.to_device(atom_position)
     cuda_reciprocal_position = cuda.to_device(reciprocal_space_1d)
-    cuda_pattern_cos = cuda.to_device(pattern_cos)
-    cuda_pattern_sin = cuda.to_device(pattern_sin)
     cuda_form_factor = cuda.to_device(form_factor)
 
     # Calculate the pattern
     calculate_pattern_gpu_back_engine[(pixel_number + 511) // 512, 512](
         cuda_form_factor, cuda_reciprocal_position, cuda_atom_position,
-        cuda_pattern_cos, cuda_pattern_sin, atom_type_num, cuda_split_index,
+        pattern_cos, pattern_sin, atom_type_num, cuda_split_index,
         pixel_number)
-
-    cuda_pattern_cos.to_host()
-    cuda_pattern_sin.to_host()
 
     if return_type == "intensity":
         pattern = np.reshape(np.square(np.abs(pattern_cos + 1j * pattern_sin)), shape[:-1])
