@@ -7,6 +7,23 @@ from pysingfel.util import deprecated
 from . import convert, mapping
 
 
+@deprecated("Please use 'take_slice' or 'extract_slice' instead. "
+            "Note, however, than the signature is different!")
+def take_one_slice(local_index, local_weight, volume, pixel_num, pattern_shape):
+    """
+    Take one slice from the volume given the index and weight and some
+    other information.
+
+    :param local_index: The index containing values to take.
+    :param local_weight: The weight for each index
+    :param volume: The volume to slice from
+    :param pixel_num: pixel number.
+    :param pattern_shape: The shape of the pattern
+    :return: The slice.
+    """
+    return extract_slice(local_index, local_weight, volume)
+
+
 def extract_slice(local_index, local_weight, volume):
     """
     Take one slice from the volume given the index and weight map.
