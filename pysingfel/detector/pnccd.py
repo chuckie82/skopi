@@ -64,7 +64,8 @@ class PnccdDetector(DetectorBase):
 
         # Redirect the output stream
         old_stdout = sys.stdout
-        f = open('Detector_initialization.log', 'w')
+        f = six.StringIO()
+        # f = open('Detector_initialization.log', 'w')
         sys.stdout = f
 
         ###########################################################################################
@@ -140,8 +141,8 @@ class PnccdDetector(DetectorBase):
 
         # Redirect the output stream
         sys.stdout = old_stdout
-        f.close()
-        os.remove('./Detector_initialization.log')
+        # f.close()
+        # os.remove('./Detector_initialization.log')
 
     def assemble_image_stack(self, image_stack):
         """
