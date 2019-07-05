@@ -165,14 +165,14 @@ class DetectorBase(object):
         :return:
         """
         return np.multiply(pattern, self.polarization_correction)
-    
+
     def add_correction(self, pattern):
-	"""
-	Add linear correction to the image stack
+        """
+        Add linear correction to the image stack
         :param pattern: The image stack
         :return:
         """
- 	return np.multiply(pattern, self.linear_correction)
+        return np.multiply(pattern, self.linear_correction)
 
     def add_quantization(self,pattern):
         """
@@ -189,31 +189,31 @@ class DetectorBase(object):
         :return:
         """
         return np.random.poisson(np.multiply(pattern, self.linear_correction))
- 
+
     def add_correction_batch(self,pattern_batch):
         """
         Add corrections to a batch of image stack
         :param pattern_batch [image stack index,image stack shape]
-	:return:
+        :return:
         """
-	return np.multiply(pattern_batch, self.linear_correction[np.newaxis])
-  
+        return np.multiply(pattern_batch, self.linear_correction[np.newaxis])
+
     def add_quantization_batch(self,pattern_batch):
         """
         Add quantization to a batch of image stack
         :param pattern_batch [image stack index, image stack shape]
-	:return:
-	"""
+        :return:
+        """
         return np.random.poisson(pattern_batch)
-    
+
     def add_correction_and_quantization_batch(self, pattern_batch ):
         """
         Add corrections to a batch of image stack and apply quantization to the batch
         :param pattern_batch: [image stack index, image stack shape]
         :return:
-        """        
+        """
         return np.random.poisson(np.multiply(pattern_batch, self.linear_correction[np.newaxis]))
-    
+
     def get_photons(self, particle, device=None):
         """
         Get a simulated photon patterns stack
