@@ -9,6 +9,7 @@ if six.PY2:
     from PSCalib.GeometryAccess import GeometryAccess
 else:
     from psana.pscalib.geometry.GeometryAccess import GeometryAccess
+    from psana.pscalib.calib.MDBWebUtils import calib_constants
 
 import pysingfel.geometry as pg
 import pysingfel.util as pu
@@ -46,7 +47,8 @@ class PnccdDetector(DetectorBase):
                 "/reg/d/psdm/amo/experiment_name/calib/group/source/geometry/0-end.data \n" +
                 "where the '/calib/group/source/geometry/0-end.data' part is essential. \n" +
                 "The address before that part is not essential and can be replaced with" +
-                " your absolute address or relative address.")
+                " your absolute address or relative address.\n"
+                "The experiment_name is also essential in Python 3.")
 
         self.initialize(geom=geom, run_num=run_num)
 
@@ -72,6 +74,7 @@ class PnccdDetector(DetectorBase):
         # Initialize the geometry configuration
         ############################################################################################
         self.geometry = GeometryAccess(geom, 0o377)
+        self.run_num = run_num
 
         # Set coordinate in real space
         temp = self.geometry.get_pixel_coords()
@@ -114,35 +117,84 @@ class PnccdDetector(DetectorBase):
         ###########################################################################################
         # first we should parse the path
         parsed_path = geom.split('/')
+        source = parsed_path[-3]
 
         if six.PY2:
             cbase = CalibParsBasePnccdV1()
             calibdir = '/'.join(parsed_path[:-4])
             group = parsed_path[-4]
-            source = parsed_path[-3]
-            runnum = run_num
             pbits = 255
-            gcp = GenericCalibPars(cbase, calibdir, group, source, runnum, pbits)
+            gcp = GenericCalibPars(cbase, calibdir, group, source, run_num, pbits)
 
-            self.pedestal = gcp.pedestals()
-            self.pixel_rms = gcp.pixel_rms()
-            self.pixel_mask = gcp.pixel_mask()
-            self.pixel_bkgd = gcp.pixel_bkgd()
-            self.pixel_status = gcp.pixel_status()
-            self.pixel_gain = gcp.pixel_gain()
+            self._pedestals = gcp.pedestals()
+            self._pixel_rms = gcp.pixel_rms()
+            self._pixel_mask = gcp.pixel_mask()
+            self._pixel_bkgd = gcp.pixel_bkgd()
+            self._pixel_status = gcp.pixel_status()
+            self._pixel_gain = gcp.pixel_gain()
         else:
-            # Currently not implemented in Python 3
-            self.pedestal = None
-            self.pixel_rms = None
-            self.pixel_mask = None
-            self.pixel_bkgd = None
-            self.pixel_status = None
-            self.pixel_gain = None
+            self.det = "pnccd_000" + source[-1]
+            self.exp = parsed_path[-5]
+
+            self._pedestals = None
+            self._pixel_rms = None
+            self._pixel_mask = None
+            self._pixel_bkgd = None
+            self._pixel_status = None
+            self._pixel_gain = None
 
         # Redirect the output stream
         sys.stdout = old_stdout
         # f.close()
         # os.remove('./Detector_initialization.log')
+
+    @property
+    def pedestals(self):
+        if six.PY3 and not self._pedestals:
+            self._pedestals = calib_constants(
+                self.det, exp=self.exp, ctype="pedestals",
+                run=self.run_num)[0]
+        return self._pedestals
+
+    @property
+    def pixel_rms(self):
+        if six.PY3 and not self._pixel_rms:
+            self._pixel_rms = calib_constants(
+                self.det, exp=self.exp, ctype="pixel_rms",
+                run=self.run_num)[0]
+        return self._pixel_rms
+
+    @property
+    def pixel_mask(self):
+        if six.PY3 and not self._pixel_mask:
+            self._pixel_mask = calib_constants(
+                self.det, exp=self.exp, ctype="pixel_mask",
+                run=self.run_num)[0]
+        return self._pixel_mask
+
+    @property
+    def pixel_bkgd(self):
+        if six.PY3 and not self._pixel_bkgd:
+            self._pixel_bkgd = calib_constants(
+                self.det, exp=self.exp, ctype="pixel_bkgd",
+                run=self.run_num)[0]
+        return self._pixel_bkgd
+
+    @property
+    def pixel_status(self):
+        if six.PY3 and not self._pixel_status:
+            self._pixel_status = calib_constants(
+                self.det, exp=self.exp, ctype="pixel_status",
+                run=self.run_num)[0]
+        return self._pixel_status
+
+    @property
+    def pixel_gain(self):
+        if six.PY3 and not self._pixel_gain:
+            self._pixel_gain = calib_constants(
+                self.det, exp=self.exp, ctype="pixel_gain",
+                run=self.run_num)[0]
+        return self._pixel_gain
 
     def assemble_image_stack(self, image_stack):
         """

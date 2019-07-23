@@ -88,13 +88,13 @@ class PlainDetector(DetectorBase):
         # Initialize the pixel effects
         ##########################################################################################
         # Initialize the detector effect parameters
-        self.pedestal = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
-        self.pixel_rms = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
-        self.pixel_bkgd = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
-        self.pixel_status = np.zeros(
+        self._pedestal = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
+        self._pixel_rms = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
+        self._pixel_bkgd = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
+        self._pixel_status = np.zeros(
             (self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
-        self.pixel_mask = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
-        self.pixel_gain = np.ones((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
+        self._pixel_mask = np.zeros((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
+        self._pixel_gain = np.ones((self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
 
         # Initialize the pixel effects
         self.initialize_pixels_with_beam(beam=beam)
