@@ -88,46 +88,9 @@ class SolventAccessibleSurface(object):
             points.append([atoms[i,0], atoms[i,1], atoms[i, 2]])
         tree = KDTree(points,leaf_size=2)
         print 'RADIUS=',radius,'\n'
-        all_nn_indices = tree.query_radius(points,r=np.transpose(radius)) # NNs within distance of 1.5 of point
-        #for j in range (100):
-        #print "dist0",j,"=",self.distance(atoms,j,9),"\n"
-        #for i in range(len(all_nn_indices)):
-        #print all_nn_indices[i],'\n'
-
-
-        #print all_nn_indices
-        #print all_nn_indices[2],'\n'
-
-        #ann = np.array(all_nn_indices,dtype=np.int32)
-        #print ann
-        #print(all_nn_indices[0])
-        #print all_nn_indices.shape
-        #all_nns = [[points[idx] for idx in nn_indices] for nn_indices in all_nn_indices]
-
-        #n.append(all_nn_indices)
-
-        #ann = np.array(an,dtype=np.int32)
-
-        #sys.exit()
+        all_nn_indices = tree.query_radius(points,r=np.transpose(radius)) # NNs
         return all_nn_indices
 
-    '''
-
-    for nns in all_nns:
-        print(nns)
-        neighbor_indices = []
-        atom_k = atoms[k]
-        radius =  atom_k[3] + probe + probe #atom_k.radius + probe + probe
-        indices = range(k)
-        indices.extend(range(k + 1, len(atoms)))
-        for i in indices:
-            atom_i = atoms[i]
-            dist = np.sqrt((atom_k[0] - atom_i[0])**2 + (atom_k[1] - atom_i[1])**2 + (atom_k[2] - atom_i[2])**2)
-            if dist < radius + atom_i[3]:
-                neighbor_indices.append(i)
-        return neighbor_indices
-        
-    '''
 
     def calculate_asa(self, atoms, probe=1.4, n_sphere_point=100):
 
@@ -140,7 +103,7 @@ class SolventAccessibleSurface(object):
 
         test_point = np.zeros((3,1))
         sphere_points = self.generate_sphere_points(n_sphere_point)
-        #sphere_points = self.gen_new_sphere_dots(probe,5.0)
+        
         points = len(sphere_points)
         const = 4.0 * math.pi / len(sphere_points)
         areas = []
@@ -150,8 +113,8 @@ class SolventAccessibleSurface(object):
         sp = np.asarray(sphere_points)
         count = 0
         total_count = 0
-        #atoms = atoms[0:20]
-        mm = 0
+        
+        
         neighbor_indices = self.find_tree_neighbors(atoms,probe)
         #print neighbor_indices.shape
 
@@ -161,17 +124,6 @@ class SolventAccessibleSurface(object):
             if i % 1000 == 0:
                 print(i)
             
-            
-            
-            
-            #neighbor_indices = self.find_neighbor_indices(atoms, probe, i)
-            #neighbor_indices = self.find_tree_neighbors(atoms,probe,i)
-            #print neighbor_indices.shape
-
-            #sys.exit()
-            #n_neighbor = len(neighbor_indices)
-            #print "ni",i,"=",len(neighbor_indices[i]),'\n'
-
             n_neighbor = len(neighbor_indices[i])
             j_closest_neighbor = 0
             radius = atom_i[3] + max_radius + probe
