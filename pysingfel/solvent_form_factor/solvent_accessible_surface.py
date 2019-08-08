@@ -22,7 +22,7 @@ class SolventAccessibleSurface(object):
         indices.extend(range(k + 1, len(atoms)))
         for i in indices:
             atom_i = atoms[i]
-            dist = np.sqrt((atom_k[0] - atom_i[0])**2 + (atom_k[1] - atom_i[1])**2 + (atom_k[2] - atom_i[2])**2)
+            dist = math.sqrt((atom_k[0] - atom_i[0])**2 + (atom_k[1] - atom_i[1])**2 + (atom_k[2] - atom_i[2])**2)
             if dist < radius + atom_i[3]:
                 neighbor_indices.append(i)
         print neighbor_indices
@@ -43,7 +43,7 @@ class SolventAccessibleSurface(object):
             y = k * offset - 1 + (offset / 2)
             r = np.sqrt(1 - y * y)
             phi = k * inc
-            points.append([np.cos(phi) * r, r*y, np.sin(phi) * r])
+            points.append([np.cos(phi) * r, y, np.sin(phi) * r])
 
         return points
 
@@ -78,7 +78,7 @@ class SolventAccessibleSurface(object):
         return np.sqrt((atom_i[0]-atom_j[0])**2 + (atom_i[1]-atom_i[1])**2 + (atom_i[2]-atom_i[2])**2)
 
     def find_tree_neighbors(self,atoms,probe):
-        an = []
+        
 
         points = []
         p = np.ones((len(atoms),1),dtype=np.int32)
@@ -86,7 +86,7 @@ class SolventAccessibleSurface(object):
 
         for i in range(len(atoms)):
             points.append([atoms[i,0], atoms[i,1], atoms[i, 2]])
-        tree = BallTree(points)
+        tree = KDTree(points,leaf_size=2)
         print 'RADIUS=',radius,'\n'
         all_nn_indices = tree.query_radius(points,r=np.transpose(radius)) # NNs within distance of 1.5 of point
         #for j in range (100):
@@ -160,6 +160,10 @@ class SolventAccessibleSurface(object):
         for i, atom_i in enumerate(atoms):
             if i % 1000 == 0:
                 print(i)
+            
+            
+            
+            
             #neighbor_indices = self.find_neighbor_indices(atoms, probe, i)
             #neighbor_indices = self.find_tree_neighbors(atoms,probe,i)
             #print neighbor_indices.shape
@@ -170,7 +174,7 @@ class SolventAccessibleSurface(object):
 
             n_neighbor = len(neighbor_indices[i])
             j_closest_neighbor = 0
-            radius = probe + atom_i[3] + max_radius
+            radius = atom_i[3] + max_radius + probe
 
             n_accessible_point = 0
 
@@ -198,9 +202,13 @@ class SolventAccessibleSurface(object):
                     r = atom_j[3] + probe
                     #print "r=",r,'\n'
                     #print "r2=",r*r,'\n'
-                    diff = np.sqrt((atom_j[0]-test_point[0])**2 + (atom_j[1] - test_point[1])**2 + (atom_j[2]-test_point[2])**2)
+                    xsq=(atom_j[0]-test_point[0])*(atom_j[0]-test_point[0])
+                    ysq=(atom_j[1]-test_point[1])*(atom_j[1]-test_point[1])
+                    zsq=(atom_j[2]-test_point[2])*(atom_j[2]-test_point[2])
+                    
+                    diffsq = xsq + ysq + zsq
                     #print "diff2=",diff*diff,'\n'
-                    if diff * diff < r * r:
+                    if diffsq < r * r:
                         j_closest_neighbor = j
                         is_accessible = False
                         break
@@ -214,7 +222,7 @@ class SolventAccessibleSurface(object):
             areas.append(area)
             sas.append(sa)
             fractions.append(fraction)
-            
+            #print(n_accessible_point)
             count +=1
         f = np.array(fractions)
         a = np.array(areas)
@@ -222,178 +230,3 @@ class SolventAccessibleSurface(object):
              
         return a,f,s
 
-
-
-
-    def make_boxes(self,a, d_max):
-
-        """
-        :param self:
-        :param a:
-        :param d_max:
-        :return:
-
-        Returns dictionary which keys are indecies of boxes (regions)
-        with d_max length side and values
-        are indicies of atoms belonging to these boxes
-        """
-
-        b = defaultdict(list)  # space divided into boxes
-        for i in xrange(len(a)):
-            atom = a[i]
-            box_coor = tuple((int(math.floor(atom[0] / d_max)),int(math.floor(atom[1]/d_max)),int(math.floor(atom[2]/d_max))))
-            b[box_coor].append(i)
-        return b
-
-
-    def add_bond(self,a, a1, a2, conn, d_max):
-        """
-
-        :param self:
-        :param a:
-        :param a1:
-        :param a2:
-        :param conn:
-        :param d_max:
-        :return:
-
-        If distance between atoms a1 and a2 is less than d_max (neighboring atoms),
-        add atoms a1 and a2 in adjacency list connected to each other
-        """
-
-        atom1 = a[a1]
-        atom2 = a[a2]
-        if ((atom1[0] - atom2[0])**2 + (atom1[1]-atom2[1])**2 + (atom1[2] - atom2[2])**2) <= d_max * d_max:  # connected
-            conn[a1].append(a2)
-            conn[a2].append(a1)
-
-
-    def neighbor_atoms(self,b, box):
-
-        """
-        :param self:
-        :param b:
-        :param box:
-        :return:
-
-        Returns list of atoms from half of neighbouring boxes of the box
-        another half is accounted when symmetric (opposite) boxes considered
-        """
-
-        na = []  # list for neighboring atoms
-        x, y, z = box  # coordinates of the box
-        # top layer consisting of 9 boxes
-        if (x + 1, y + 1, z + 1) in b: na.extend(b[(x + 1, y + 1, z + 1)])
-        if (x, y + 1, z + 1) in b: na.extend(b[(x, y + 1, z + 1)])
-        if (x + 1, y, z + 1) in b: na.extend(b[(x + 1, y, z + 1)])
-        if (x, y, z + 1) in b: na.extend(b[(x, y, z + 1)])
-        if (x - 1, y + 1, z + 1) in b: na.extend(b[(x - 1, y + 1, z + 1)])
-        if (x + 1, y - 1, z + 1) in b: na.extend(b[(x + 1, y - 1, z + 1)])
-        if (x, y - 1, z + 1) in b: na.extend(b[(x, y - 1, z + 1)])
-        if (x - 1, y, z + 1) in b: na.extend(b[(x - 1, y, z + 1)])
-        if (x - 1, y - 1, z + 1) in b: na.extend(b[(x - 1, y - 1, z + 1)])
-        # half of the middle layer excluding the box itself (4 boxes)
-        if (x + 1, y + 1, z) in b: na.extend(b[(x + 1, y + 1, z)])
-        if (x, y + 1, z) in b: na.extend(b[(x, y + 1, z)])
-        if (x + 1, y, z) in b: na.extend(b[(x + 1, y, z)])
-        if (x + 1, y - 1, z) in b: na.extend(b[(x + 1, y - 1, z)])
-        return na
-
-
-    def adjacency_list(self,a, d_max):
-
-        """
-        :param self:
-        :param a:
-        :param d_max:
-        :return:
-
-        Returns adjacency list from coordinate file
-        in O(len(a)) time
-        """
-
-        b = self.make_boxes(a, d_max)  # put atoms into the boxes with dmax length side
-        # now go on boxes and check connections inside 3x3 superboxes
-        conn = [[] for i in xrange(len(a))]  # list of bond lengths each atom implicated
-        for box in b:
-            lb = len(b[box])
-            for i in range(lb):
-                a1 = b[box][i]
-                # check possible connections inside the box
-                for j in range(i + 1, lb):
-                    a2 = b[box][j]
-                    self.add_bond(a, a1, a2, conn, d_max)
-                # check connections with atoms from neighbouring boxes
-                na = self.neighbor_atoms(b, box)  # list of such atoms
-                for a2 in na:
-                    self.add_bond(a, a1, a2, conn, d_max)
-        return conn
-
-
-    def find_neighbor_indices_modified(self,atoms, indices, probe, k):
-        """
-        Returns list of indices of atoms within probe distance to atom k.
-        """
-        neighbor_indices = []
-        atom_k = atoms[k]
-        radius = atom_k[3] + probe + probe
-        for i in indices:
-            if i == k: continue
-            atom_i = atoms[i]
-            dist2 = (atom_k[0]-atom_i[0])**2 + (atom_k[1]-atom_i[1])**2 + (atom_k[2]-atom_i[2])**2 # ToAn
-            if dist2 < (radius + atom_i[3]) ** 2:  # ToAn
-                neighbor_indices.append(i)
-        return neighbor_indices
-
-
-    def calculate_asa_optimized(self,atoms, probe, n_sphere_point=960):
-        """
-        Returns the accessible-surface areas of the atoms, by rolling a
-        ball with probe radius over the atoms with their radius
-        defined.
-        """
-        max_radius = 3.0
-        sphere_points = self.generate_sphere_points(n_sphere_point)
-
-        const = 4.0 * math.pi / len(sphere_points)
-        areas = []
-        fractions = []
-        sas = []
-        
-        neighbor_list = self.adjacency_list(atoms, 2 * (probe + max(atoms, key=lambda p: p[3])[3]))
-        print "Before loop..."
-        for i, atom_i in enumerate(atoms):
-            print(i)
-            neighbor_indices = [neig for neig in neighbor_list[i]]
-            neighbor_indices = self.find_neighbor_indices_modified(atoms, neighbor_indices, probe,i)  # even further narrow diapazon
-            n_neighbor = len(neighbor_indices)
-            j_closest_neighbor = 0
-            radius = probe + atom_i[3] + max_radius
-
-            n_accessible_point = 0
-            for point in sphere_points:
-                is_accessible = True
-                test_point = np.array([(radius*point[0]+atom_i[0]),(radius*point[1] + atom_i[1]), (radius*point[2] + atom_i[2])])
-
-                cycled_indices = range(j_closest_neighbor, n_neighbor)
-                cycled_indices.extend(range(j_closest_neighbor))
-
-                for j in cycled_indices:
-                    atom_j = atoms[neighbor_indices[j]]
-                    r = atom_j[3] + probe
-                    diff2 = (atom_j[0] - test_point[0])**2 + (atom_j[1] - test_point[1])**2 + (atom_j[2]-test_point[2])**2
-                    if diff2 < r * r:
-                        j_closest_neighbor = j
-                        is_accessible = False
-                        break
-                if is_accessible:
-                    n_accessible_point += 1
-
-            area = const * n_accessible_point * radius * radius
-            fraction = float(n_accessible_point)/len(sphere_points)
-            sa = 4.0 * np.pi * radius * radius
-            areas.append(area)
-            fractions.append(fraction)
-            sas.append(sa)
-
-        return areas,fractions,sas
