@@ -2,10 +2,6 @@ import numpy as np
 import os
 import sys
 
-from PSCalib.GenericCalibPars import GenericCalibPars
-from PSCalib.CalibParsBasePnccdV1 import CalibParsBasePnccdV1
-from PSCalib.GeometryAccess import GeometryAccess, img_from_pixel_arrays
-
 import pysingfel.geometry as pg
 import pysingfel.util as pu
 import pysingfel.crosstalk as pc
@@ -64,15 +60,39 @@ class DetectorBase(object):
         self.linear_correction = None
 
         # Detector effects
-        self.pedestal = 0
-        self.pixel_rms = 0
-        self.pixel_bkgd = 0
-        self.pixel_status = 0
-        self.pixel_mask = 0
-        self.pixel_gain = 0
+        self._pedestal = 0
+        self._pixel_rms = 0
+        self._pixel_bkgd = 0
+        self._pixel_status = 0
+        self._pixel_mask = 0
+        self._pixel_gain = 0
 
         # self.geometry currently only work for the pre-defined detectors
         self.geometry = None
+
+    @property
+    def pedestals(self):
+        return self._pedestals
+
+    @property
+    def pixel_rms(self):
+        return self._pixel_rms
+
+    @property
+    def pixel_mask(self):
+        return self._pixel_mask
+
+    @property
+    def pixel_bkgd(self):
+        return self._pixel_bkgd
+
+    @property
+    def pixel_status(self):
+        return self._pixel_status
+
+    @property
+    def pixel_gain(self):
+        return self._pixel_gain
 
     def initialize_pixels_with_beam(self, beam=None):
         """
