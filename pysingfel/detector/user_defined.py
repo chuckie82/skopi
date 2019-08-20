@@ -2,10 +2,6 @@ import numpy as np
 import os
 import sys
 
-from PSCalib.GenericCalibPars import GenericCalibPars
-from PSCalib.CalibParsBasePnccdV1 import CalibParsBasePnccdV1
-from PSCalib.GeometryAccess import GeometryAccess, img_from_pixel_arrays
-
 import pysingfel.geometry as pg
 import pysingfel.util as pu
 import pysingfel.crosstalk as pc
@@ -104,37 +100,37 @@ class UserDefinedDetector(DetectorBase):
         ##########################################################################################
         # Detector effects
         if 'pedestal' in geom:
-            self.pedestal = geom['pedestal'].astype(np.float64)
+            self._pedestal = geom['pedestal'].astype(np.float64)
         else:
-            self.pedestal = np.zeros(
+            self._pedestal = np.zeros(
                 (self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
 
         if 'pixel rms' in geom:
-            self.pixel_rms = geom['pixel rms'].astype(np.float64)
+            self._pixel_rms = geom['pixel rms'].astype(np.float64)
         else:
-            self.pixel_rms = np.zeros(
+            self._pixel_rms = np.zeros(
                 (self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
 
         if 'pixel bkgd' in geom:
-            self.pixel_bkgd = geom['pixel bkgd'].astype(np.float64)
+            self._pixel_bkgd = geom['pixel bkgd'].astype(np.float64)
         else:
-            self.pixel_bkgd = np.zeros(
+            self._pixel_bkgd = np.zeros(
                 (self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
 
         if 'pixel status' in geom:
-            self.pixel_status = geom['pixel status'].astype(np.float64)
+            self._pixel_status = geom['pixel status'].astype(np.float64)
         else:
-            self.pixel_status = np.zeros(
+            self._pixel_status = np.zeros(
                 (self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
 
         if 'pixel mask' in geom:
-            self.pixel_mask = geom['pixel mask'].astype(np.float64)
+            self._pixel_mask = geom['pixel mask'].astype(np.float64)
         else:
-            self.pixel_mask = np.zeros(
+            self._pixel_mask = np.zeros(
                 (self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
 
         if 'pixel gain' in geom:
-            self.pixel_gain = geom['pixel gain'].astype(np.float64)
+            self._pixel_gain = geom['pixel gain'].astype(np.float64)
         else:
-            self.pixel_gain = np.ones(
+            self._pixel_gain = np.ones(
                 (self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
