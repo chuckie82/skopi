@@ -6,7 +6,6 @@ import pysingfel as ps
 import pysingfel.geometry as pg
 import pysingfel.util as pu
 import pysingfel.crosstalk as pc
-import pysingfel.gpu.diffraction as pgd
 from pysingfel.util import deprecation_message
 from pysingfel import particle
 from pysingfel.particlePlacement import max_radius, distribute_particles
@@ -157,6 +156,7 @@ class DetectorBase(object):
                 "Device option is deprecated. "
                 "Everything now runs on the GPU.")
 
+        import pysingfel.gpu.diffraction as pgd  # Only import GPU if needed
         diffraction_pattern = pgd.calculate_diffraction_pattern_gpu(
             self.pixel_position_reciprocal,
             particle,
@@ -200,6 +200,7 @@ class DetectorBase(object):
                 "Device option is deprecated. "
                 "Everything now runs on the GPU.")
 
+        import pysingfel.gpu.diffraction as pgd  # Only import GPU if needed
         diffraction_pattern = pgd.calculate_diffraction_pattern_gpu(
             self.pixel_position_reciprocal,
             particle,
