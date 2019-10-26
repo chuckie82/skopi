@@ -148,7 +148,7 @@ class Particle(object):
         :return:
         """
 
-        atoms = symmpdb(fname)
+        atoms = symmpdb(fname, ff)
         self.atom_pos = atoms[:, 0:3] / 10 ** 10  # convert unit from Angstroms to m
         tmp = (100 * atoms[:, 3] + atoms[:, 4]).astype(
             int)  # hack to get split idx from the sorted atom array
@@ -200,7 +200,6 @@ class Particle(object):
                     flag = True
                     for j in idx1:
                         if int(wk_dbase[j, 1]) == qq:
-                            # print "Enter: ", j
                             [a1, a2, a3, a4, a5, c, b1, b2, b3, b4, b5] = wk_dbase[j, 2:]
 
                             ff = (a1 * np.exp(-b1 * self.q_sample ** 2) +
@@ -237,6 +236,51 @@ class Particle(object):
             self.num_compton_q_samples = len(ffdbase[:, 0])
             self.sBound = np.zeros(self.num_q_samples)
             self.nFree = np.zeros(self.num_q_samples)
+        elif ff == 'CM':
+            """
+            Here, one tries to calculate the form factor from formula and tables.
+            Therefore, one needs to setup some reference points for interpolation.
+            Here, the qs variable is such a variable containing the momentum length
+            at which one calculate the reference values.
+            """
+            # set up q samples and compton
+            qs = np.linspace(0, 10, 101) / (2.0 * np.pi * 0.529177206 * 2.0)
+            self.q_sample = qs
+            self.compton_q_sample = qs
+            self.num_q_samples = len(qs)
+            self.num_compton_q_samples = len(qs)
+            self.sBound = np.zeros(self.num_q_samples)
+            self.nFree = np.zeros(self.num_q_samples)
+            self.ff_table = None
+
+            # calculate form factor using WaasKirf coeffs table
+            cm_dbase = load_cromermann_database()
+
+            for i in idx:
+                zz = int(atoms[i, 3])  # atom type
+                qq = int(atoms[i, 4])  # charge
+                idx1 = np.where(cm_dbase[:, 0] == zz)[0]
+                flag = True
+                for j in idx1:
+                    if int(cm_dbase[j, 1]) == qq:
+                        [a1, a2, a3, a4, c, b1, b2, b3, b4] = cm_dbase[j, 2:]
+                        if self.ff_table is None:
+                            self.ff_table = (a1 * np.exp(-b1 * self.q_sample ** 2) +
+                                             a2 * np.exp(-b2 * self.q_sample ** 2) +
+                                             a3 * np.exp(-b3 * self.q_sample ** 2) +
+                                             a4 * np.exp(-b4 * self.q_sample ** 2) + c)
+                        else:
+                            ff = (a1 * np.exp(-b1 * self.q_sample ** 2) +
+                                  a2 * np.exp(-b2 * self.q_sample ** 2) +
+                                  a3 * np.exp(-b3 * self.q_sample ** 2) +
+                                  a4 * np.exp(-b4 * self.q_sample ** 2) + c)
+
+                            self.ff_table = np.vstack((self.ff_table, ff))
+                        flag = False
+                        break
+                if flag:
+                    print('Atom number = ' + str(zz) + ' with charge ' + str(qq))
+                    raise ValueError('Unrecognized atom type!')
         else:
             raise ValueError('Unrecognized form factor source!')
 

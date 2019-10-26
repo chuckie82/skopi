@@ -1,6 +1,6 @@
 import h5py
 import numpy as np
-from pysingfel.ff_waaskirf_database import load_waaskirf_database
+from pysingfel.ff_waaskirf_database import load_waaskirf_database, load_cromermann_database
 
 def deprecation_message(message):
     """Print a deprecation message.
@@ -125,7 +125,7 @@ def read_geomfile(fname):
 
 
 # Read pdb file and return atom position and type
-def symmpdb(fname):
+def symmpdb(fname, ff='WK'):
     """
     Parse the pdb file. This function can handle the REMARK 350 correctly.
     :param fname: The address of the pdb file.
@@ -141,7 +141,14 @@ def symmpdb(fname):
     trans_dict = {}  # dict to save the symmetry translations and chain id
     atom_count = 0
     line = fin.readline()
-    dbase = load_waaskirf_database()
+    if ff == 'WK':
+        dbase = load_waaskirf_database()
+    elif ff == 'CM':
+        dbase = load_cromermann_database()
+    else:
+        print "Undefined form factor type"
+        exit()
+
     list1 = [atomType[0] for atomType in dbase]
     # list2 = [charges[0] for charges in dbase]
     while line:
