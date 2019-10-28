@@ -146,8 +146,7 @@ def symmpdb(fname, ff='WK'):
     elif ff == 'CM':
         dbase = load_cromermann_database()
     else:
-        print "Undefined form factor type"
-        exit()
+        raise ValueError("Undefined form factor type")
 
     list1 = [atomType[0] for atomType in dbase]
     # list2 = [charges[0] for charges in dbase]
