@@ -155,7 +155,7 @@ class Particle(object):
         atom_type, idx = np.unique(np.sort(tmp), return_index=True)
         self.num_atom_types = len(atom_type)
         self.split_idx = np.append(idx, [len(tmp)])
-
+        bohr_radius = 0.529177206
         if ff == 'WK':
             """
             Here, one tries to calculate the form factor from formula and tables.
@@ -163,8 +163,9 @@ class Particle(object):
             Here, the qs variable is such a variable containing the momentum length
             at which one calculate the reference values.
             """
+            
             # set up q samples and compton
-            qs = np.linspace(0, 10, 101) / (2.0 * np.pi * 0.529177206 * 2.0)
+            qs = np.linspace(0, 10, 101) / (2.0 * np.pi * bohr_radius * 2.0)
             self.q_sample = qs
             self.compton_q_sample = qs
             self.num_q_samples = len(qs)
@@ -228,10 +229,10 @@ class Particle(object):
                     qq = int(atoms[i, 4])  # charge
                     self.ff_table = np.vstack(
                         (self.ff_table, ffdbase[:, zz] * (zz - qq) / (zz * 1.0)))
-
+           
             # set up q samples and compton
-            self.q_sample = ffdbase[:, 0] / (2.0 * np.pi * 0.529177206 * 2.0)
-            self.compton_q_sample = ffdbase[:, 0] / (2.0 * np.pi * 0.529177206 * 2.0)
+            self.q_sample = ffdbase[:, 0] / (2.0 * np.pi * bohr_radius  * 2.0)
+            self.compton_q_sample = ffdbase[:, 0] / (2.0 * np.pi * g * 2.0)
             self.num_q_samples = len(ffdbase[:, 0])
             self.num_compton_q_samples = len(ffdbase[:, 0])
             self.sBound = np.zeros(self.num_q_samples)
@@ -299,13 +300,13 @@ class Particle(object):
             total_atom = [coordinates[0], coordinates[1], coordinates[2], atomic_number, 0]
             all_atoms.append(total_atom)                                      # charge = 0 (by default)
         atoms = np.asarray(all_atoms)
-
+        
         self.atom_pos = atoms[:, 0:3] * 1e-10
         tmp = (100 * atoms[:, 3] + atoms[:, 4]).astype(int)
         atom_type, idx = np.unique(np.sort(tmp), return_index=True)
         self.num_atom_types = len(atom_type)
         self.split_idx = np.append(idx, [len(tmp)])
-        qs = np.linspace(0, 10, 101) / (2.0 * np.pi * 0.529177206 * 2.0)
+        qs = np.linspace(0, 10, 101) / (2.0 * np.pi * bohr_radius  * 2.0)
         self.q_sample = qs
         self.compton_q_sample = qs
         self.num_q_samples = len(qs)
