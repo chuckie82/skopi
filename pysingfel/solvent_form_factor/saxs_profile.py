@@ -1,6 +1,6 @@
 import sys
 import form_factor_table
-import radial_distribution_function
+import new_rdf_libsaxs
 import numpy as np
 
 class Profile:
@@ -21,7 +21,10 @@ class Profile:
         for i in range(1,self.nsamples):
 
             self.q[i] = self.q[i-1] + q_delta
-            
+        
+        self.vacuum_ff = None
+
+        self.dummy_ff = None
         self.rgyration = 0.0
         self.npartials = 0
         self.vac_vac = np.zeros((self.nsamples,1))
@@ -86,7 +89,7 @@ class Profile:
 
         self.In = np.zeros((self.nsamples,1),dtype=np.float64)
 
-def calculate_profile_partial (prof,particles,surf_area,ft,vff,dff,ff_type='HEAVY_ATOMS'):
+def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,ff_type='HEAVY_ATOMS'):
    
       
     r_size = 3
@@ -105,10 +108,11 @@ def calculate_profile_partial (prof,particles,surf_area,ft,vff,dff,ff_type='HEAV
     unique_elem = unique_elem.astype(np.int32)
  
     print("Start partial profile calculation for %d particles.\n " % len(coordinates))
+    
+    prof.vacuum_ff = np.zeros((len(coordinates),prof.nsamples),dtype=np.float64)
 
-    vacuum_ff = np.zeros((len(coordinates),prof.nsamples),dtype=np.float32)
+    prof.dummy_ff = np.zeros((len(coordinates),prof.nsamples),dtype=np.float64)
 
-    dummy_ff = np.zeros((len(coordinates),prof.nsamples),dtype=np.float32)
     water_ff = 0
     h2o_ff_i = 0
     h2o_ff_j = 0
@@ -122,10 +126,12 @@ def calculate_profile_partial (prof,particles,surf_area,ft,vff,dff,ff_type='HEAV
         #    if unique_elem[i] == elements[m]:
         #        # print m,unique_elem[i],'\n'
         #        break
-        #print "m=",m,"\n"
+        print "m=",m,"\n"
         if elements[m] == 6:
             i = 2
-
+            
+        #print vff[2,:]
+        #sys.exit()
         if elements[m] == 7:
             i = 3
         if elements[m] == 8:
@@ -136,85 +142,90 @@ def calculate_profile_partial (prof,particles,surf_area,ft,vff,dff,ff_type='HEAV
             i == 9
         if elements[m] == 17:
             i = 10
-
-        vacuum_ff[m,:]   = vff[i,:]
-        print vacuum_ff[m,:]
-
             
-        
+        #print unique_elem[i]
+       
+        #print elements[0].astype(np.int32)
+        prof.vacuum_ff[m,:]   = vff[i,:]
+        #print vacuum_ff[m,:]
+
         #print m,i,vff[i,0],'\n'
-        dummy_ff[m,:]   = dff[i,:]
+        prof.dummy_ff[m,:]   = dff[i,:]
             
            
         #print len(surface)
         #print len(coordinates)
                 
-        if len(surf_area) == len(coordinates):
-            water_ff = np.resize(water_ff,(len(coordinates),1))
-            r_size = 6
+    if len(saxs_sa) == len(coordinates):
+        water_ff = np.resize(water_ff,(len(coordinates),1))
+        r_size = 6
                     
-            #print wf.shape
-            for n in range(len(coordinates)):
-                water_ff[n] = surf_area[n] * wf
+        #print wf.shape
+        for n in range(len(coordinates)):
+            water_ff[n] = saxs_sa[n] * wf
                 
     
     r_dist = []
+    #mdist = scipy.spatial.distance.cdist(coordinates,coordinates)
     max_dist = calculate_max_distance(coordinates)
-
+    
+    #sf = Sinc_func.Sinc_func(np.sqrt(max_dist * 3.0), 0.0001)
+    
+    
     for i in range(r_size):
-        r_dist.append(radial_distribution_function.RadialDistributionFunction(0.5,max_dist))
+        r_dist.append(new_rdf_libsaxs.RadialDistributionFunction(0.5,max_dist))
    
     for i in range(len(coordinates)):
         
         print i
-        vac_ff_i = vacuum_ff[i,0]
-        dum_ff_i = dummy_ff[i,0]
-        if len(surf_area) == len(coordinates):
+        vac_ff_i = prof.vacuum_ff[i,0]
+        dum_ff_i = prof.dummy_ff[i,0]
+        if len(saxs_sa) == len(coordinates):
             h2o_ff_i = water_ff[i]
             
         for j in range(i+1,len(coordinates)):
             
                 
-            vac_ff_j = vacuum_ff[j,0]
-            dum_ff_j = dummy_ff[j,0]
+            vac_ff_j = prof.vacuum_ff[j,0]
+            dum_ff_j = prof.dummy_ff[j,0]
             
-            dist = np.sqrt((coordinates[i,0]-coordinates[j,0])**2 + (coordinates[i,1]-coordinates[j,1])**2 + (coordinates[i,2]-coordinates[j,2])**2)
-            print 2*vac_ff_i*vac_ff_j
-            #sys.exit()
-            r_dist[0] = radial_distribution_function.add2distribution(r_dist[0],dist,
-                                 2.0 * vac_ff_i * vac_ff_j) #  constant
-            r_dist[1] = radial_distribution_function.add2distribution(r_dist[1],dist,
+            dist = (coordinates[i,0]-coordinates[j,0])**2 + (coordinates[i,1]-coordinates[j,1])**2 + (coordinates[i,2]-coordinates[j,2])**2
+            #print 2*vac_ff_i*vac_ff_j
+                #sys.exit()
+            r_dist[0] = new_rdf_libsaxs.add2distribution(r_dist[0],dist,
+                            2.0 * vac_ff_i * vac_ff_j) #  constant
+            r_dist[1] = new_rdf_libsaxs.add2distribution(r_dist[1],dist,
                                            2.0 * dum_ff_i * dum_ff_j) # c1^2
-            r_dist[2] = radial_distribution_function.add2distribution(r_dist[2],dist,
-                                 2.0 * (vac_ff_i * dum_ff_j +
-                                      vac_ff_j * dum_ff_i)) # -c1
-            if len(surf_area) == len(coordinates):
+            r_dist[2] = new_rdf_libsaxs.add2distribution(r_dist[2],dist,
+                               2.0 * (vac_ff_i * dum_ff_j +
+                                     vac_ff_j * dum_ff_i)) # -c1
+            if len(saxs_sa) == len(coordinates):
                 
-                h2o_ff_j = water_ff * surf_area[j]
+                h2o_ff_j = water_ff * saxs_sa[j]
                     
-                r_dist[3] = radial_distribution_function.add2distribution(r_dist[3], dist, (2.0 * h2o_ff_i * h2o_ff_j)) # c2^2
-                r_dist[4] = radial_distribution_function.add2distribution(r_dist[4],dist,
-                                     2.0 * (vac_ff_i * h2o_ff_j +
-                                          vac_ff_j * h2o_ff_i)) # c2
-                r_dist[5] =  radial_distribution_function.add2distribution(r_dist[5],dist,
-                                     2.0 * (h2o_ff_i * dum_ff_j +
-                                          h2o_ff_j * dum_ff_i))# -c1*c2
+                r_dist[3] = new_rdf_libsaxs.add2distribution(r_dist[3], dist, 2.0 *   3.5 * 3.5) #h2o_ff_i * h2o_ff_j) # c2^2
+                r_dist[4] = new_rdf_libsaxs.add2distribution(r_dist[4],dist,
+                                     2.0 * (vac_ff_i * 3.5 +
+                                          vac_ff_j * 3.5)) # c2
+                r_dist[5] =  new_rdf_libsaxs.add2distribution(r_dist[5],dist,
+                                     2.0 * (3.5 * dum_ff_j +
+                                          3.5 * dum_ff_i))# -c1*c2
                 
-            # Autocorrelation
-            r_dist[0] =  radial_distribution_function.add2distribution(r_dist[0],0,vac_ff_i * vac_ff_i)#  constant
-            r_dist[1] = radial_distribution_function.add2distribution(r_dist[1],0,dum_ff_i * dum_ff_i) # c1^2
-            r_dist[2] = radial_distribution_function.add2distribution(r_dist[2],0,2 * vac_ff_i * dum_ff_i)# -c1
-            
-            if len(surf_area) == len(coordinates):
-            
-                r_dist[3] = radial_distribution_function.add2distribution(r_dist[3],0,
-                                 h2o_ff_i * h2o_ff_i)
-                r_dist[4] = radial_distribution_function.add2distribution(r_dist[4], 0,
-                                 2 * vac_ff_i * h2o_ff_i)
-                r_dist[5] = radial_distribution_function.add2distribution(r_dist[5], 0,
-                                 2 * h2o_ff_i * dum_ff_i)
-            new_prof = radial_distribution_function.radial_distributions_to_partials(prof,r_size,r_dist)
-            intensity = sum_profile_partials(new_prof,1.0, 0.0)  #c1 = 1.0, c2 = 0.0
+                # Autocorrelation
+        r_dist[0] =  new_rdf_libsaxs.add2distribution(r_dist[0],0,vac_ff_i * vac_ff_i)#  constant
+        r_dist[1] = new_rdf_libsaxs.add2distribution(r_dist[1],0,dum_ff_i * dum_ff_i) # c1^2
+        r_dist[2] = new_rdf_libsaxs.add2distribution(r_dist[2],0,2 * vac_ff_i * dum_ff_i)# -c1
+        
+        if len(saxs_sa) == len(coordinates):
+            print "Hello\n"
+            r_dist[3] = new_rdf_libsaxs.add2distribution(r_dist[3],0,
+                             h2o_ff_i * h2o_ff_i)
+            r_dist[4] = new_rdf_libsaxs.add2distribution(r_dist[4], 0,
+                             2 * vac_ff_i * h2o_ff_i)
+            r_dist[5] = new_rdf_libsaxs.add2distribution(r_dist[5], 0,
+                             2 * h2o_ff_i * dum_ff_i)
+    new_prof = new_rdf_libsaxs.radial_distributions_to_partials(prof,r_size,r_dist)
+    intensity = sum_profile_partials(new_prof,1.0, 0.0)  #c1 = 1.0, c2 = 0.0
     
     return intensity
 
@@ -256,7 +267,7 @@ def calculate_max_distance(coordinates):
         for j in range(len(coordinates)):
                        
 
-            d = np.sqrt((coordinates[i,0]-coordinates[j,0])** 2 + (coordinates[i,1] - coordinates[j,1])**2 + (coordinates[i,2]-coordinates[j,2])**2)
+            d = (coordinates[i,0]-coordinates[j,0])** 2 + (coordinates[i,1] - coordinates[j,1])**2 + (coordinates[i,2]-coordinates[j,2])**2
                        
             if d > distance:
 
