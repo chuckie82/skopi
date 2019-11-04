@@ -1,7 +1,7 @@
 import numpy as np
 import sys
 import Sinc_func
-import new_profile_libsaxs
+import saxs_profile
 
 
 class RadialDistributionFunction:

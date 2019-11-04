@@ -1,6 +1,6 @@
 import sys
 import form_factor_table
-import new_rdf_libsaxs
+import radial_distribution_function
 import numpy as np
 
 class Profile:
@@ -173,7 +173,7 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,ff_type='HEAVY_
     
     
     for i in range(r_size):
-        r_dist.append(new_rdf_libsaxs.RadialDistributionFunction(0.5,max_dist))
+        r_dist.append(new_rdf_radial_distribution_function.RadialDistributionFunction(0.5,max_dist))
    
     for i in range(len(coordinates)):
         
@@ -192,39 +192,39 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,ff_type='HEAVY_
             dist = (coordinates[i,0]-coordinates[j,0])**2 + (coordinates[i,1]-coordinates[j,1])**2 + (coordinates[i,2]-coordinates[j,2])**2
             #print 2*vac_ff_i*vac_ff_j
                 #sys.exit()
-            r_dist[0] = new_rdf_libsaxs.add2distribution(r_dist[0],dist,
+            r_dist[0] = new_rdf_radial_distribution_function.add2distribution(r_dist[0],dist,
                             2.0 * vac_ff_i * vac_ff_j) #  constant
-            r_dist[1] = new_rdf_libsaxs.add2distribution(r_dist[1],dist,
+            r_dist[1] = new_rdf_radial_distribution_function.add2distribution(r_dist[1],dist,
                                            2.0 * dum_ff_i * dum_ff_j) # c1^2
-            r_dist[2] = new_rdf_libsaxs.add2distribution(r_dist[2],dist,
+            r_dist[2] = new_rdf_radial_distribution_function.add2distribution(r_dist[2],dist,
                                2.0 * (vac_ff_i * dum_ff_j +
                                      vac_ff_j * dum_ff_i)) # -c1
             if len(saxs_sa) == len(coordinates):
                 
                 h2o_ff_j = water_ff * saxs_sa[j]
                     
-                r_dist[3] = new_rdf_libsaxs.add2distribution(r_dist[3], dist, 2.0 *   3.5 * 3.5) #h2o_ff_i * h2o_ff_j) # c2^2
-                r_dist[4] = new_rdf_libsaxs.add2distribution(r_dist[4],dist,
+                r_dist[3] = new_rdf_radial_distribution_function.add2distribution(r_dist[3], dist, 2.0 *   3.5 * 3.5) #h2o_ff_i * h2o_ff_j) # c2^2
+                r_dist[4] = new_rdf_radial_distribution_function.add2distribution(r_dist[4],dist,
                                      2.0 * (vac_ff_i * 3.5 +
                                           vac_ff_j * 3.5)) # c2
-                r_dist[5] =  new_rdf_libsaxs.add2distribution(r_dist[5],dist,
+                r_dist[5] =  new_rdf_radial_distribution_function.add2distribution(r_dist[5],dist,
                                      2.0 * (3.5 * dum_ff_j +
                                           3.5 * dum_ff_i))# -c1*c2
                 
                 # Autocorrelation
-        r_dist[0] =  new_rdf_libsaxs.add2distribution(r_dist[0],0,vac_ff_i * vac_ff_i)#  constant
-        r_dist[1] = new_rdf_libsaxs.add2distribution(r_dist[1],0,dum_ff_i * dum_ff_i) # c1^2
-        r_dist[2] = new_rdf_libsaxs.add2distribution(r_dist[2],0,2 * vac_ff_i * dum_ff_i)# -c1
+        r_dist[0] =  new_rdf_radial_distribution_function.add2distribution(r_dist[0],0,vac_ff_i * vac_ff_i)#  constant
+        r_dist[1] = new_rdf_radial_distribution_function.add2distribution(r_dist[1],0,dum_ff_i * dum_ff_i) # c1^2
+        r_dist[2] = new_rdf_radial_distribution_function.add2distribution(r_dist[2],0,2 * vac_ff_i * dum_ff_i)# -c1
         
         if len(saxs_sa) == len(coordinates):
             print "Hello\n"
-            r_dist[3] = new_rdf_libsaxs.add2distribution(r_dist[3],0,
+            r_dist[3] = new_rdf_radial_distribution_function.add2distribution(r_dist[3],0,
                              h2o_ff_i * h2o_ff_i)
-            r_dist[4] = new_rdf_libsaxs.add2distribution(r_dist[4], 0,
+            r_dist[4] = new_rdf_radial_distribution_function.add2distribution(r_dist[4], 0,
                              2 * vac_ff_i * h2o_ff_i)
-            r_dist[5] = new_rdf_libsaxs.add2distribution(r_dist[5], 0,
+            r_dist[5] = new_rdf_radial_distribution_function.add2distribution(r_dist[5], 0,
                              2 * h2o_ff_i * dum_ff_i)
-    new_prof = new_rdf_libsaxs.radial_distributions_to_partials(prof,r_size,r_dist)
+    new_prof = new_rdf_radial_distribution_function.radial_distributions_to_partials(prof,r_size,r_dist)
     intensity = sum_profile_partials(new_prof,1.0, 0.0)  #c1 = 1.0, c2 = 0.0
     
     return intensity

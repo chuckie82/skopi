@@ -1,25 +1,11 @@
 
 # form_factor_table.py
 
-
-
 import numpy as np
 import sys
-#import IMP
-#import IMP.profile
-
 import elements_constants
-#import IMP.saxs
-#import IMP.atom
 import util
 import particle
-
-
-#import IMP.saxs
-#import IMP.atom
-#import IMP.util
-
-
 
 """
 
@@ -39,7 +25,11 @@ class FormFactorTable:
 class FormFactorTable(object):
 
     def __init__(self,table_name=None):
-
+    
+        self.max_q_ = 3.0
+        self.min_q_ = 0.0
+        self.delta_q_ = 0.01
+        
         self.form_factor_type = {1:'ALL_ATOMS',2:'HEAVY_ATOMS',3:'CA_ATOMS',4:'RESIDUES'}
         #   H       He - periodic table line 1
         # Li  Be    B     C       N       O       F     Ne - line 2
@@ -61,12 +51,11 @@ class FormFactorTable(object):
         'Co':24,'Ni':25,'Zn':26,'Se':27,'Br':28,'Ag':29,'I':30,'Ir':31,'Pt':32,'Au':33,'Hg':34,'CH':35,'CH2':36,
         'CH3':37,'NH':38,'NH2':39,'NH3':40,'OH':41,'OH2':42,'SH':43}
                              
-                             
+                         #   H       He - periodic table line 1    
                          
         self.zero_form_factors = np.array([
-        -0.720147, -0.720228,
-        #   H       He - periodic table line 1
-        1.591,     2.591,     3.591,   0.50824,  6.16294, 4.94998, 7.591,   6.993,
+        
+        -0.720147, -0.720228,1.591,     2.591,     3.591,   0.50824,  6.16294, 4.94998, 7.591,   6.993,
         # Li     Be      B     C       N        O       F      Ne - line 2
         7.9864,    8.9805,    9.984,   10.984,   13.0855, 9.36656, 13.984,  16.591,
         #  Na      Mg        Al       Si        P        S       Cl    Ar - line 3
@@ -119,20 +108,68 @@ class FormFactorTable(object):
         'Na':11,'Mg':12,'Al':13,'Si':14,'P':15, 'S':16,'Cl':17,'Ar':18,'K':19,'Ca':20,'Cr':21,'Mn':22, 'Fe':23,
         'Co':24,'Ni':25,'Zn':26,'Se':27,'Br':28,'Ag':29,'I':30,'Ir':31,'Pt':32,'Au':33,'Hg':34,'CH':35,'CH2':36,
         'CH3':37,'NH':38,'NH2':39,'NH3':40,'OH':41,'OH2':42,'SH':43}
+        
+        
+        #UD                i=1,5
+        #UD  a1  a2  a3  a4  a5  c  b1  b2  b3  b4  b5  excl_vol
+        #H He C N O Ne Na Mg Cl
+        # Cromer-Mann coefficients
+        
+        self.ff_coeff      = np.array([[0.493002  , 0.322912  , 0.140191  , 0.040810 ,  0.0  ,   0.003038 ,  10.5109  , 26.1257   ,  3.14236 ,  57.7997   ,  1.0,      5.15],
 
+        [0.489918  ,  0.262003 ,  0.196767  , 0.049879  , 0.0  ,   0.001305 ,  20.6593  ,  7.74039 ,  49.5519   ,  2.20159   , 1.0    ,  5.15],
+
+        [2.31000  ,  1.02000 ,   1.58860 ,   0.865000  , 0.0   ,  0.215600   ,20.8439  , 10.2075  ,   0.568700  ,  51.6512  ,   1.0    ,  16.44],
+
+        [12.2126   ,  3.13220  ,  2.01250  ,  1.16630 ,   0.0   , -11.529   ,    0.005700 , 9.89330  , 28.9975  ,   0.582600  , 1.0   ,   2.49],
+        [3.04850 ,   2.28680 ,   1.54630 ,   0.867000 ,  0.0  ,   0.250800 ,   13.2771,     5.70110  ,  0.323900  ,32.9089  ,  1.0    ,  9.13],
+        [3.95530  ,  3.11250 ,   1.45460 ,    1.12510  ,  0.0 ,    0.351500 ,    8.40420 ,  3.42620  ,  0.230600 , 21.7184 ,    1.0     , 9.],
+
+        [4.76260  ,  3.17360    ,1.26740   , 1.11280   , 0.0  ,  0.676000 ,   3.28500  , 8.84220  ,  0.313600 , 129.424   ,   1.0   ,   9. ],
+        [5.42040 ,   2.17350  ,  1.22690  ,  2.30730  ,  0.0  ,   0.858400  ,  2.82750 , 79.2611   ,  0.380800  , 7.19370  ,  1.0   ,   9.],
+        [6.43450   , 4.17910 ,   1.78000   , 1.49080  ,  0.0    , 1.11490   ,  1.90670 , 27.1570   ,  0.526000 , 68.1645   ,  1.0    ,  5.73],
+        [6.90530   , 5.20340   , 1.43790   , 1.58630  ,  0.0    , 0.866900   , 1.46790 , 22.2151 ,    0.253600  ,56.1720  ,   1.0   ,   19.86],
+        [18.2915 ,    7.20840  ,  6.53370  ,  2.33860   , 0.0  , -16.378    ,   0.00660  , 1.1717  ,  19.5424  ,  60.4486  ,   1.0  ,    9.],
+        [15.6348   , 7.95180  ,  8.43720   , 0.853700 ,  0.0  , -14.875   ,   -0.00740  , 0.608900 , 10.3116  ,  25.9905   ,  1.0   ,   9.],
+        [11.0424   ,  7.37400  ,  4.13460 ,   0.439900  , 0.0   ,  1.00970  ,   4.65380  , 0.305300 , 12.0546   , 31.2809  ,   1.0   ,   9.],
+        [11.2296  ,   7.38830 ,  4.73930 ,   0.71080  ,  0.0  ,   0.93240 ,    4.12310  , 0.272600  ,10.2443  ,  25.6466   ,  1.0    ,  9.],
+        [11.9719   ,  7.38620  ,  6.46680  ,  1.39400  ,  0.0   ,  0.780700 ,   2.99460 ,  0.203100 ,  7.08260  , 18.0995   ,  1.0    ,  9.],
+        [17.0006 ,    5.81960 ,    3.97310   , 4.35430  ,  0.0  ,   2.84090  ,   2.40980  , 0.272600  , 15.2372  , 43.8163  ,   1.0   ,   9.],
+        [16.8819   , 18.5913  ,  25.5582  ,   5.86000   , 0.0  ,   12.0658   ,  0.461100 , 8.62160    , 1.48260  ,36.3956   ,  1.0    ,  19.86]])
+        
+        self.vol_coefficient = np.zeros((self.ff_coeff.shape[0],1),dtype=np.float64)
+        print self.vol_coefficient.shape
+        self.a = np.zeros((self.ff_coeff.shape[0],5),dtype=np.float64)
+        self.b = np.zeros((self.ff_coeff.shape[0],5),dtype=np.float64)
+        self.c = np.zeros((self.ff_coeff.shape[0],1),dtype=np.float64)
+        self.excl_vol = np.zeros((self.ff_coeff.shape[0],1),dtype=np.float64)
+        
+        for i in range(self.ff_coeff.shape[0]):
+            for j in range(5):
+            
+               self.a[i,j]   =   self.ff_coeff[i,j]
+               
+            self.c[i] = self.ff_coeff[i,5]
+            
+            for j in range(5):
+            
+                self.b[i,j-5] = self.ff_coeff[i,j+6]
+                
+            self.excl_vol[i] = self.ff_coeff[i,11]
+        
+      
+        self.number_of_q_entries = int(np.ceil((self.max_q_ - self.min_q_) / self.delta_q_))+1
+        self.q_ =np.zeros((self.number_of_q_entries,1),dtype=np.float64)
+        
         self.vanderwaals_volume = None
 
         self.vacuum_form_factor_table = None
         self.dummy_form_factor_table = None
         self.form_factor_table = None
 
-        self.rho = 0.334
+        self.rho = 0.334 # electron density of water
 
-        self.q = None
-        self.min_q = 0.0
-        self.max_q = 1.0
-        self.delta_q = 0.1
-
+       
         self.element_ff_dict = None
         self.residue_type_form_factor_dict_ = None
 
@@ -140,15 +177,10 @@ class FormFactorTable(object):
         self.ff_table = None
 
         self.corrected_form_factors = None
-        self.vacuum_form_factors = None
-        self.dummy_form_factors = None
-
-        # form factor coefficients (a's, b's,c's in particle.py)
-        self.a_ = np.zeros((5, 1), dtype=np.float32)
-        self.c_ = 0.0
-        self.b = np.zeros((5, 1), dtype=np.float32)
-        self.excl_vol = None #self.get_vanderwaals_volume()# calculated from volume of each element
-
+        self.vacuum_form_factors = np.zeros((self.ff_coeff.shape[0],self.number_of_q_entries),dtype=np.float64)
+        self.dummy_form_factors = np.zeros((self.ff_coeff.shape[0],self.number_of_q_entries),dtype=np.float64)
+        
+        #self.excl_vol = None #self.get_vanderwaals_volume()# calculated from volume of each element
 
         #self.init_element_form_factor_dict()
         #self.init_residue_type_form_factor_dict()
@@ -167,7 +199,7 @@ class FormFactorTable(object):
                     self.dummy_zero_form_factors[i] = 0.0
                     self.vacuum_zero_form_factors[i] = 0.0
 
-                number_of_q_entries = IMP.util.get_rounded(((self.q_max - self.q_min) / self.a_delta) + 1)
+                number_of_q_entries = IMP.util.get_rounded(((self.q_max - self.q_min) / self.q_delta) + 1)
                 form_factor_template = np.zeros(number_of_q_entries, dtype=np.float32)
 
                 self.form_factors = [form_factor_template] * element_constants.HEAVY_ATOMS_SIZE
@@ -176,10 +208,12 @@ class FormFactorTable(object):
 
                 self.dummy_form_factors = [form_factor_template] * elements_constants.HEAVY_ATOM_SIZE
 
-        #self.compute_form_factors_all_atoms()
+        self.compute_form_factors_all_atoms()
+        #dummy = self.calculate_dummy_form_factors(self.excl_vol,self.number_of_q_entries)
+        self.compute_dummy_form_factors()
+        #print dummy
         #self.compute_form_factors_heavy_atoms()
-
-
+       
 
     def read_form_factor_table(self,table_name):
 
@@ -235,6 +269,8 @@ class FormFactorTable(object):
         ff_atom_type = self.get_form_factor_atom_type(p, ff_type)
         if ff_atom_type > elements_constants.HEAVY_ATOMS_SIZE:
             print("Atom type not found")
+        return self.form_factor[ff_atom_type]
+        
 
     def get_vacuum_zero_form_factors(self,i):
 
@@ -275,9 +311,9 @@ class FormFactorTable(object):
         one_third = (1.0/3.0)
         c = (3.0/(4.0*np.pi))
 
-        ii = i.astype(np.int32)
+        ii = i
         print(ii)
-        print (ii.shape)
+        
         form_factor = self.get_dummy_zero_form_factors(ii-1)
         print(form_factor.shape)
         return np.power(c*form_factor, one_third)
@@ -289,6 +325,14 @@ class FormFactorTable(object):
     def set_dummy_form_factors(self, dum):
 
         self.dummy_form_factors = dum
+        
+    def get_vacuum_form_factors(self,part,ff_type='HEAVY_ATOMS'):
+        #element = self.get_form_factor_atom_type(part,ff_type)
+        return self.vacuum_form_factors
+    
+    def set_vacuum_form_factors(self,v):
+        
+        self.vacuum_form_factors = v
 
     def get_default_form_factor_table(self):
 
@@ -315,19 +359,7 @@ class FormFactorTable(object):
         (14.156, 85.986, 71.83):'TYR', (14.945, 98.979, 84.034):'TRP',
         (7.173, 53.9896, 46.817):'VAL',(9.037, 37.991, 28.954):'UNK'}
 
-    def get_form_factor_coefficients(self):
-        
-        particles = particle.Particle()
-        #form_factor_coefficients
-        self.form_factor_table = particles.get_ff_table()
-
-        self.atom_type = particle.get_atom_type()
-
-        a,b,c = particle.get_form_factor_coefficients()
-   
-        return a,c,b
-
-        #return a,c,b
+    
     def get_form_factor_table(self):
 
         return self.form_factor_table
@@ -362,100 +394,92 @@ class FormFactorTable(object):
 
         self.zero_form_factors = z
         
-    def get_water_form_factor():
+    def get_water_form_factor(self):
         
-        return self.dummy_form_factor[-2]
+        return self.zero_form_factors[-2]
 
 
     def show(self):
 
-        for i in range(constants_elements.HEAVY_ATOMS_SIZE):
+        for i in range(40):#constants_elements.HEAVY_ATOMS_SIZE):
 
 
-            print('FFTYPE ',i,'zero_ff ',self.zero_form_factors[i], 'vacuum ff',self.vacuum_zero_ff[i], ' dummy ff', self.dummy_zero_form_factors[i],'\n')
+            print('FFTYPE ',i,'zero_ff ',self.zero_form_factors[i], 'vacuum ff',self.vacuum_zero_form_factors[i], ' dummy ff', self.dummy_zero_form_factors[i],'\n')
+
+            
+
+    def compute_dummy_form_factors(self):
+
+  
+        dff = np.zeros((self.ff_coeff.shape[0],self.number_of_q_entries),dtype=np.float64)
+
+        for i in range(self.ff_coeff.shape[0]):
+           
+            for iq in range(self.number_of_q_entries):
+
+                dff[i,iq] = self.rho * self.excl_vol[i] * np.exp(-np.power(self.excl_vol[i],(2.0/3.0)) * (self.q_[iq]**2)/(16.0*np.pi))
+                
+                
+        self.dummy_form_factors = dff
+    
+        
 
     def calculate_dummy_form_factors(self,excluded,q_entries):
 
-        #print excluded.dtype
-        #print (q_entries)
-        #print (q_entries.shape)
 
+        dff = np.zeros((excluded.shape[0],q_entries.shape[0]),dtype=np.float64)
 
-
-        #vol_coefficient = np.zeros((len(excluded),1),dtype=np.float64)
-        #print vol_coefficient.shape
-        #sys.exit()
-        dff = np.zeros((len(excluded),len(q_entries)),dtype=np.float64)
-
-        for i in range(len(excluded)):
-            #vol_coefficient =
-            #amp = self.rho * excluded[i]
-            for iq in range(len(q_entries)):
-                #vol_coefficient[i,iq ] = -np.power(excluded[i],(2.0,3.0))*(q_entries[iq]*q_entries[iq])/(16*np.pi)
-
-                #print(vol_coefficient[i,iq])
+        for i in range(excluded.shape[0]):
+            
+            for iq in range(q_entries.shape[0]):
+ 
                 dff[i,iq] = self.rho * excluded[i] * np.exp(-np.power(excluded[i],(2.0/3.0)) * (q_entries[iq]**2)/(16.0*np.pi))
                 
-                #print dff.shape
+                
         self.dummy_form_factors = dff
-        #print(dff.shape)
-        #print(dff)
-        #print vol_coefficient
-        #print vol_coefficient.shape
-        #print len(q_entries)
-        #for iq in range(len(q_entries)):
+     
         return self.dummy_form_factors
 
 
     def compute_form_factors_all_atoms(self):
-        #[a, cold,b] = self.get_form_factor_coefficients()
-        self.q = np.linspace(0,10,101)
-        number_of_q_entries = len(self.q)
-
-        #number_of_q_entries = np.ceil((self.max_q - self.min_q)/self.delta_q).astype(np.int32)
-        for i in range(1,elements_constants.ALL_ATOM_SIZE):
-
-            #self.form_factor_coefficients[i].excl_vol = self.get_volume()
-
-            self.vol_coefficient[i] = -np.power(self.get_vanderwaals_volume(i),(2.0,3.0))/(16*np.pi)
+        
+       
+       
+        s = np.zeros((self.number_of_q_entries,1),dtype=np.float64)
+        for i in range(0,self.ff_coeff.shape[0]):
 
 
-            for iq in range(number_of_q_entries):
+            
+            for iq in range(self.number_of_q_entries):
 
-                #self.q = self.min_q  + float(iq)*self.delta_q
-                #s = self.q/(4.0*np.pi)
+                self.q_[iq] = self.min_q_  + float(iq)*self.delta_q_
+                s[iq] = self.q_[iq]/(4.0*np.pi)
                 
                 
 
-                #self.vacuum_form_factors_[i,iq] = 0.0 #self.form_factor_coefficients_[i,element_form_factor[i]]
+                self.vacuum_form_factors[i,iq] = self.c[i] #self.form_factor_coefficients_[i,element_form_factor[i]]
 
-                #for j in range(5):
+                for j in range(5):
 
-                   #self.vacuum_form_factors_[i,iq] = self.a[j] * np.exp(-self.b_[j])
-
-
-
-                self.dummy_form_factors_[i,iq] = self.rho_ * self.excl_vol_[i]* np.exp(self.vol_coeff * self.q_[iq] * self.q_[iq])
-
-                #self.form_factors_[i,iq] = self.vacuum_form_factors_[i,iq] - self.dummy_form_factors_[i,iq]
-
-            self.vacuum_form_factors = self.ff_table
+                    self.vacuum_form_factors[i,iq] += self.a[i,j] * np.exp(-self.b[i,j]*s[iq]*s[iq])
 
 
 
-            self.zero_form_factors[i] = c[i]
+            self.zero_form_factors[i] = self.c[i]
 
-            #for j in range(5):
+            for j in range(5):
 
-                #self.zero_form_factors_[i] += self.a_[j]
+                self.zero_form_factors[i] += self.a[i,j]
 
-            self.vacuum_zero_form_factors[i] = self.zero_form_factors[i]
 
-            self.dummy_zero_form_factors[i] = self.rho_ *  form_factor_coefficients_[i].excl_vol_
-
-            self.zero_form_factors[i] -= self.rho * self.excl_vol_
+            self.zero_form_factors[i] -= self.rho * self.excl_vol[i]
+        print self.vacuum_form_factors
+        print "intermission"
+        
+            
 
 # end of function: compute_form_factors_all_atoms
+        #sys.exit()
 
     def compute_form_factors_heavy_atoms(self):
 
@@ -554,6 +578,56 @@ class AtomFactorCoefficients
 
 a class for storing form factors solvation table
 
+
+"""
+
+"""
+
+                                  int number_of_q_entries = (int)std::ceil((max_q_ - min_q_) / delta_q_);
+
+                                   // iterate over different atom types
+                                   for (unsigned int i = 0; i < ALL_ATOM_SIZE; i++) {
+                                     // form factors for all the q range
+                                     // volr_coeff = - v_i^(2/3) / 4PI
+                                     double volr_coeff =
+                                         -std::pow(form_factors_coefficients_[i].excl_vol_, (2.0 / 3.0)) /
+                                         (16 * PI);
+
+                                     // iterate over q
+                                     for (int iq = 0; iq < number_of_q_entries; iq++) {
+                                       double q = min_q_ + (double)iq * delta_q_;
+                                       double s = q / (4 * PI);
+
+                                       // c
+                                       vacuum_form_factors_[i][iq] = form_factors_coefficients_[i].c_;
+
+                                       // SUM [a_i * EXP( - b_i * (q/4pi)^2 )] Waasmaier and Kirfel (1995)
+                                       for (unsigned int j = 0; j < 5; j++) {
+                                         vacuum_form_factors_[i][iq] +=
+                                             form_factors_coefficients_[i].a_[j] *
+                                             std::exp(-form_factors_coefficients_[i].b_[j] * s * s);
+                                       }
+                                       // subtract solvation: rho * v_i * EXP( (- v_i^(2/3) / (4pi)) * q^2  )
+                                       dummy_form_factors_[i][iq] = rho_ *
+                                                                    form_factors_coefficients_[i].excl_vol_ *
+                                                                    std::exp(volr_coeff * q * q);
+
+                                       form_factors_[i][iq] =
+                                           vacuum_form_factors_[i][iq] - dummy_form_factors_[i][iq];
+                                     }
+
+                                     // zero form factors
+                                     zero_form_factors_[i] = form_factors_coefficients_[i].c_;
+                                     for (unsigned int j = 0; j < 5; j++) {
+                                       zero_form_factors_[i] += form_factors_coefficients_[i].a_[j];
+                                     }
+                                     vacuum_zero_form_factors_[i] = zero_form_factors_[i];
+                                     dummy_zero_form_factors_[i] =
+                                         rho_ * form_factors_coefficients_[i].excl_vol_;
+                                     // subtract solvation
+                                     zero_form_factors_[i] -= rho_ * form_factors_coefficients_[i].excl_vol_;
+                                   }
+                                 }
 
 """
 
