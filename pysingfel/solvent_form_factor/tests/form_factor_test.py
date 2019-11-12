@@ -1,15 +1,17 @@
 import unittest
-import form_factor_table
+import sys
+import pysingfel.solvent_form_factor as sff
+
 
 class FormFactorTest(unittest.TestCase):
         
     def setUp(self):
-        self.ft = form_factor_table.FormFactorTable()
+        self.ft = sff.FormFactorTable()
         
     def test_read_atomic_coefficients(self):
     
         #fft = form_factor_table.FormFactorTable('formfactors-int_tab_solvation.lib',0,3.0,0.01)
-        self.assertIsInstance(self.ft,form_factor_table.FormFactorTable)
+        self.assertIsInstance(self.ft,sff.FormFactorTable)
         
     def test_vanderwaals_radius(self):
         
@@ -24,4 +26,4 @@ class FormFactorTest(unittest.TestCase):
 if __name__ == '__main__':
     unittest.main()
         
-    
+

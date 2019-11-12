@@ -1,9 +1,8 @@
 import unittest
-import form_factor_table
-import radial_distribution_function
-import saxs_profile
-import sys,os
-import particle
+import sys
+import pysingfel as ps
+import pysingfel.solvent_form_factor as sff
+import os
 import numpy as np
 
 class TestRadialDistributionFunction(unittest.TestCase):
@@ -12,12 +11,12 @@ class TestRadialDistributionFunction(unittest.TestCase):
         self.max_dist = 10
         self.bin_size = 0.5
 
-        self.rdf = radial_distribution_function.RadialDistributionFunction(self.bin_size,self.max_dist)
+        self.rdf = sff.RadialDistributionFunction(self.bin_size,self.max_dist)
         self.nbins = self.rdf.get_nbins()
         
     def test_rdf_object(self):
     
-        self.assertIsInstance(self.rdf,radial_distribution_function.RadialDistributionFunction)
+        self.assertIsInstance(self.rdf,sff.RadialDistributionFunction)
         
     def test_rdf_nbins(self):
     
@@ -37,7 +36,7 @@ class TestRadialDistributionFunction(unittest.TestCase):
     def test_values(self):
 
         z = np.zeros((self.nbins,1),dtype=np.float64)
-        radial_distribution_function.add2distribution(self.rdf,self.max_dist,20) # put 20 in last bin
+        sff.add2distribution(self.rdf,self.max_dist,20) # put 20 in last bin
         z[-1] = 20
         np.allclose(z,self.rdf.values)
             

@@ -1,10 +1,11 @@
 import unittest
-import form_factor_table
+import sys
+import pysingfel.solvent_form_factor as sff
 
 class FormFactorVariantsTest(unittest.TestCase):
 
     def setUp(self):
-        self.ft = form_factor_table.FormFactorTable()
+        self.ft = sff.FormFactorTable()
         self.atom_type = 'A'
         self.residue_type = 'XYZ'
     
@@ -96,7 +97,7 @@ class FormFactorVariantsTest(unittest.TestCase):
         
         self.assertEqual(self.ft.get_nitrogen_atom_type('NH1','ARG'),'NH2')
         self.assertEqual(self.ft.get_nitrogen_atom_type('NH1','PRO'),'N')
-              
+             
         self.assertEqual(self.ft.get_nitrogen_atom_type('NH2','ARG'),'NH2')
         self.assertEqual(self.ft.get_nitrogen_atom_type('NH2','PRO'),'N')
         
