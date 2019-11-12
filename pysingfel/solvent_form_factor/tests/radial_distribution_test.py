@@ -1,7 +1,7 @@
 import unittest
 import form_factor_table
 import radial_distribution_function
-import saxs_profile_sep
+import saxs_profile
 import sys,os
 import particle
 import numpy as np
