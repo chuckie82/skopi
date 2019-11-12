@@ -5,7 +5,8 @@ import numpy as np
 import sys
 import elements_constants
 import util
-import particle
+from pysingfel.particle import *
+from pysingfel.util import *
 
 """
 
@@ -54,7 +55,7 @@ class FormFactorTable(object):
                              
                          #   H       He - periodic table line 1    
         
-        self.ff_cm_map = { 'H':0,'HE':1,'C':2,'N':3,'O':4,'NE':5,'SOD+':6,'MG+2':7,'P':8,'S':9,'CAL2+':10,'FE2+':11,'ZN2+':12,'SE':13,'AU':14,'CH':15,'CH2':16,'CH3':17,'NH':18,'NH2':19,'NH3':20,'OH':21,'OH2':22,'SH':23}
+        self.ff_cm_dict = { 'H':0,'HE':1,'C':2,'N':3,'O':4,'NE':5,'SOD+':6,'MG+2':7,'P':8,'S':9,'CAL2+':10,'FE2+':11,'ZN2+':12,'SE':13,'AU':14,'CH':15,'CH2':16,'CH3':17,'NH':18,'NH2':19,'NH3':20,'OH':21,'OH2':22,'SH':23}
         
         self.zero_form_factors = np.array([
         
@@ -346,9 +347,9 @@ class FormFactorTable(object):
         self.element_ff_dict = {0:'H',1:'He',2:'Li', 3:'Be', 4:'B', 5:'C',6:'N',7:'O',8:'Fl',9:'Ne', 10:'Na',11:'Mg', 12:'Al',13:'Si',14:'P',
         15:'S', 16:'Cl',17:'Ar', 18:'K', 19:'Ca', 20:'Cr', 21:'Mn', 22:'Fe', 23:'Co',24:'Ni', 25:'Cu',26:'Zn',27:'Se',28:'Ag',29:'I',30:'Ir',31:'Au',32:'Hg'}
 
-    def get_ff_cm_map(self):
+    def get_ff_cm_dict(self):
         
-        return self.ff_cm_map
+        return self.ff_cm_dict
     
     def get_element_dict_id(self,s):
         return self.element_ff_dict[s]
@@ -914,7 +915,7 @@ class FormFactorTable(object):
        elif atomic_type == 'S':
        
           ret_type = self.get_sulfur_atom_type(atom_variant_type, residue_type)
-       elif self.ff_cm_map.has_key(atomic_type):
+       elif self.ff_cm_dict.has_key(atomic_type):
           ret_type = atomic_type
        else:
           print "Can't find form factor for atom using default value of nitrogen \n"
