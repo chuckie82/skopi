@@ -6,7 +6,11 @@ import numpy as np
 class Profile:
 
     def __init__(self,q_min,q_max,q_delta):
-    
+        self.q_min = q_min
+        self.q_max = q_max
+        self.q_delta = q_delta
+        
+        
         self.nsamples = int(np.ceil((q_max - q_min) / q_delta))+1
         self.intensity = np.zeros((self.nsamples,1),dtype=np.float64)
 
@@ -16,7 +20,7 @@ class Profile:
         
         self.average_radius = 1.58
         self.average_volume_  = 17.5
-        
+        self.experimental_ = False
         self.q[0] = q_min
         for i in range(1,self.nsamples):
 
@@ -89,23 +93,121 @@ class Profile:
 
         self.In = np.zeros((self.nsamples,1),dtype=np.float64)
 
+    def write_partial_profiles(self,file_name):
+  
+        
+        print 'hello write_partial_profiles'
+        try:
+            fp = open(file_name,'w')
+        except IOError as ioe:
+            print("Can't open file %s: %s" % (file_name, ioe))
+        else:
+            print("Opened file for writing successfully.")
+
+
+        #header line
+        fp.write("# SAXS profile: number of points = %d,  q_min = %f, q_max = %f, delta_q=%f\n" % (self.nsamples,self.q_min,self.q_max,self.q_delta))
+
+        
+        fp.write("#    q    intensity \n")
+            
+        for i in range(self.nsamples):
+                
+                
+            w1 = self.q[i]
+            fp.write("%10.5f " % w1)
+               
+            fp.write("%15.8f " % self.vac_vac[i])
+            fp.write("%15.8f " % self.dum_dum[i])
+            fp.write("%15.8f " % self.vac_dum[i])
+            fp.write("%15.8f " % self.dum_dum[i])
+            fp.write("%15.8f " % self.vac_h2o[i])
+            fp.write("%15.8f " % self.dum_h2o[i])
+            fp.write("%15.8f " %self.h2o_h2o[i])
+            fp.write("\n")
+
+        fp.write("\n")
+        fp.close()
+
+
+    def write_SAXS_file(self,file_name,max_q=3.0):
+
+       try:
+           outFile = open(file_name,'w')
+       
+       except IOError as ioe:
+           print("Can't open file %s: %s\n" % (file_name, ioe))
+
+       # header line
+       outFile.write("# SAXS profile: number of points = %d, q_min = %f, q_max = %f " % (self.nsamples,self.q_min,self.q_max))
+
+       #if max_q > 0:
+       #    outFile.write(str(max_q))
+       #else:
+       outFile.write(str(self.q_max))
+       outFile.write(", delta_q =%f\n" % self.q_delta)
+       outFile.write("#    q    intensity ")
+
+       if self.experimental_:
+            outFile.write("   error")
+       outFile.write("\n")
+
+       # Main data
+       for i in range(self.nsamples):
+           #print self.nsamples
+           if self.q_max > 0 and self.q[i] > self.q_max:
+               break
+       
+           s1 = self.q[i]
+           #print s1
+
+           outFile.write("%10.8f " % s1)
+
+           s2 = self.In[i]
+           #print s2
+           outFile.write("%15.8f " % s2)
+
+           if self.experimental_: # do not print error for theoretical profiles
+              
+               s3 = self.error_[i]
+               outFile.write("%10.8f" % s3)
+
+           outFile.write("\n")
+
+       outFile.close()
+
 def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,ff_type='HEAVY_ATOMS'):
-   
-      
+
     r_size = 3
     wf = ft.get_water_form_factor()
     print wf
-        
-    coordinates = particles.get_atom_pos()
-    print coordinates.shape
-
-    elements = particles.get_atom_type()
-    unique_elem = np.unique(elements)
-    print unique_elem
     
-    elements = elements.astype(np.int32)
+    #coordinates = particles.get_atom_pos()
+    coordinates = particles.get_atom_struct()
+    coordinates = np.transpose(coordinates)
+    coordinates = coordinates[:,0:3]
+    #print coordinates
+    
+    
+    
    
-    unique_elem = unique_elem.astype(np.int32)
+
+    #elements = particles.get_atom_type()
+    #unique_elem = np.unique(elements)
+    #print unique_elem
+    
+    e = particles.get_element()
+    
+    #elements = elements.astype(np.int32)
+    
+    
+    symbols = particles.get_atomic_symbol()
+    #atomic_variant = particles.get_atomic_variant()
+    residue  = particles.get_residue()
+    #ret_type = ft.get_form_factor_atom_type(symbols,e, residue)
+    table = ft.get_ff_cm_map()
+    #idx =   table[ret_type]
+    #unique_elem = unique_elem.astype(np.int32)
  
     print("Start partial profile calculation for %d particles.\n " % len(coordinates))
     
@@ -116,46 +218,46 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,ff_type='HEAVY_
     water_ff = 0
     h2o_ff_i = 0
     h2o_ff_j = 0
-        
+    
+    for i in range(24):
+        vff[i,-1] = 0.0
+        dff[i,-1] = 0.0
     #vacuum_ff = form_factor_table_form_factors()
     #for m in range(len(coordinates)):
     #   vacuum_ff[m] = form_factor_table.get_vacuum_form_factors()
     #    dummy_ff[m] = form_factor_table.get_dummy_form_factors()
+#
     for m in range(len(coordinates)):
+        print m
+        
+        ret_type = ft.get_form_factor_atom_type(symbols[m],e[m], residue[m])
+        idx =   table[ret_type]
+        #print ret_type
+        #print idx
+        #sys.exit()
         #for i in range(len(unique_elem)):
         #    if unique_elem[i] == elements[m]:
         #        # print m,unique_elem[i],'\n'
         #        break
-        print "m=",m,"\n"
-        if elements[m] == 6:
-            i = 2
-            
-        #print vff[2,:]
-        #sys.exit()
-        if elements[m] == 7:
-            i = 3
-        if elements[m] == 8:
-            i = 4
-        if elements[m] == 15:
-            i = 8
-        if  elements[m] ==  16:
-            i == 9
-        if elements[m] == 17:
-            i = 10
-            
+        #print "m=",m,"\n"
+
         #print unique_elem[i]
        
         #print elements[0].astype(np.int32)
-        prof.vacuum_ff[m,:]   = vff[i,:]
-        #print vacuum_ff[m,:]
+        prof.vacuum_ff[m,:]   = vff[idx,:] #vff[i,:]
+        #print prof.vacuum_ff[m,:]
 
         #print m,i,vff[i,0],'\n'
-        prof.dummy_ff[m,:]   = dff[i,:]
+        prof.dummy_ff[m,:]   = dff[idx,:]#dff[i,:]
+        #print prof.dummy_ff[m,:]
+        #sys.exit()
+        #print idx
+        
             
-           
+        
         #print len(surface)
-        #print len(coordinates)
-                
+    #print coordinates
+    #sys.exit()
     if len(saxs_sa) == len(coordinates):
         water_ff = np.resize(water_ff,(len(coordinates),1))
         r_size = 6
@@ -164,16 +266,15 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,ff_type='HEAVY_
         for n in range(len(coordinates)):
             water_ff[n] = saxs_sa[n] * wf
                 
-    
     r_dist = []
     #mdist = scipy.spatial.distance.cdist(coordinates,coordinates)
     max_dist = calculate_max_distance(coordinates)
-    
-    #sf = Sinc_func.Sinc_func(np.sqrt(max_dist * 3.0), 0.0001)
+    print max_dist
+    #sys.exit()
     
     
     for i in range(r_size):
-        r_dist.append(new_rdf_radial_distribution_function.RadialDistributionFunction(0.5,max_dist))
+        r_dist.append(radial_distribution_function.RadialDistributionFunction(0.5,max_dist))
    
     for i in range(len(coordinates)):
         
@@ -181,50 +282,52 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,ff_type='HEAVY_
         vac_ff_i = prof.vacuum_ff[i,0]
         dum_ff_i = prof.dummy_ff[i,0]
         if len(saxs_sa) == len(coordinates):
-            h2o_ff_i = water_ff[i]
+        
+            h2o_ff_i = wf * saxs_sa[i]
             
         for j in range(i+1,len(coordinates)):
             
-                
             vac_ff_j = prof.vacuum_ff[j,0]
             dum_ff_j = prof.dummy_ff[j,0]
             
             dist = (coordinates[i,0]-coordinates[j,0])**2 + (coordinates[i,1]-coordinates[j,1])**2 + (coordinates[i,2]-coordinates[j,2])**2
-            #print 2*vac_ff_i*vac_ff_j
-                #sys.exit()
-            r_dist[0] = new_rdf_radial_distribution_function.add2distribution(r_dist[0],dist,
+            
+            r_dist[0] = radial_distribution_function.add2distribution(r_dist[0],dist,
                             2.0 * vac_ff_i * vac_ff_j) #  constant
-            r_dist[1] = new_rdf_radial_distribution_function.add2distribution(r_dist[1],dist,
+                            
+            r_dist[1] = radial_distribution_function.add2distribution(r_dist[1],dist,
                                            2.0 * dum_ff_i * dum_ff_j) # c1^2
-            r_dist[2] = new_rdf_radial_distribution_function.add2distribution(r_dist[2],dist,
+                                           
+            r_dist[2] = radial_distribution_function.add2distribution(r_dist[2],dist,
                                2.0 * (vac_ff_i * dum_ff_j +
                                      vac_ff_j * dum_ff_i)) # -c1
             if len(saxs_sa) == len(coordinates):
                 
-                h2o_ff_j = water_ff * saxs_sa[j]
+                h2o_ff_j = wf * saxs_sa[j]
                     
-                r_dist[3] = new_rdf_radial_distribution_function.add2distribution(r_dist[3], dist, 2.0 *   3.5 * 3.5) #h2o_ff_i * h2o_ff_j) # c2^2
-                r_dist[4] = new_rdf_radial_distribution_function.add2distribution(r_dist[4],dist,
-                                     2.0 * (vac_ff_i * 3.5 +
-                                          vac_ff_j * 3.5)) # c2
-                r_dist[5] =  new_rdf_radial_distribution_function.add2distribution(r_dist[5],dist,
-                                     2.0 * (3.5 * dum_ff_j +
-                                          3.5 * dum_ff_i))# -c1*c2
+                r_dist[3] = radial_distribution_function.add2distribution(r_dist[3], dist, 2.0 *   h2o_ff_i * h2o_ff_j)  # c2^2
+                
+                r_dist[4] = radial_distribution_function.add2distribution(r_dist[4],dist,
+                                     2.0 * (vac_ff_i * h2o_ff_j +
+                                          vac_ff_j * h2o_ff_i)) # c2
+                r_dist[5] =  radial_distribution_function.add2distribution(r_dist[5],dist,
+                                     2.0 * (h2o_ff_i * dum_ff_j +
+                                          h2o_ff_j * dum_ff_i))# -c1*c2
                 
                 # Autocorrelation
-        r_dist[0] =  new_rdf_radial_distribution_function.add2distribution(r_dist[0],0,vac_ff_i * vac_ff_i)#  constant
-        r_dist[1] = new_rdf_radial_distribution_function.add2distribution(r_dist[1],0,dum_ff_i * dum_ff_i) # c1^2
-        r_dist[2] = new_rdf_radial_distribution_function.add2distribution(r_dist[2],0,2 * vac_ff_i * dum_ff_i)# -c1
+        r_dist[0] =  radial_distribution_function.add2distribution(r_dist[0],0,vac_ff_i * vac_ff_i)#  constant
+        r_dist[1] = radial_distribution_function.add2distribution(r_dist[1],0,dum_ff_i * dum_ff_i) # c1^2
+        r_dist[2] = radial_distribution_function.add2distribution(r_dist[2],0,2 * vac_ff_i * dum_ff_i)# -c1
         
         if len(saxs_sa) == len(coordinates):
-            print "Hello\n"
-            r_dist[3] = new_rdf_radial_distribution_function.add2distribution(r_dist[3],0,
+            
+            r_dist[3] = radial_distribution_function.add2distribution(r_dist[3],0,
                              h2o_ff_i * h2o_ff_i)
-            r_dist[4] = new_rdf_radial_distribution_function.add2distribution(r_dist[4], 0,
+            r_dist[4] = radial_distribution_function.add2distribution(r_dist[4], 0,
                              2 * vac_ff_i * h2o_ff_i)
-            r_dist[5] = new_rdf_radial_distribution_function.add2distribution(r_dist[5], 0,
+            r_dist[5] = radial_distribution_function.add2distribution(r_dist[5], 0,
                              2 * h2o_ff_i * dum_ff_i)
-    new_prof = new_rdf_radial_distribution_function.radial_distributions_to_partials(prof,r_size,r_dist)
+    new_prof = radial_distribution_function.radial_distributions_to_partials(prof,r_size,r_dist)
     intensity = sum_profile_partials(new_prof,1.0, 0.0)  #c1 = 1.0, c2 = 0.0
     
     return intensity

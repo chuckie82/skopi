@@ -1,16 +1,17 @@
 import numpy as np
 import sys
-import Sinc_func
 import saxs_profile
 
 
 class RadialDistributionFunction:
 
-    def __init__(self,bin_size=0.5,max_dist=10000):
+    def __init__(self,bin_size=0.5,max_dist=50):
         
         self.max_distance = max_dist
         self.bin_size = bin_size;
         self.one_over_bin_size = 1.0/ bin_size
+        
+        
         self.nbins = int(max_dist * self.one_over_bin_size) + 1
         self.values = np.zeros((self.nbins,1),dtype=np.float64)
          
@@ -45,12 +46,11 @@ def add2distribution(rdist,distance,val):
     rdist.values[bin] += val
     return rdist
 
-def radial_distributions_to_partials(p , ndists, r_dists):
-    dd = []
-    xx = []
+def radial_distributions_to_partials(p , ndists, r_dists,modulation_function_parameter=0.23):
+  
     nbins = r_dists[0].get_nbins()
     delta_x = r_dists[0].get_bin_size()
-    sf = Sinc_func.Sinc_func(np.sqrt(r_dists[0].get_max_distance()) * 3.0, 0.0001)
+    
     for iq in range(p.nsamples):
         
         q = p.get_q(iq)
@@ -58,12 +58,14 @@ def radial_distributions_to_partials(p , ndists, r_dists):
         for r in range(nbins):
             
             
-            qd = r * delta_x * q  # r * delta_x = dist
-            dd.append(qd)
-            x = sf.sincc(qd/np.pi)
-            xx.append(x)
+            qd = np.sqrt(r * delta_x * q) # r * delta_x = dist
             
-            #xx.append(x)
+            
+            x =  np.sinc(qd/np.pi)
+            
+              
+           
+        
             if r_dists[0].values[r] > 0.0:
       
                 p.vac_vac[iq] += r_dists[0].values[r] * x;
@@ -89,6 +91,7 @@ def radial_distributions_to_partials(p , ndists, r_dists):
             p.vac_h2o[iq] *= scaling_factor
             p.dum_h2o[iq] *= scaling_factor
             p.h2o_h2o[iq] *= scaling_factor
+    
     
     return p
     
