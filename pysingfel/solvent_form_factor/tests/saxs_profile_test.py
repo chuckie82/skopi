@@ -67,27 +67,12 @@ class TestPartialProfiles(unittest.TestCase):
             dff_py.append(dummy_ff_m[idx])
             mv = np.asarray(vff_py)
         md = np.asarray(dff_py)
-        '''
-        m = IMP.Model()
-        mp0 = IMP.atom.read_pdb('SAXS_10atoms.pdb',m,IMP.atom.NonWaterNonHydrogenPDBSelector())
-        atoms = IMP.atom.get_by_type(mp0,IMP.atom.ATOM_TYPE)
+        
+        iv = np.loadtxt('imp_ff_v.txt')
+        id = np.loadtxt('imp_ff_d.txt')
+        #print iv.shape
+        #print id.shape       
 
-        minq = 0.0
-        maxq  = 3.0
-        deltaq = 0.01
-        imp_ft = IMP.saxs.FormFactorTable('formfactors-int_tab_solvation.lib',minq,maxq,deltaq)
-        vff_orig = []
-        dff_orig = []
-        for i in range(len(atoms)):
-        
-       
-            vff_orig.append(imp_ft.get_vacuum_form_factors(atoms[i]))
-            dff_orig.append(imp_ft.get_dummy_form_factors(atoms[i]))
-
-        
-        iv = np.asarray(vff_orig)
-        id = np.asarray(dff_orig)
-        
         self.assertTrue(np.allclose(iv,mv))
         self.assertTrue(np.allclose(id,md))
         '''
