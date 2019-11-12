@@ -27,6 +27,11 @@ class Particle(object):
         self.num_atom_types = None  # number of atom types
         self.ff_table = None  # form factor table -> atom_type x qSample
 
+        self.atomic_variant = None 
+        self.residue = None
+        self.atomic_symbol = None
+        self.at = None
+
         # Scattering
         self.q_sample = None  # q vector sin(theta)/lambda
         self.num_q_samples = None  # number of q samples
@@ -106,6 +111,23 @@ class Particle(object):
     def get_num_compton_q_samples(self):
         return self.num_compton_q_samples
 
+    def get_atom_type(self):
+       print("Self_at",self.at)
+       return self.at
+         
+    def get_atom_struct(self):
+       return self.atom_struct
+     
+    def get_atomic_symbol(self):
+       return self.atomic_symbol
+        
+    def get_atomic_variant(self):
+       return self.atomic_variant
+         
+    def get_residue(self):
+       return self.residue
+
+
     def read_h5file(self, fname, datasetname):
         """
         Parse the h5file to get the particle position and the other information
@@ -148,7 +170,20 @@ class Particle(object):
         :return:
         """
 
-        atoms = symmpdb(fname)
+        Atoms,atomslist = symmpdb(fname)
+        
+        self.at = atoms[:,3]
+        
+        # parallel structure temp fix
+        xpos = [row[0] for row in atomslist]
+        ypos = [row[1] for row  in atomslist]
+        zpos = [row[2] for row in atomslist]
+        an =[row[3] for row in atomslist]
+        self.atom_struct = np.array([xpos,ypos,zpos,an])
+        self.atomic_symbol = [row[4] for row in atomslist]
+        self.atomic_variant = [row[5] for row in atomslist]
+        self.residue = [row[6] for row in atomslist]
+
         self.atom_pos = atoms[:, 0:3] / 10 ** 10  # convert unit from Angstroms to m
         tmp = (100 * atoms[:, 3] + atoms[:, 4]).astype(
             int)  # hack to get split idx from the sorted atom array
