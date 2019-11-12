@@ -65,7 +65,7 @@ class TestPartialProfiles(unittest.TestCase):
             idx = table[ret_type]
             vff_py.append(vacuum_ff_m[idx])
             dff_py.append(dummy_ff_m[idx])
-            mv = np.asarray(vff_py)
+        mv = np.asarray(vff_py)
         md = np.asarray(dff_py)
         
         iv = np.loadtxt('imp_ff_v.txt')
@@ -75,7 +75,7 @@ class TestPartialProfiles(unittest.TestCase):
 
         self.assertTrue(np.allclose(iv,mv))
         self.assertTrue(np.allclose(id,md))
-        '''
+        
     def test_init_water_form_factor(self):
     
        
