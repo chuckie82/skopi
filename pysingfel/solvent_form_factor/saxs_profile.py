@@ -200,8 +200,8 @@ def assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms,r_
        
     if verbose ==1:
         fp = open('atomtypes.txt','w')
-        fv = open('vacuum.txt','w')
-        fd = open('dummy.txt','w')
+        fv = open('vacuum_impPy.txt','w')
+        fd = open('dummy_impPy.txt','w')
     
     prof.vacuum_ff = np.zeros((num_atoms,prof.nsamples),dtype=np.float64)
 
@@ -269,7 +269,7 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,ff_type='HEAVY_
 
     num_atoms = len(coordinates)
     
-    prof, water_ff, r_size = assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms)
+    prof, water_ff, r_size = assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms,r_size)
    
     r_dist = []
     max_dist = calculate_max_distance(coordinates)
