@@ -32,30 +32,23 @@ class TestRadialDistributionFunction(unittest.TestCase):
         self.rdf.reset()
         v = self.rdf.get_values()
         np.allclose(v,r)
-        
-    def test_values(self):
-
-        z = np.zeros((self.nbins,1),dtype=np.float64)
-        sff.add2distribution(self.rdf,self.max_dist,20) # put 20 in last bin
-        z[-1] = 20
-        np.allclose(z,self.rdf.values)
     
+    def test_radial_distribution_libsaxs_compare(self):
+        print "test_radial_distribution goes here\n"
+
     def test_qd_var_ts(self):
         os.chdir('/reg/neh/home/marcgri/Software/pysingfel/pysingfel/solvent_form_factor/tests')
-        pyQd10= np.loadtxt("qd_10atoms_marc.txt")
-        lsQd10 = np.loadtxt("qd_ls_saxs10atoms.txt")
+        pyQd10= np.loadtxt("data/qd_impPy.txt")
+        lsQd10 = np.loadtxt("data/qd_ls.txt")
          
         self.assertTrue(np.allclose(pyQd10,lsQd10))
 
     def test_sinc_func(self):
         os.chdir('/reg/neh/home/marcgri/Software/pysingfel/pysingfel/solvent_form_factor/tests')
-        pySinc2 = np.loadtxt("sinc_2atoms_marc.txt")
-        lsSinc2 = np.loadtxt("sinc_ls_2atoms.txt")
 
-	self.assertTrue(np.allclose(pySinc2,lsSinc2))
         
-        pySinc10 = np.loadtxt("sinc_10atoms_marc.txt")
-        lsSinc10 =  np.loadtxt("sinc_ls_saxs10atoms.txt")
+        pySinc10 = np.loadtxt("data/sinc_impPy.txt")
+        lsSinc10 =  np.loadtxt("data/sinc_ls.txt")
 
         self.assertTrue(np.allclose(pySinc10,lsSinc10))
 

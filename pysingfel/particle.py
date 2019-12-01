@@ -174,7 +174,7 @@ class Particle(object):
         :return:
         """
 
-        atoms,atomslist = symmpdb(fname, ff)
+        atoms,atomslist = symmpdb(fname)
         
         
         #print atomslist

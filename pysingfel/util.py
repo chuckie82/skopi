@@ -163,7 +163,7 @@ def symmpdb(fname):
                 tmp = [float(line[30:38].strip()), float(line[38:46].strip()), float(line[46:54].strip()), 0, 0]
                 atom_symbol = line[76:78].strip()
                 atom_variant = line[13:16].strip()
-                Residue = line[17:21].strip()
+                residue = line[17:21].strip()
                      
                 lst = [tmp[0],tmp[1],tmp[2],tmp[3] ,atom_symbol,atom_variant,residue]
                 print lst

@@ -3,10 +3,8 @@
 
 import numpy as np
 import sys
-import elements_constants
-import util
-from pysingfel.particle import *
-from pysingfel.util import *
+import pysingfel.solvent_form_factor.elements_constants
+import pysingfel as ps
 
 """
 
@@ -511,8 +509,8 @@ class FormFactorTable(object):
         dummy_form_factors_oh =  self.dummy_form_factors[4] + 1.0*self.dummy_form_factors[0]
         dummy_form_factors_oh2 =  self.dummy_form_factors[4] + 2.0 * self.dummy_form_factors[0]
         
-        vacuum_form_factors_sh =  self.vacuum_form_factors[10] + 1.0*self.vacuum_form_factors[0]
-        dummy_form_factors_sh =  self.dummy_form_factors[10] + 1.0 * self.dummy_form_factors[0]
+        vacuum_form_factors_sh =  self.vacuum_form_factors[9] + 1.0*self.vacuum_form_factors[0]
+        dummy_form_factors_sh =  self.dummy_form_factors[9] + 1.0 * self.dummy_form_factors[0]
         
         heavy_vacuum_form_factors = [vacuum_form_factors_ch,vacuum_form_factors_ch2,vacuum_form_factors_ch3,
             vacuum_form_factors_nh,vacuum_form_factors_nh2,vacuum_form_factors_nh3,
