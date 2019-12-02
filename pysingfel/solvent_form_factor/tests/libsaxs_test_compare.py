@@ -1,11 +1,14 @@
 import unittest 
 import numpy as np
+import pysingfel.solvent_form_factor as sff
 
 class LibSaxsCompareDataTest(unittest.TestCase):
     
     def setUp(self):
         print "Testing code against libsaxs...\n"
-
+        
+        sff.saxs.profile.verbose =1 
+        
     def test_partial_profile_data(self):
 
         print "Testing partial profile data against libsaxs...\n"
@@ -34,7 +37,7 @@ class LibSaxsCompareDataTest(unittest.TestCase):
         self.assertTrue(np.allclose(rd0,r0_py))
         self.assertTrue(np.allclose(rd1,r1_py))
         self.assertTrue(np.allclose(rd2,r2_py))
-    
+    """   
     def test_vacuum_form_factor_data(self):
         print "Testing vacuum form factor data against libsaxs...\n"
         vls = np.loadtxt('data/vacuum_ls.txt')
