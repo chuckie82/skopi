@@ -618,13 +618,13 @@ class FormFactorTable(object):
         # CB
         if atom_type == 'CB':
            if residue_type == 'ILE' or  residue_type == 'THR' or residue_type == 'VAL':
-              print 'CH'
+              #print 'CH'
               
               return 'CH'
             
            if residue_type == 'ALA':
               return 'CH3'
-           print 'CH2'
+           #print 'CH2'
            
            return 'CH2'
           
@@ -896,9 +896,9 @@ class FormFactorTable(object):
         return 'O'
  
     def get_form_factor_atom_type(self,atomic_type,atom_variant_type, residue_type):
-       print atomic_type
-       print atom_variant_type
-       print residue_type
+       #print atomic_type
+       #print atom_variant_type
+       #print residue_type
        
        
        if atomic_type == 'C':
@@ -918,8 +918,8 @@ class FormFactorTable(object):
        else:
           print "Can't find form factor for atom using default value of nitrogen \n"
           ret_type = 'N'
-       print '\n\n'
-       print ret_type
+       #print '\n\n'
+       #print ret_type
     
        return ret_type;
  
