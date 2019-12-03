@@ -1,8 +1,8 @@
 import unittest
 import sys
-import pysingfel as ps
-import pysingfel.solvent_form_factor as sff
 import os
+sys.path.append("../../..")
+import pysingfel as ps
 import numpy as np
 
 class TestRadialDistributionFunction(unittest.TestCase):
@@ -11,12 +11,12 @@ class TestRadialDistributionFunction(unittest.TestCase):
         self.max_dist = 10
         self.bin_size = 0.5
 
-        self.rdf = sff.RadialDistributionFunction(self.bin_size,self.max_dist)
+        self.rdf = ps.solvent_form_factor.radial_distribution_function.RadialDistributionFunction(self.bin_size,self.max_dist)
         self.nbins = self.rdf.get_nbins()
         
     def test_rdf_object(self):
     
-        self.assertIsInstance(self.rdf,sff.RadialDistributionFunction)
+        self.assertIsInstance(self.rdf,ps.solvent_form_factor.radial_distribution_function.RadialDistributionFunction)
         
     def test_rdf_nbins(self):
     
@@ -37,14 +37,12 @@ class TestRadialDistributionFunction(unittest.TestCase):
         print "test_radial_distribution goes here\n"
 
     def test_qd_var_ts(self):
-        os.chdir('/reg/neh/home/marcgri/Software/pysingfel/pysingfel/solvent_form_factor/tests')
         pyQd10= np.loadtxt("data/qd_impPy.txt")
         lsQd10 = np.loadtxt("data/qd_ls.txt")
          
         self.assertTrue(np.allclose(pyQd10,lsQd10))
 
     def test_sinc_func(self):
-        os.chdir('/reg/neh/home/marcgri/Software/pysingfel/pysingfel/solvent_form_factor/tests')
 
         
         pySinc10 = np.loadtxt("data/sinc_impPy.txt")

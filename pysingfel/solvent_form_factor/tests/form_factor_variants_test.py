@@ -1,11 +1,13 @@
 import unittest
 import sys
-import pysingfel.solvent_form_factor as sff
+import os
+sys.path.append('../../..')
+import pysingfel as ps
 
 class FormFactorVariantsTest(unittest.TestCase):
 
     def setUp(self):
-        self.ft = sff.FormFactorTable()
+        self.ft = ps.solvent_form_factor.form_factor_table.FormFactorTable()
         self.atom_type = 'A'
         self.residue_type = 'XYZ'
     

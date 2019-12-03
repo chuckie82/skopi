@@ -1,22 +1,18 @@
 
 import unittest
 import sys,os
-sys.path.append("~marcgri/Software/pysingfel")
-#sys.path.append("..")
-import pysingfel as ps
-sys.path.append("~marcgri/Software/pysingfel/solvent_form_factor")
-#import pysingfel.solvent_form_factor as sff
 import numpy as np
-
+sys.path.append('../../..')
+import pysingfel as ps
 
 class TestPartialProfiles(unittest.TestCase):
     
     def setUp(self):
   
-        self.ft = ps.solvent_form_factor.FormFactorTable()
+        self.ft = ps.solvent_form_factor.form_factor_table.FormFactorTable()
         self.prof = ps.solvent_form_factor.saxs_profile.Profile(0,3.0,0.01)
-        self.particle = ps.Particle()
-        self.particle.read_pdb('/reg/neh/home/marcgri/Software/pysingfel/pysingfel/solvent_form_factor/tests/SAXS_10atoms.pdb','CM')
+        self.particle = ps.particle.Particle()
+        self.particle.read_pdb('SAXS_10atoms.pdb','CM')
         self.nsamples = 301
         self.coordinates = self.particle.get_atom_pos()
         
@@ -44,7 +40,7 @@ class TestPartialProfiles(unittest.TestCase):
     def test_assign_form_factors(self):
     
         particles = ps.particle.Particle()
-        particles.read_pdb('/reg/neh/home5/marcgri/Software/pysingfel/pysingfel/solvent_form_factor/tests/SAXS_10atoms.pdb','CM')
+        particles.read_pdb('SAXS_10atoms.pdb','CM')
         lp = particles.get_num_atoms()
         ft_py = ps.solvent_form_factor.form_factor_table.FormFactorTable()
         symbols = particles.get_atomic_symbol()
