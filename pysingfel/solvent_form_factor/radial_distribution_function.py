@@ -53,7 +53,7 @@ class RadialDistributionFunction:
         return self.max_distance
 
 
-def radial_distributions_to_partials(p , ndists, r_dists,modulation_function_parameter=0.23):
+def radial_distributions_to_partials(p , ndists, r_dists,verbose,modulation_function_parameter=0.23):
   
     nbins = r_dists[0].get_nbins()
     #print "nbins=",nbins
@@ -61,7 +61,6 @@ def radial_distributions_to_partials(p , ndists, r_dists,modulation_function_par
     delta_x = r_dists[0].get_bin_size()
     #print "delta_x=",delta_x
 
-    verbose = 0
     #sincqd = []
     #qdsave = []
     #s = []
@@ -81,9 +80,6 @@ def radial_distributions_to_partials(p , ndists, r_dists,modulation_function_par
         
         q = p.get_q(iq)
         #fq.write("%.6f\n" % q)
-        #print q
-        #print "Nbins",nbins
-        #sys.exit()
         for r in range(nbins):
             
             
@@ -108,11 +104,11 @@ def radial_distributions_to_partials(p , ndists, r_dists,modulation_function_par
                fr0.write("%.6f\n" % r_dists[0].values[r])
                fr1.write("%.6f\n" % r_dists[1].values[r])
                fr2.write("%.6f\n" % r_dists[2].values[r])
-            #if ndists == 6:
-            #
-            #    p.h2o_h2o[iq] +=  r_dists[3].values[r] * x
-            #    p.vac_h2o[iq] +=  r_dists[4].values[r] * x
-            #    p.dum_h2o[iq] +=  r_dists[5].values[r] * x
+            if ndists == 6:
+            
+               p.h2o_h2o[iq] +=  r_dists[3].values[r] * x
+               p.vac_h2o[iq] +=  r_dists[4].values[r] * x
+               p.dum_h2o[iq] +=  r_dists[5].values[r] * x
         
 
         #modulation_function_parameter = 0.23
@@ -126,8 +122,8 @@ def radial_distributions_to_partials(p , ndists, r_dists,modulation_function_par
         #fvd.write("%.6f\n" % p.vac_dum[iq])
         #s.append(scaling_factor)
         #if ndists == 6:
-            
-        #    p.vac_h2o[iq] *= scaling_factor
+        #    
+        #   #p.vac_h2o[iq] *= scaling_factor
         #    p.dum_h2o[iq] *= scaling_factor
         #    p.h2o_h2o[iq] *= scaling_factor
         #fqd.write("%.6f\n" % qd)

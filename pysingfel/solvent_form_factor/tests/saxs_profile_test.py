@@ -8,7 +8,8 @@ import pysingfel as ps
 class TestPartialProfiles(unittest.TestCase):
     
     def setUp(self):
-  
+        
+        self.verbose=1 
         self.ft = ps.solvent_form_factor.form_factor_table.FormFactorTable()
         self.prof = ps.solvent_form_factor.saxs_profile.Profile(0,3.0,0.01)
         self.particle = ps.particle.Particle()
@@ -87,7 +88,7 @@ class TestPartialProfiles(unittest.TestCase):
         
     def test_check_radial_distribution(self):
         num_atoms = len(self.coordinates)
-        p,waterff,ndists= ps.solvent_form_factor.saxs_profile.assign_form_factors_2_profile(self.particle,self.prof,self.saxs_sa,self.vv,self.dd,self.ft,num_atoms,self.ndists)
+        p,waterff,ndists= ps.solvent_form_factor.saxs_profile.assign_form_factors_2_profile(self.particle,self.prof,self.saxs_sa,self.vv,self.dd,self.ft,num_atoms,self.ndists,self.verbose)
         
         f = np.zeros((6,1),dtype=np.float64)
         
@@ -122,9 +123,9 @@ class TestPartialProfiles(unittest.TestCase):
         self.bin_size = 0.5
         for i in range(ndists):
            r_dist.append(ps.solvent_form_factor.radial_distribution_function.RadialDistributionFunction( self.bin_size,self.max_dist))
-        p,waterff, ndists = ps.solvent_form_factor.saxs_profile.assign_form_factors_2_profile(self.particle,self.prof,self.saxs_sa ,self.vv,self.dd,self.ft,num_atoms,ndists)
+        p,waterff, ndists = ps.solvent_form_factor.saxs_profile.assign_form_factors_2_profile(self.particle,self.prof,self.saxs_sa ,self.vv,self.dd,self.ft,num_atoms,ndists,self.verbose)
         
-        new_p = ps.solvent_form_factor.radial_distribution_function.radial_distributions_to_partials(p,6,r_dist)
+        new_p = ps.solvent_form_factor.radial_distribution_function.radial_distributions_to_partials(p,6,r_dist,self.verbose)
  
         self.assertIsInstance(new_p,ps.solvent_form_factor.saxs_profile.Profile)
         
@@ -140,10 +141,10 @@ class TestPartialProfiles(unittest.TestCase):
         z = np.zeros((self.nsamples,1),dtype=np.float64)
         ndists =6
         num_atoms = len(self.coordinates)
-        p,waterff,r_size  = ps.solvent_form_factor.saxs_profile.assign_form_factors_2_profile(self.particle,self.prof,self.saxs_sa,self.vv,self.dd,self.ft,num_atoms,ndists)
+        p,waterff,r_size  = ps.solvent_form_factor.saxs_profile.assign_form_factors_2_profile(self.particle,self.prof,self.saxs_sa,self.vv,self.dd,self.ft,num_atoms,ndists,self.verbose)
         self.assertIsInstance(p,ps.solvent_form_factor.saxs_profile.Profile)
         
-        new_p = ps.solvent_form_factor.radial_distribution_function.radial_distributions_to_partials(p,ndists,self.r_dist)
+        new_p = ps.solvent_form_factor.radial_distribution_function.radial_distributions_to_partials(p,ndists,self.r_dist,self.verbose)
         
         self.assertEqual(np.any(new_p.vac_vac),0.0)
         self.assertEqual(np.any(new_p.dum_dum),0.0)
@@ -152,7 +153,7 @@ class TestPartialProfiles(unittest.TestCase):
         self.assertEqual(np.any(new_p.dum_h2o),0.0)
         self.assertEqual(np.any(new_p.vac_h2o),0.0)
         
-        Intensity = ps.solvent_form_factor.saxs_profile.sum_profile_partials(new_p,1.0,0.0)
+        Intensity = ps.solvent_form_factor.saxs_profile.sum_profile_partials(new_p,1.0,0.0,self.verbose)
         self.assertTrue(np.allclose(Intensity,z))
     
 

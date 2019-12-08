@@ -1,13 +1,12 @@
 import unittest 
 import numpy as np
-import pysingfel.solvent_form_factor as sff
+import os
+import sys
 
 class LibSaxsCompareDataTest(unittest.TestCase):
     
     def setUp(self):
         print "Testing code against libsaxs...\n"
-        
-        sff.saxs.profile.verbose =1 
         
     def test_partial_profile_data(self):
 

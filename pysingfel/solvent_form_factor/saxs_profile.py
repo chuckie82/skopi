@@ -5,7 +5,6 @@ import numpy as np
 import scipy
 import matplotlib.pyplot as plt
 
-verbose = 0
 
 class Profile:
 
@@ -193,9 +192,8 @@ class Profile:
        outFile.close()
 
 
-def assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms,r_size):
+def assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms,r_size,verbose):
     
-    global verbose
     
        
     if verbose ==1:
@@ -245,10 +243,8 @@ def assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms,r_
     return prof, water_ff,r_size
 
 
-def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,ff_type='HEAVY_ATOMS'):
+def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,verbose,c1,c2,ff_type='HEAVY_ATOMS'):
     
-    global verbose
-    #verbose = 0
     if verbose ==1:
         fp = open('atomtypes_ImpPy.txt','w')
         fv = open('vacuum_ImpPy.txt','w')
@@ -269,7 +265,7 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,ff_type='HEAVY_
 
     num_atoms = len(coordinates)
     
-    prof, water_ff, r_size = assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms,r_size)
+    prof, water_ff, r_size = assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms,r_size,verbose)
    
     r_dist = []
     max_dist = calculate_max_distance(coordinates)
@@ -285,29 +281,44 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,ff_type='HEAVY_
     r0 = np.zeros((nbins,1),dtype=np.float64)
     r1 = np.zeros((nbins,1),dtype=np.float64)
     r2 = np.zeros((nbins,1),dtype=np.float64)
-    
+    r3 = np.zeros((nbins,1),dtype=np.float64)
+    r4 = np.zeros((nbins,1),dtype=np.float64)
+    r5 = np.zeros((nbins,1),dtype=np.float64)
+
     bins = (r_dist[0].get_one_over_bin_size()*cd).astype(int)
     
     vacuum2 =  np.outer(prof.vacuum_ff[:,0],prof.vacuum_ff[:,0])
     dummy2  =  np.outer(prof.dummy_ff[:,0],prof.dummy_ff[:,0])
     vd = np.outer(prof.vacuum_ff[:,0],prof.dummy_ff[:,0])
     
-    #vach2o = np.outer(prof.vacuum_ff[:,0],water_ff)
-    #dumh2o = np.outer(prof.dummy_ff[:,0],water_ff)
-    #h2o2 = np.outer(water_#ff,water_ff)
+    if r_size == 6:
+       vach2o = np.outer(prof.vacuum_ff[:,0],water_ff)
+       dumh2o = np.outer(prof.dummy_ff[:,0],water_ff)
+       h2o2 = np.outer(water_ff,water_ff)
     
     r0[0] = np.sum(np.diag(vacuum2))
     r1[0] = np.sum(np.diag(dummy2))
     r2[0] = 2.0 * np.sum(np.diag(vd))
+    
+    if r_size == 6:
+       r3[0] = np.sum(np.diag(h2o2))
+       r4[0] = 2.0 * np.sum(np.diag(vach2o))
+       r5[0] = 2.0 * np.sum(np.diag(dumh2o))
+
     #print r0[0]
     #print r1[0]
     #print r2[0]
     
     vacuum2 = np.triu(vacuum2,k=1)
     dummy2 = np.triu(dummy2,k=1)
-
+    if r_size == 6:
+       h2o2 = np.triu(h2o2,k=1)
     vd[np.diag_indices(vd.shape[0])] = 0
     
+    if r_size == 6:
+       vach2o[np.diag_indices(vach2o.shape[0])]
+       dumh2o[np.diag_indices(dumh2o.shape[0])]
+
     if verbose == 1:
         fp.close()
         fv.close()
@@ -325,6 +336,12 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,ff_type='HEAVY_
     vacuum2 = vacuum2.ravel()
     dummy2 = dummy2.ravel()
     vd = vd.ravel()
+
+    if r_size == 6:
+       h2o2 = h2o2.ravel()
+       vach2o = vach2o.ravel()
+       dumh2o = dumh2o.ravel()
+
     lin_idx = np.argsort(flat, kind='mergesort')
     
     sp = np.split(lin_idx, np.cumsum(np.bincount(flat)[:-1]))
@@ -338,64 +355,32 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,ff_type='HEAVY_
         r0[b] += 2.0*np.sum(vacuum2[sp[b]])
         r1[b] += 2.0*np.sum(dummy2[sp[b]])
         r2[b] += 2.0*np.sum(vd[sp[b]])
-        
+        if r_size == 6:
+           r3[b] += 2.0*np.sum(h2o2[sp[b]])
+           r4[b] += 2.0*np.sum(vach2o[sp[b]])
+	   r5[b] += 2.0*np.sum(dumh2o[sp[b]])
         #print r0[b]
         #print r1[b]
         #print r2[b]
-        
-        #if len(saxs_sa) == len(coordinates):
-        
-        #    h2o_ff_i = wf * saxs_sa[i]
-            
-
-            #r_dist[0] = radial_distribution_function.add2distribution(r_dist[0],dist,2.0 * vac_ff_i * vac_ff_j) #  constant
-                            
-            #r_dist[1] = radial_distribution_function.add2distribution(r_dist[1],dist,2.0 * dum_ff_i * dum_ff_j) # c1^2
-                                           
-            #r_dist[2] = radial_distribution_function.add2distribution(r_dist[2],dist,
-            #                 2.0 * (vac_ff_i * dum_ff_j +vac_ff_j * dum_ff_i)) # -c1
-            #if len(saxs_sa) == len(coordinates):
-                
-            #    h2o_ff_j = wf * saxs_sa[j]
-                    
-            #    r_dist[3] = radial_distribution_function.add2distribution(r_dist[3], dist, 2.0 *   h2o_ff_i * h2o_ff_j,1)  # c2^2
-                
-            #    r_dist[4] = radial_distribution_function.add2distribution(r_dist[4],dist,
-            #                         2.0 * (vac_ff_i * h2o_ff_j +
-            #                              vac_ff_j * h2o_ff_i),1) # c2
-            #    r_dist[5] =  radial_distribution_function.add2distribution(r_dist[5],dist,
-            #                         2.0 * (h2o_ff_i * dum_ff_j +
-            #                              h2o_ff_j * dum_ff_i),1)# -c1*c2
-                
-
-        
-        #if len(saxs_sa) == len(coordinates):
-            
-        #    r_dist[3] = radial_distribution_function.add2distribution(r_dist[3],0,
-        #                     h2o_ff_i * h2o_ff_i,0)
-        #    r_dist[4] = radial_distribution_function.add2distribution(r_dist[4], 0,
-        #                     2 * vac_ff_i * h2o_ff_i,0)
-        #    r_dist[5] = radial_distribution_function.add2distribution(r_dist[5], 0,
-        #                     2 * h2o_ff_i * dum_ff_i,0)
     
 
     r_dist[0].values = r0
     r_dist[1].values = r1
     r_dist[2].values = r2
     
-    #if r_size == 6:
-    #r_dist[3].values = r3
-    #r_dist[4].values = r4
-    #r_dist[5].values = r5
+    if r_size == 6:
+       r_dist[3].values = r3
+       r_dist[4].values = r4
+       r_dist[5].values = r5
     
-    new_prof = radial_distribution_function.radial_distributions_to_partials(prof,r_size,r_dist)
+    new_prof = radial_distribution_function.radial_distributions_to_partials(prof,r_size,r_dist,verbose)
     
     newpartials = np.hstack((new_prof.q, new_prof.vac_vac,new_prof.dum_dum, new_prof.vac_dum))
-    
+  
     if verbose == 1:
        np.savetxt('partials_ImpPy.txt',newpartials,fmt='%.6f',delimiter=' ' , newline='\n')
        
-    intensity = sum_profile_partials(new_prof,1.0, 0.0)  #c1 = 1.0, c2 = 0.0
+    intensity = sum_profile_partials(new_prof,c1, c2,verbose)  #c1 = 1.0, c2 = 0.0
     
     if verbose == 1:
        np.savetxt('intensity_ImpPy.txt',intensity,fmt='%.6f',delimiter=' ' , newline='\n')
@@ -404,7 +389,7 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,ff_type='HEAVY_
 
 
 
-def sum_profile_partials(p, c1,c2):
+def sum_profile_partials(p, c1,c2,verbose):
     verbose = 0
     rm = p.average_radius
     

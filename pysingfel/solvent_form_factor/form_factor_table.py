@@ -3,7 +3,8 @@
 
 import numpy as np
 import sys
-import pysingfel.solvent_form_factor.elements_constants
+import elements_constants
+sys.path.append('../..')
 import pysingfel as ps
 
 """
