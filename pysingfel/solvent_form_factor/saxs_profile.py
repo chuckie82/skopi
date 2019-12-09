@@ -197,9 +197,9 @@ def assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms,r_
     
        
     if verbose ==1:
-        fp = open('atomtypes.txt','w')
-        fv = open('vacuum_impPy.txt','w')
-        fd = open('dummy_impPy.txt','w')
+        fp = open('data/atomtypes.txt','w')
+        fv = open('data/vacuum_impPy.txt','w')
+        fd = open('data/dummy_impPy.txt','w')
     
     prof.vacuum_ff = np.zeros((num_atoms,prof.nsamples),dtype=np.float64)
 
@@ -246,9 +246,9 @@ def assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms,r_
 def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,verbose,c1,c2,ff_type='HEAVY_ATOMS'):
     
     if verbose ==1:
-        fp = open('atomtypes_ImpPy.txt','w')
-        fv = open('vacuum_ImpPy.txt','w')
-        fd = open('dummy_ImpPy.txt','w')
+        fp = open('data/atomtypes_ImpPy.txt','w')
+        fv = open('data/vacuum_ImpPy.txt','w')
+        fd = open('data/dummy_ImpPy.txt','w')
     
     r_size = 3
     
@@ -323,7 +323,7 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,verbose,c1,c2,f
         fp.close()
         fv.close()
         fd.close()
-        fdist = open('dist_impPy.txt','w')
+        fdist = open('data/dist_impPy.txt','w')
 
         for a in range(len(coordinates)):
             for c in range(len(coordinates)):
@@ -378,12 +378,12 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,verbose,c1,c2,f
     newpartials = np.hstack((new_prof.q, new_prof.vac_vac,new_prof.dum_dum, new_prof.vac_dum))
   
     if verbose == 1:
-       np.savetxt('partials_ImpPy.txt',newpartials,fmt='%.6f',delimiter=' ' , newline='\n')
+       np.savetxt('data/partials_ImpPy.txt',newpartials,fmt='%.6f',delimiter=' ' , newline='\n')
        
     intensity = sum_profile_partials(new_prof,c1, c2,verbose)  #c1 = 1.0, c2 = 0.0
     
     if verbose == 1:
-       np.savetxt('intensity_ImpPy.txt',intensity,fmt='%.6f',delimiter=' ' , newline='\n')
+       np.savetxt('data/intensity_ImpPy.txt',intensity,fmt='%.6f',delimiter=' ' , newline='\n')
        
     return intensity
 
@@ -429,7 +429,7 @@ def sum_profile_partials(p, c1,c2,verbose):
     
     if verbose  == 1:
 	gqq = np.asarray(gqq)
-        np.savetxt('gq_ImpPy.txt',  gqq,fmt='%.6f', delimiter =' ',newline='\n')
+        np.savetxt('data/gq_ImpPy.txt',  gqq,fmt='%.6f', delimiter =' ',newline='\n')
 
     return I
                            

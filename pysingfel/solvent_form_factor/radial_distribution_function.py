@@ -65,15 +65,15 @@ def radial_distributions_to_partials(p , ndists, r_dists,verbose,modulation_func
     #qdsave = []
     #s = []
     if verbose == 1:
-        fp = open("sinc_ImpPy.txt",'w')
-        fqd = open("qd_ImpPy.txt",'w')
-        fq = open("q_marc_ImpPy.txt",'w')
-        fr0 = open("r0_ImpPy.txt",'w')
-        fr1 = open("r1_ImpPy.txt",'w')
-        fr2 = open("r2_ImpPy.txt",'w')
-        fvv = open("vacvac_ImpPy.txt",'w')
-        fdd = open("dumdum_ImpPy.txt",'w')
-        fvd = open("vacdum_ImpPy.txt",'w')
+        fp = open("data/sinc_ImpPy.txt",'w')
+        fqd = open("data/qd_ImpPy.txt",'w')
+        fq = open("data/q_marc_ImpPy.txt",'w')
+        fr0 = open("data/r0_ImpPy.txt",'w')
+        fr1 = open("data/r1_ImpPy.txt",'w')
+        fr2 = open("data/r2_ImpPy.txt",'w')
+        fvv = open("data/vacvac_ImpPy.txt",'w')
+        fdd = open("data/dumdum_ImpPy.txt",'w')
+        fvd = open("data/vacdum_ImpPy.txt",'w')
     
 
     for iq in range(p.nsamples):
