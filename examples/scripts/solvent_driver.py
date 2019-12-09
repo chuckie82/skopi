@@ -10,7 +10,6 @@ import time
 
 def main():
     
-    global verbose
 
     params = parse_input_arguments(sys.argv)
     min_q = params['min_q']
@@ -51,27 +50,39 @@ def main():
     xyz = particles.get_atom_struct()
     xyz = np.transpose(xyz)
 
+
+     
+    atomic_variant = particles.get_atomic_variant()
     symbols = particles.get_atomic_symbol()
-    e = particles.get_atomic_variant()
+    residue  = particles.get_residue()
+   
+    table = ft.get_ff_cm_dict()
+    for m in range(len(xyz)):
+           if m % 1000 == 0:
+              print m
 
-    residue = particles.get_residue()
+           ret_type = ft.get_form_factor_atom_type(symbols[m],atomic_variant[m], residue[m])
+           print ret_type
+           idx =   table[ret_type]
 
-    for i in range(len(xyz)):
-        radius.append(2.0)
+           radius.append(ft.ff_radii[idx])
+
     radius = np.asarray(radius)
     radius = radius.reshape((lp,1))
 
     radius = np.array(radius)
+    print radius
+   
     xyz_plus_radius = np.hstack((xyz,radius))
     start = time.time()
 
 
     s = ps.solvent_form_factor.solvent_accessible_surface.SolventAccessibleSurface()
-    surface_area,fraction,sas = s.calculate_asa(xyz_plus_radius,1.4,100)
+    surface_area,fraction,sas = s.calculate_asa(xyz_plus_radius,1.4,960)
     end = time.time()
     print 'Calculated %d particle surface areas in %f seconds.' % (len(xyz_plus_radius),end-start)
-
-
+    
+    np.savetxt("sas.txt",fraction) 
     start = time.time()
     model_profile = ps.solvent_form_factor.saxs_profile.Profile(min_q,max_q,delta_q)
 

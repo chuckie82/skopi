@@ -182,7 +182,7 @@ class FormFactorTable(object):
         self.corrected_form_factors = None
         self.vacuum_form_factors = np.zeros((self.ff_coeff.shape[0],self.number_of_q_entries),dtype=np.float64)
         self.dummy_form_factors = np.zeros((self.ff_coeff.shape[0],self.number_of_q_entries),dtype=np.float64)
-        
+        self.ff_radii = np.zeros((self.ff_coeff.shape[0],1),dtype=np.float64)       
         #self.excl_vol = None #self.get_vanderwaals_volume()# calculated from volume of each element
 
         self.init_element_form_factor_dict()
@@ -216,7 +216,7 @@ class FormFactorTable(object):
         self.compute_dummy_form_factors()
         #print dummy
         self.compute_form_factors_heavy_atoms()
-       
+        self.compute_radii()
 
     def read_form_factor_table(self,table_name):
 
@@ -308,7 +308,8 @@ class FormFactorTable(object):
     def get_vanderwaals_volume(self,i):
         
         return (4.0/3.0) * np.pi * np.power(self.vanderwaals_radius[i],3.0)
-
+    
+    
     def get_radius(self,i ,ff_type='HEAVY_ATOMS'):
 
         one_third = (1.0/3.0)
@@ -448,7 +449,19 @@ class FormFactorTable(object):
      
         return self.dummy_form_factors
 
+    def compute_radii(self):
+        
+        one_third = (1.0/3.0)
+        c = (3.0/(4.0*np.pi))
 
+        for i in range(0,self.ff_coeff.shape[0]):
+
+            form_factor = self.get_dummy_form_factors()
+            ff = form_factor[:,0]/self.rho
+        
+        self.ff_radii = np.power(c*ff, one_third)
+
+            
     def compute_form_factors_all_atoms(self):
         
        
