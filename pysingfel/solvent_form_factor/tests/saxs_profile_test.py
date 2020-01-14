@@ -5,15 +5,15 @@ import numpy as np
 sys.path.append('../../..')
 import pysingfel as ps
 
-class TestPartialProfiles(unittest.TestCase):
+class TestSAXSProfiles(unittest.TestCase):
     
     def setUp(self):
         
-        self.verbose=1 
+        self.verbose=0
         self.ft = ps.solvent_form_factor.form_factor_table.FormFactorTable()
         self.prof = ps.solvent_form_factor.saxs_profile.Profile(0,3.0,0.01)
         self.particle = ps.particle.Particle()
-        self.particle.read_pdb('SAXS_10atoms.pdb','CM')
+        self.particle.read_pdb('SAXS_10atoms_mod.pdb','CM')
         self.nsamples = 301
         self.coordinates = self.particle.get_atom_pos()
         
@@ -41,7 +41,8 @@ class TestPartialProfiles(unittest.TestCase):
     def test_assign_form_factors(self):
     
         particles = ps.particle.Particle()
-        particles.read_pdb('SAXS_10atoms.pdb','CM')
+        #particles.read_pdb('../../../examples/input/SAXS_10atoms.pdb','CM')
+        particles.read_pdb('SAXS_10atoms_mod.pdb','CM')
         lp = particles.get_num_atoms()
         ft_py = ps.solvent_form_factor.form_factor_table.FormFactorTable()
         symbols = particles.get_atomic_symbol()

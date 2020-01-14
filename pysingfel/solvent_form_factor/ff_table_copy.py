@@ -183,97 +183,15 @@ class FormFactorTable(object):
         self.vacuum_form_factors = np.zeros((self.ff_coeff.shape[0],self.number_of_q_entries),dtype=np.float64)
         self.dummy_form_factors = np.zeros((self.ff_coeff.shape[0],self.number_of_q_entries),dtype=np.float64)
         self.ff_radii = np.zeros((self.ff_coeff.shape[0],1),dtype=np.float64)       
-        #self.excl_vol = None #self.get_vanderwaals_volume()# calculated from volume of each element
 
         self.init_element_form_factor_dict()
-        #self.init_residue_type_form_factor_dict()
-        #self.get_form_factor_coefficients()
 
-
-        if table_name is not None:
-
-            ff_num = self.read_form_factor_table(table_name)
-
-            if ff_num > 0:
-
-                for i in range(elements_constants.HEAVY_ATOM_SIZE):
-
-                    self.zero_form_factors[i] = 0.0
-                    self.dummy_zero_form_factors[i] = 0.0
-                    self.vacuum_zero_form_factors[i] = 0.0
-
-                number_of_q_entries = IMP.util.get_rounded(((self.q_max - self.q_min) / self.q_delta) + 1)
-                form_factor_template = np.zeros(number_of_q_entries, dtype=np.float32)
-
-                self.form_factors = [form_factor_template] * element_constants.HEAVY_ATOM_SIZE
-
-                self.vacuum_form_factors = [form_factor_template] * elements_constants.HEAVY_ATOM_SIZE
-
-                self.dummy_form_factors = [form_factor_template] * elements_constants.HEAVY_ATOM_SIZE
 
         self.compute_form_factors_all_atoms()
-        #dummy = self.calculate_dummy_form_factors(self.excl_vol,self.number_of_q_entries)
         self.compute_dummy_form_factors()
-        #print dummy
         self.compute_form_factors_heavy_atoms()
         self.compute_radii()
 
-    def read_form_factor_table(self,table_name):
-
-        with open(table_name,'r') as fp:
-            
-            
-            #form_factors_coefficients_ = [AtomFactorCoefficients() for _ in range(elements_constants.ALL_ATOM_SIZE)]
-
-
-            line = fp.readline()
-            while line:
-
-                if line[0] == '#':  # if comment line, read the whole line and move on
-
-                    continue
-
-                else:         #  return the first character
-                    line = fp.readline()
-                    break
-                # read the data files
-                #AtomFactorCoefficients coeff;
-
-                counter = 0
-                while not fp.eof():
-                    line = fp.readline()
-                    coeff = line.split(' ')
-                    for j in coeff:
-
-                        ff_type = atom_factor_coefficients.get_form_factor_atom_type(e)
-
-                        if ff_type != 'UNK':
-                            form_factors_coefficients_[ff_type] = coeff
-                            counter += 1
-                            print("read_form_factor_table: Atom type found: ",coeff.atom_type,'\n')
-                        else:
-                            print("Atom type is not supported ",coeff.atom_type,'\n')
-
-
-                print(counter," form factors were read from file.",'\n')
-        return counter
-
-    def write_form_factor_table(self):
-        print("hello from write form factor function")
-        # TO DO
-
-    def get_form_factor_atom_type(self, p,ff_type):
-
-        print("hello from form factor atom type function ")
-        # TO DO
-
-    def get_form_factor(self, p, ff_type):
-        
-        ff_atom_type = self.get_form_factor_atom_type(p, ff_type)
-        if ff_atom_type > elements_constants.HEAVY_ATOMS_SIZE:
-            print("Atom type not found")
-        return self.form_factor[ff_atom_type]
-        
 
     def get_vacuum_zero_form_factors(self,i):
 
@@ -288,10 +206,6 @@ class FormFactorTable(object):
         
         return self.zero_form_factors[i]
 
-
-    def get_zero_form_factors(self):
-
-        return self.zero_form_factors[i]
 
     def get_volume(self,p, ff_type='HEAVY_ATOMS'):
 
@@ -315,10 +229,7 @@ class FormFactorTable(object):
         one_third = (1.0/3.0)
         c = (3.0/(4.0*np.pi))
 
-        ii = i
-        print(ii)
-        
-        form_factor = self.get_dummy_zero_form_factors(ii-1)
+        form_factor = self.get_dummy_zero_form_factors(i-1)
         print(form_factor.shape)
         return np.power(c*form_factor, one_third)
 
@@ -331,7 +242,6 @@ class FormFactorTable(object):
         self.dummy_form_factors = dum
         
     def get_vacuum_form_factors(self,part,ff_type='HEAVY_ATOMS'):
-        #element = self.get_form_factor_atom_type(part,ff_type)
         return self.vacuum_form_factors
     
     def set_vacuum_form_factors(self,v):
@@ -407,15 +317,6 @@ class FormFactorTable(object):
         
         return self.zero_form_factors[-2]
 
-
-    def show(self):
-
-        for i in range(40):#constants_elements.HEAVY_ATOMS_SIZE):
-
-
-            print('FFTYPE ',i,'zero_ff ',self.zero_form_factors[i], 'vacuum ff',self.vacuum_zero_form_factors[i], ' dummy ff', self.dummy_zero_form_factors[i],'\n')
-
-            
 
     def compute_dummy_form_factors(self):
 
@@ -493,8 +394,6 @@ class FormFactorTable(object):
 
 
             self.zero_form_factors[i] -= self.rho * self.excl_vol[i]
-        #print self.vacuum_form_factors
-        #print "intermission"
         
             
 
@@ -502,7 +401,9 @@ class FormFactorTable(object):
        
     
     def compute_form_factors_heavy_atoms(self):
-        
+        """
+        Computes the vacuum and dummy form factors of basic atomic complexes
+        """       
         
         vacuum_form_factors_ch =  self.vacuum_form_factors[2] + 1.0*self.vacuum_form_factors[0]
         vacuum_form_factors_ch2 =  self.vacuum_form_factors[2] + 2.0 * self.vacuum_form_factors[0]
@@ -535,80 +436,17 @@ class FormFactorTable(object):
         
         self.vacuum_form_factors = np.vstack((self.vacuum_form_factors,heavy_vacuum_form_factors))
         self.dummy_form_factors = np.vstack((self.dummy_form_factors,heavy_dummy_form_factors))
-        #print self.vacuum_form_factors.shape
     
-        
-        
-    '''
-    def compute_form_factors_heavy_atoms(self):
-
-        no_of_q_entries = np.ceil((self.max_q - self.min_q) / self.delta_q)
-
-        
-        h_num = 0
-
-        for i in range(elements_constants.ALL_ATOM_SIZE,elements.constants.HEAVY_ATOM_SIZE):
-            if i == self.element_dict['CH']:
-                element_type = self.element_dict['C']
-                h_num = 1
-                
-            elif i == self.element_dict['CH2']:
-                element_type = self.element_dict['C']
-                h_num = 2
-
-            elif i==self.element_dict['CH3']:
-                element_type = self.element_dict['C']
-                h_num =  3
-
-            elif i== self.element_dict['OH']:
-                element_type = self.element_dict['O']
-                h_num = 1
-                
-            elif i== self.element_dict['OH2']:                    
-            
-                element_type = self.element_dict['O']
-                h_num = 2
-                
-            elif i== self.element_dict['NH']:
-            
-                element_type = self.element_dict['N']
-                h_num = 1
-                
-            elif i == self.element_dict['NH2']:
-            
-                element_type = self.element_dict['N']
-                h_num = 2
-            
-            elif i == self.element_dict['NH3']:
-           
-                element_type = self.element_dict['N']
-                h_num = 3
-            
-            elif i == self.element_dict['SH']:
-           
-                element_type = self.element_dict['S']
-                h_num = 1
-
-            # full form factor calculations
-            
-            for iq in range(self.number_of_q_entries):
-            
-                self.form_factors[iq] = self.form_factors[element_type,iq] + h_num*self.form_factors[self.element_dict['H'],iq]
-
-                self.vacuum_form_factors[iq] = self.get_vacuum_form_factors[element_type,iq] + h_num *self.vacuum_form_factors[self.element_dict['H'],iq]
-
-                self.dummy_form_factors[iq] = self.dummy_form_factors[element_type,iq] + h_num * self.dummy_form_factors[self.element_dict['H'],iq]
-
-            # zero form factor calculations
-            self.zero_form_factors_[i] = self.zero_form_factors[element_type] + h_num * self.zero_form_factors[self.element_dict['H']]
-            self.vacuum_zero_form_factors[i] = self.vacuum_zero_form_factors[element_type] + h_num * self.vacuum_zero_form_factors[self.element_dict['H']]
-            self.dummy_zero_form_factors[i] =  self.dummy_form_factors[element_type] + h_num * self.dummy_form_factors[self.element_dict['H']]
-
     
-    '''
     def get_carbon_atom_type(self,atom_type,residue_type):
     
+        """ 
+        Determines the form factor type based on atomic variant and residue of carbon atom
         
+        :param atom_type: atomic variant of carbon (C-alpha, C-beta, etc.)
+        :param residue_type: residue that contains the carbon atom
+        :return atomic complex of carbon (C, CH, CH2, CH3) for determining form factor
+        """
         # protein atoms
         # CH
         if atom_type == 'CH':
@@ -632,13 +470,11 @@ class FormFactorTable(object):
         # CB
         if atom_type == 'CB':
            if residue_type == 'ILE' or  residue_type == 'THR' or residue_type == 'VAL':
-              #print 'CH'
               
               return 'CH'
             
            if residue_type == 'ALA':
               return 'CH3'
-           #print 'CH2'
            
            return 'CH2'
           
@@ -762,12 +598,21 @@ class FormFactorTable(object):
         if atom_type == 'C8':
            return 'CH'
 
-        print "Carbon atom not found, using default C form factor for atomic_variant=%s, residue=%s\n" % (atom_type,residue_type)
+        print "Carbon atom not found, using default C form factor for ",
+        atom_type," ", residue_type,'\n'
         return 'C'
         
 
     def get_nitrogen_atom_type(self,atom_type,residue_type):
-    
+        """ 
+        Determines the form factor type based on atomic variant and residue of nitrogen atom
+        
+        :param atom_type: atomic variant of nitrogen (N-delta, N-gamma, etc.)
+        :param residue_type: residue that contains the nitrogen atom
+        :return atomic complex of carbon (N, NH, NH2, NH3) for determining form factor
+        """
+  
+        
          # protein atoms
          #  N
          if atom_type == 'N':
@@ -846,12 +691,19 @@ class FormFactorTable(object):
            return 'N'
 
       
-         print "Nitrogen atom not found, using default N form factor for atomic_variant=%s, residue=%s\n" % (atom_type, residue_type)
+         print "Nitrogen atom not found, using default N form factor for ",atom_type," ",residue_type,'\n'
                     
          return 'N'
         
     def get_sulfur_atom_type(self,atom_type,residue_type):
-    
+        """ 
+        Determines the form factor type based on atomic variant and residue of sulfur atom
+        
+        :param atom_type: atomic variant of sulfur (S-delta, S-gamma, etc.)
+        :param residue_type: residue that contains the sulfur atom
+        :return atomic complex of sulfur (S, SH) for determining form factor
+        """
+
         # SD
         if atom_type == 'SD':
            return 'S'
@@ -861,14 +713,20 @@ class FormFactorTable(object):
               return 'SH'
            return 'S'
             
-        print "Sulfur atom not found, using default S form factor for atomic_variant=%s, residue=%s\n" % (atom_type,residue_type)
+        print "Sulfur atom not found, using default S form factor for ", atom_type, " ",residue_type,'\n'
         return 'S'
         
-        
-    
 
     def get_oxygen_atom_type(self,atom_type,residue_type):
- 
+        """ 
+        Determines the form factor type based on atomic variant and residue of oxygen atom
+        
+        :param atom_type: atomic variant of oxygen (O-epilson1, etc)
+        :param residue_type: residue that contains the oxygen atom
+        :return atomic complex of oxygen (O, OH, OH2) for determining form factor
+        """
+      
+
         # O OE1 OE2 OD1 OD2 O1A O2A OXT OT1 OT2
         if atom_type == 'O' or atom_type == 'OE1' or atom_type == 'OE2' or atom_type == 'OD1' or atom_type == 'OD2' or atom_type == 'O1A' or atom_type == 'O2A' or atom_type == 'OT1' or atom_type == 'OT2' or atom_type == 'OXT':
            return 'O'
@@ -904,16 +762,19 @@ class FormFactorTable(object):
         if residue_type == 'HOH':
            return 'OH2'
 
-        print "Oxygen atom not found, using default O form factor for atomic_variant=%s, residue_type =%s\n" % (atom_type, residue_type)
+        print "Oxygen atom not found, using default O form factor for ", atom_type, " ",residue_type,'\n'
                  
         return 'O'
  
     def get_form_factor_atom_type(self,atomic_type,atom_variant_type, residue_type):
-       #print atomic_type
-       #print atom_variant_type
-       #print residue_type
-       
-       
+       """
+       Determines the form factor for the atom
+       :param atomic_type: atomic element
+       :param atom_variant_type: atomic variant (C-alpha, C-beta, N-delta, etc.)
+       :param residue_type: residue that contains the atom
+       :return the type of the atom for determining the form factor
+       """
+
        if atomic_type == 'C':
        
           ret_type = self.get_carbon_atom_type(atom_variant_type, residue_type)
@@ -931,82 +792,6 @@ class FormFactorTable(object):
        else:
           print "Can't find form factor for atom using default value of nitrogen \n"
           ret_type = 'N'
-       #print '\n\n'
-       #print ret_type
     
        return ret_type;
  
-
-"""
-    compute form factors all atoms 
-
-    f(q) = f_atomic(q) - f_solvent(q)
-    f_atomic(q) = c + SUM[a_i * EXP(- b_i * (q / 4pi) ^ 2)]
-    i = 1, 5
-
-
-f_solvent(q) = rho * v_i * EXP((- v_i ^ (2 / 3) / (4pi)) * q ^ 2)
-
-"""
-
-"""
-class AtomFactorCoefficients
-
-a class for storing form factors solvation table
-
-
-"""
-
-"""
-
-                                  int number_of_q_entries = (int)std::ceil((max_q_ - min_q_) / delta_q_);
-
-                                   // iterate over different atom types
-                                   for (unsigned int i = 0; i < ALL_ATOM_SIZE; i++) {
-                                     // form factors for all the q range
-                                     // volr_coeff = - v_i^(2/3) / 4PI
-                                     double volr_coeff =
-                                         -std::pow(form_factors_coefficients_[i].excl_vol_, (2.0 / 3.0)) /
-                                         (16 * PI);
-
-                                     // iterate over q
-                                     for (int iq = 0; iq < number_of_q_entries; iq++) {
-                                       double q = min_q_ + (double)iq * delta_q_;
-                                       double s = q / (4 * PI);
-
-                                       // c
-                                       vacuum_form_factors_[i][iq] = form_factors_coefficients_[i].c_;
-
-                                       // SUM [a_i * EXP( - b_i * (q/4pi)^2 )] Waasmaier and Kirfel (1995)
-                                       for (unsigned int j = 0; j < 5; j++) {
-                                         vacuum_form_factors_[i][iq] +=
-                                             form_factors_coefficients_[i].a_[j] *
-                                             std::exp(-form_factors_coefficients_[i].b_[j] * s * s);
-                                       }
-                                       // subtract solvation: rho * v_i * EXP( (- v_i^(2/3) / (4pi)) * q^2  )
-                                       dummy_form_factors_[i][iq] = rho_ *
-                                                                    form_factors_coefficients_[i].excl_vol_ *
-                                                                    std::exp(volr_coeff * q * q);
-
-                                       form_factors_[i][iq] =
-                                           vacuum_form_factors_[i][iq] - dummy_form_factors_[i][iq];
-                                     }
-
-                                     // zero form factors
-                                     zero_form_factors_[i] = form_factors_coefficients_[i].c_;
-                                     for (unsigned int j = 0; j < 5; j++) {
-                                       zero_form_factors_[i] += form_factors_coefficients_[i].a_[j];
-                                     }
-                                     vacuum_zero_form_factors_[i] = zero_form_factors_[i];
-                                     dummy_zero_form_factors_[i] =
-                                         rho_ * form_factors_coefficients_[i].excl_vol_;
-                                     // subtract solvation
-                                     zero_form_factors_[i] -= rho_ * form_factors_coefficients_[i].excl_vol_;
-                                   }
-                                 }
-
-"""
-
-
-
-
