@@ -1,5 +1,6 @@
 import numpy as np
 from numba import jit
+from six import string_types
 
 from pysingfel.util import deprecated
 
@@ -18,7 +19,7 @@ def angle_axis_to_rot3d(axis, theta):
     :param theta: Rotation angle.
     :return:
     """
-    if isinstance(axis, basestring):
+    if isinstance(axis, string_types):
         axis = axis.lower()
         if axis == 'x':
             axis = np.array([1., 0., 0.])
@@ -60,7 +61,7 @@ def angle_axis_to_quaternion(axis, theta):
     :param theta: Rotation angle.
     :return:
     """
-    if isinstance(axis, basestring):
+    if isinstance(axis, string_types):
         axis = axis.lower()
         if axis == 'x':
             axis = np.array([1., 0., 0.])

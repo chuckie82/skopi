@@ -3171,7 +3171,7 @@ def load_waaskirf_database():
     return dbase
 
 def load_cromermann_database():
-    # Cromer-Mann table of coefficients for calculating the Thomson (kinematical) scattering factors of the elements
+    # Cromer-Mann table of coefficients for calculating the Thomson (kinematical) scattering factors of the elements 
     # and common valence states. The coefficients are for an Aikman expansion, which is of this form:
     #       4
     # ff = sum [ a_i*exp(-b_i*s^2) ] + c

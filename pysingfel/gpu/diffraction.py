@@ -41,7 +41,7 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
     :param return_type: 'intensity' to return the intensity field. 'complex_field' to return the full diffraction field.
     :return: The diffraction field.
     """
-    """This function can be used to calculate the diffraction field for 
+    """This function can be used to calculate the diffraction field for
     arbitrary reciprocal space """
 
     # convert the reciprocal space into a 1d series.
@@ -59,7 +59,7 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
     atom_position = np.ascontiguousarray(particle.atom_pos[:])
     atom_type_num = len(particle.split_idx) - 1
 
-    # create 
+    # create
     pattern_cos = np.zeros(pixel_number, dtype=np.float64)
     pattern_sin = np.zeros(pixel_number, dtype=np.float64)
 
@@ -69,22 +69,13 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
     cuda_split_index = cuda.to_device(split_index)
     cuda_atom_position = cuda.to_device(atom_position)
     cuda_reciprocal_position = cuda.to_device(reciprocal_space_1d)
-    cuda_pattern_cos = cuda.to_device(pattern_cos)
-    cuda_pattern_sin = cuda.to_device(pattern_sin)
     cuda_form_factor = cuda.to_device(form_factor)
 
     # Calculate the pattern
-    calculate_pattern_gpu_back_engine[(pixel_number + 511) / 512, 512](cuda_form_factor,
-                                                                       cuda_reciprocal_position,
-                                                                       cuda_atom_position,
-                                                                       cuda_pattern_cos,
-                                                                       cuda_pattern_sin,
-                                                                       atom_type_num,
-                                                                       cuda_split_index,
-                                                                       pixel_number)
-
-    cuda_pattern_cos.to_host()
-    cuda_pattern_sin.to_host()
+    calculate_pattern_gpu_back_engine[(pixel_number + 511) // 512, 512](
+        cuda_form_factor, cuda_reciprocal_position, cuda_atom_position,
+        pattern_cos, pattern_sin, atom_type_num, cuda_split_index,
+        pixel_number)
 
     if return_type == "intensity":
         pattern = np.reshape(np.square(np.abs(pattern_cos + 1j * pattern_sin)), shape[:-1])
