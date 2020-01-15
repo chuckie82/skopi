@@ -1,8 +1,9 @@
 import h5py
 import numpy as np
-from pysingfel.util import symmpdb
-from pysingfel.geometry import quaternion2rot3d, get_random_rotation, get_random_translations
-from pysingfel.ff_waaskirf_database import *
+import sys
+from util import symmpdb
+#from geometry import quaternion2rot3d, get_random_rotation, get_random_translations
+from ff_waaskirf_database import *
 
 
 class Particle(object):
@@ -26,6 +27,7 @@ class Particle(object):
         self.split_idx = None
         self.num_atom_types = None  # number of atom types
         self.ff_table = None  # form factor table -> atom_type x qSample
+        
 
         # Scattering
         self.q_sample = None  # q vector sin(theta)/lambda
@@ -35,6 +37,10 @@ class Particle(object):
         self.num_compton_q_samples = 0  # number of Compton q samples
         self.sBound = None  # Compton: static structure factor S(q)
         self.nFree = None  # Compton: number of free electrons
+        self.element = None
+        self.residue = None
+        self.atomic_symbol = None
+        self.at = None
         if len(fname) != 0:
             # read from pmi file to get info about radiation damage at a certain time slice
             if len(fname) == 1:
@@ -45,7 +51,23 @@ class Particle(object):
                 self.read_h5file(fname[0], fname[1])
             else:
                 raise ValueError('Wrong number of parameters to construct the particle object!')
-
+    
+    def get_atom_type(self):
+        #print("Self_at",self.at)
+        return self.at
+        
+    def get_atom_struct(self):
+        return self.atom_struct
+    
+    def get_atomic_symbol(self):
+        return self.atomic_symbol
+        
+    def get_atomic_variant(self):
+        return self.atomic_variant
+        
+    def get_residue(self):
+        return self.residue
+        
     # Generate some random rotation in the particle
     def rotate(self, quaternion):
         """
@@ -68,6 +90,7 @@ class Particle(object):
         rot3d = get_random_rotation(axis)
         new_pos = np.dot(self.atom_pos, rot3d.T)
         self.set_atom_pos(new_pos)
+    
 
     def random_translation_vector(self):#, beam_focus_size):
         """
@@ -105,7 +128,10 @@ class Particle(object):
 
     def get_num_compton_q_samples(self):
         return self.num_compton_q_samples
-
+    
+    def get_q_sample(self):
+        return self.q_sample
+        
     def read_h5file(self, fname, datasetname):
         """
         Parse the h5file to get the particle position and the other information
@@ -147,15 +173,26 @@ class Particle(object):
         :param ff: The form factor table to use
         :return:
         """
-
-        atoms = symmpdb(fname, ff)
+        atoms,atomslist = symmpdb(fname, ff)
+        xpos = [row[0] for row in atomslist]
+        ypos = [row[1] for row  in atomslist]
+        zpos = [row[2] for row in atomslist]
+        an =[row[3] for row in atomslist] # atomic number
+        self.atom_struct = np.array([xpos,ypos,zpos,an])
+        self.atomic_symbol = [row[4] for row in atomslist]
+        self.atomic_variant = [row[5] for row in atomslist]
+        self.residue = [row[6] for row in atomslist]
         self.atom_pos = atoms[:, 0:3] / 10 ** 10  # convert unit from Angstroms to m
+        self.at = atoms[:,3]
         tmp = (100 * atoms[:, 3] + atoms[:, 4]).astype(
             int)  # hack to get split idx from the sorted atom array
         atom_type, idx = np.unique(np.sort(tmp), return_index=True)
         self.num_atom_types = len(atom_type)
         self.split_idx = np.append(idx, [len(tmp)])
+
         bohr_radius = 0.529177206
+
+
         if ff == 'WK':
             """
             Here, one tries to calculate the form factor from formula and tables.
@@ -163,7 +200,6 @@ class Particle(object):
             Here, the qs variable is such a variable containing the momentum length
             at which one calculate the reference values.
             """
-            
             # set up q samples and compton
             qs = np.linspace(0, 10, 101) / (2.0 * np.pi * bohr_radius * 2.0)
             self.q_sample = qs
@@ -229,10 +265,10 @@ class Particle(object):
                     qq = int(atoms[i, 4])  # charge
                     self.ff_table = np.vstack(
                         (self.ff_table, ffdbase[:, zz] * (zz - qq) / (zz * 1.0)))
-           
+
             # set up q samples and compton
-            self.q_sample = ffdbase[:, 0] / (2.0 * np.pi * bohr_radius  * 2.0)
-            self.compton_q_sample = ffdbase[:, 0] / (2.0 * np.pi * g * 2.0)
+            self.q_sample = ffdbase[:, 0] / (2.0 * np.pi * 0.529177206 * 2.0)
+            self.compton_q_sample = ffdbase[:, 0] / (2.0 * np.pi * 0.529177206 * 2.0)
             self.num_q_samples = len(ffdbase[:, 0])
             self.num_compton_q_samples = len(ffdbase[:, 0])
             self.sBound = np.zeros(self.num_q_samples)
@@ -245,7 +281,7 @@ class Particle(object):
             at which one calculate the reference values.
             """
             # set up q samples and compton
-            qs = np.linspace(0, 10, 101) / (2.0 * np.pi * 0.529177206 * 2.0)
+            qs = np.linspace(0, 10, 101) / (2.0 * np.pi * bohr_radius * 2.0)
             self.q_sample = qs
             self.compton_q_sample = qs
             self.num_q_samples = len(qs)
@@ -287,6 +323,7 @@ class Particle(object):
 
     def create_from_atoms(self, atoms):
         atom_types = {'H': 1, 'HE': 2, 'C': 6, 'N1+': 6, 'N': 7, 'O': 8, 'O1-': 9, 'P': 15, 'S': 16, 'CL': 18, 'FE': 26}
+        
         all_atoms = []
         for atom_info in atoms:
             for info in atom_info:
@@ -300,13 +337,14 @@ class Particle(object):
             total_atom = [coordinates[0], coordinates[1], coordinates[2], atomic_number, 0]
             all_atoms.append(total_atom)                                      # charge = 0 (by default)
         atoms = np.asarray(all_atoms)
-        
+
         self.atom_pos = atoms[:, 0:3] * 1e-10
         tmp = (100 * atoms[:, 3] + atoms[:, 4]).astype(int)
         atom_type, idx = np.unique(np.sort(tmp), return_index=True)
+        
         self.num_atom_types = len(atom_type)
         self.split_idx = np.append(idx, [len(tmp)])
-        qs = np.linspace(0, 10, 101) / (2.0 * np.pi * bohr_radius  * 2.0)
+        qs = np.linspace(0, 10, 101) / (2.0 * np.pi * 0.529177206 * 2.0)
         self.q_sample = qs
         self.compton_q_sample = qs
         self.num_q_samples = len(qs)

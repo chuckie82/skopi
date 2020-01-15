@@ -4,8 +4,8 @@ import saxs_profile
 
 class RadialDistributionFunction:
 
-    def __init__(self,bin_size=0.5,max_dist=50):
-        
+    def __init__(self,bin_size=0.5,max_dist=50): # in Angstroms 
+          
         self.max_distance = max_dist
         self.bin_size = bin_size;
         self.one_over_bin_size = 1.0/ bin_size
@@ -38,7 +38,17 @@ class RadialDistributionFunction:
 
 
 def radial_distributions_to_partials(p , ndists, r_dists,verbose,modulation_function_parameter=0.23):
-  
+    """
+    Calculates the partial profiles from the corresponding radial distribution functions
+
+    :param p: Profile object
+    :param ndist: number of radial distribution functions
+    :param r_dist list of radial distribution functions
+    :param verbose: verbose file output mode (on:1,off:0)
+    :param modulation function parameter: I(q) = I(0) * exp(-b*q*q), where b is this constant
+    :return p: Profile object with calculated partial profiles
+    """
+
     nbins = r_dists[0].get_nbins()
     
     delta_x = r_dists[0].get_bin_size()
