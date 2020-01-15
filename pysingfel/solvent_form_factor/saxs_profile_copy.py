@@ -212,8 +212,8 @@ def assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms,r_
     :param r_size: size of radial distribution function list
     :param verbose: verbose write mode (on:1, off:0)
     :return prof: profile object
-    :return: water_ff; array of water form factors by atom
-    :return: r_size: size of radial distribution function list
+    :return water_ff; array of water form factors by atom
+    :return r_size: size of radial distribution function list
     """
           
     if verbose ==1:

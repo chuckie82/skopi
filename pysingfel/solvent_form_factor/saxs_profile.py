@@ -42,12 +42,13 @@ class Profile:
         self.rgyration = 0.0
         self.npartials = 0
         
-        self.vac_vac = np.zeros((self.nsamples,1),dtype=np.float64)
-        self.vac_dum = np.zeros((self.nsamples,1),dtype=np.float64)
+        # components of intensity
+        self.vac_vac = np.zeros((self.nsamples,1),dtype=np.float64)  
+        self.vac_dum = np.zeros((self.nsamples,1),dtype=np.float64)  
         self.dum_dum = np.zeros((self.nsamples,1),dtype=np.float64)
         self.vac_h2o = np.zeros((self.nsamples,1),dtype=np.float64)
         self.dum_h2o = np.zeros((self.nsamples,1),dtype=np.float64)
-        self.h2o_h2o = np.zeros((self.nsamples,1),dtype=np.float64)
+        self.h2o_h2o = np.zeros((self.nsamples,1),dtype=np.float64)  #
 
     def get_intensities(self):
         return self.In
@@ -202,6 +203,22 @@ class Profile:
 
 def assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms,r_size,verbose):
     
+    """
+    Assigns form factor values based on atom type
+
+    :param prof: the profile object
+    :param particles: atoms that make up the particle
+    :param saxs_sa: solvent accessible fraction of atoms' surface areas
+    :param vff: table of vacuum form factors
+    :param dff:  table of dummy form factors
+    :param ft: form factor table object
+    :param num_atoms: number of atoms
+    :param r_size: size of radial distribution function list
+    :param verbose: verbose write mode (on:1, off:0)
+    :return prof: profile object
+    :return water_ff; array of water form factors by atom
+    :return r_size: size of radial distribution function list
+    """
     
           
     if verbose ==1:
@@ -255,6 +272,22 @@ def assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms,r_
 
 def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,verbose,c1,c2,ff_type='HEAVY_ATOMS'):
     
+    """
+    Pre-computes partial profiles based on 6 equations
+    Equation 5 in Schneidman-Duhovny et al. 2013
+
+    :param prof: the profile object
+    :param particles: atoms that make up the particle
+    :param saxs_sa: solvent accessible fraction of atoms' surface areas
+    :param ft: form factor table object
+    :param vff: table of vacuum form factors
+    :param dff:  table of dummy form factors
+    :param verbose: writing to files for testing
+    :param c1: excluded volume parameter
+    :param c2: hydration layer parameter
+    :return intensity: the intensity
+    """ 
+    
     # can write output files containing atomtypes, vacuum/dummy form factors
     if verbose ==1:
         fp = open('data/atomtypes_ImpPy.txt','w')
@@ -292,7 +325,7 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,verbose,c1,c2,f
     # distance betwen pairs of atoms
     cd = scipy.spatial.distance.cdist(coordinates,coordinates)
     
-    #max_dist = np.max(cd)
+    
     # radial distribution functions
     r0 = np.zeros((nbins,1),dtype=np.float64)
     r1 = np.zeros((nbins,1),dtype=np.float64)
@@ -419,10 +452,21 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,verbose,c1,c2,f
     print "sum_partial_profiles takes %f seconds.\n" % (t_end_spp - t_start_spp)
     return intensity
 
-
+   
 
 def sum_profile_partials(p, c1,c2,verbose):
-    verbose = 0
+
+    """
+    Computes full profile for given c1/c2  parameters
+    
+    :param p: profile object
+    :param c1: excluded volume parameter
+    :param c2: hydration layer parameter
+    :param verbose: verbose mode (on:1, off:0)
+    :return I: intensity of full profile
+    """
+
+    
     rm = p.average_radius
     
     #  excluded volume coefficient

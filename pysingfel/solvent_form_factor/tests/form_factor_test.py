@@ -19,10 +19,6 @@ class FormFactorTest(unittest.TestCase):
         self.assertEqual(self.ft.get_vanderwaals_radius(2),1.82)
         self.assertEqual(self.ft.get_vanderwaals_radius(-3),1.75)
         
-    def test_element_form_factor_dict(self):
-        self.assertEqual(self.ft.get_element_dict_id(0),'H')
-        self.assertEqual(self.ft.get_element_dict_id(5),'C')
-        self.assertEqual(self.ft.get_element_dict_id(28),'Ag')
       
 if __name__ == '__main__':
     unittest.main()
