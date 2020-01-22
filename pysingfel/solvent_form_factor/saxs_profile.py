@@ -282,7 +282,7 @@ def assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms,r_
     return prof, water_ff,r_size
 
 
-def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,c1,c2,ff_type='HEAVY_ATOMS'):
+def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,c1,c2):
     
     """
     Pre-computes partial profiles based on 6 equations
