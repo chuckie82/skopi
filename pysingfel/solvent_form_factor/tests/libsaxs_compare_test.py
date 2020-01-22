@@ -122,14 +122,14 @@ class LibSaxsCompareDataTest(unittest.TestCase):
     
     def test_Gq_data(self):
         print "Testing Gq data against libsaxs...\n"
-        gqls = np.loadtxt('data/gq_ls.txt')
-        gq = np.loadtxt('data/gq_impPy.txt')
+        gqls = np.loadtxt('../data/gq_ls.txt')
+        gq = np.loadtxt('../data/gq_impPy.txt')
         self.assertTrue(np.allclose(gqls,gq))
     
     def test_intensity_data(self):
         
         print "Testing intensity data against libsaxs...\n"
-        ils = np.loadtxt('data/intensity_ls.txt')
+        ils = np.loadtxt('../data/intensity_ls.txt')
         #print ils
         self.intensity = np.array(self.intensity).T
         #    #intens = np.loadtxt('data/intensity_impPy.txt')
