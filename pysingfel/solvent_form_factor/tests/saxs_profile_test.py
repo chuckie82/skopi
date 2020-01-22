@@ -1,4 +1,5 @@
-
+# this functionality has been rolled into libsaxs_test_compare.py
+# do not use
 import unittest
 import sys,os
 import numpy as np
