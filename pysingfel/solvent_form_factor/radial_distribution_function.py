@@ -4,7 +4,7 @@ import saxs_profile
 
 class RadialDistributionFunction:
 
-    def __init__(self,bin_size=0.5,max_dist): # in Angstroms
+    def __init__(self,bin_size=0.5,max_dist=50): # in Angstroms
         
         self.max_distance = max_dist
         self.bin_size = bin_size;
