@@ -173,17 +173,11 @@ class Particle(object):
         :param ff: The form factor table to use
         :return:
         """
-
-        atoms,atomslist = symmpdb(fname)
-        
-        
-        #print atomslist
-       
-        
+        atoms,atomslist = symmpdb(fname, ff)
         xpos = [row[0] for row in atomslist]
         ypos = [row[1] for row  in atomslist]
         zpos = [row[2] for row in atomslist]
-        an =[row[3] for row in atomslist]
+        an =[row[3] for row in atomslist] # atomic number
         self.atom_struct = np.array([xpos,ypos,zpos,an])
         self.atomic_symbol = [row[4] for row in atomslist]
         self.atomic_variant = [row[5] for row in atomslist]
@@ -295,13 +289,12 @@ class Particle(object):
             self.sBound = np.zeros(self.num_q_samples)
             self.nFree = np.zeros(self.num_q_samples)
             self.ff_table = None
-            
+
             # calculate form factor using WaasKirf coeffs table
             cm_dbase = load_cromermann_database()
 
             for i in idx:
                 zz = int(atoms[i, 3])  # atom type
-                
                 qq = int(atoms[i, 4])  # charge
                 idx1 = np.where(cm_dbase[:, 0] == zz)[0]
                 flag = True

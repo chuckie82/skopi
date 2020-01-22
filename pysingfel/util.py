@@ -1,6 +1,6 @@
 import h5py
 import numpy as np
-from pysingfel.ff_waaskirf_database import load_waaskirf_database
+from pysingfel.ff_waaskirf_database import load_waaskirf_database, load_cromermann_database
 
 def deprecation_message(message):
     """Print a deprecation message.
@@ -125,7 +125,7 @@ def read_geomfile(fname):
 
 
 # Read pdb file and return atom position and type
-def symmpdb(fname):
+def symmpdb(fname, ff='WK'):
     """
     Parse the pdb file. This function can handle the REMARK 350 correctly.
     :param fname: The address of the pdb file.
@@ -141,10 +141,15 @@ def symmpdb(fname):
     trans_dict = {}  # dict to save the symmetry translations and chain id
     atom_count = 0
     line = fin.readline()
-    dbase = load_waaskirf_database()
-    lst = []
-    list_dict = []     
-
+    list_dict = []  # dict for x,y,z,atomtype,atom_symbol,atom_variant,residue
+    if ff == 'WK':
+        dbase = load_waaskirf_database()
+    elif ff == 'CM':
+        dbase = load_cromermann_database()
+    elif ff == 'SFF':
+        dbase = load_waaskirf_database()
+    else:
+        raise ValueError("Undefined form factor type")
 
     list1 = [atomType[0] for atomType in dbase]
     # list2 = [charges[0] for charges in dbase]
@@ -164,11 +169,9 @@ def symmpdb(fname):
                 atom_symbol = line[76:78].strip()
                 atom_variant = line[13:16].strip()
                 residue = line[17:21].strip()
-                     
-                lst = [tmp[0],tmp[1],tmp[2],tmp[3] ,atom_symbol,atom_variant,residue]
-                print lst
-                     
-                list_dict.append(lst)                # Get the atom type
+
+                list_dict.append(tmp[0],tmp[1],tmp[2],tmp[3] ,atom_symbol,atom_variant,residue) # Get the atom type
+
                 if line[76:78].strip() in atom_types.keys():
                     tmp[3] = atom_types[line[76:78].strip()]
                     idxs = [i for i in range(len(list1)) if list1[i] == tmp[3]]

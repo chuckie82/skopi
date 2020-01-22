@@ -20,14 +20,28 @@ def put_slice(local_index, local_weight, slice_, volume_merge,
 
     volume_shape = volume_merge.shape
     volume_num_1d = volume_shape[0]
-    convertion_factor = np.array(
-        [volume_num_1d * volume_num_1d, volume_num_1d, 1], dtype=np.int64)
 
-    # Get flattened views of the volume
-    volume_m_1d = volume_merge.view()
-    volume_m_1d.shape = (volume_num_1d ** 3,)  # ensure continuous array
-    volume_w_1d = volume_weight.view()
-    volume_w_1d.shape = (volume_num_1d ** 3,)
+    if volume_merge.flags["C_CONTIGUOUS"] and volume_merge.flags["C_CONTIGUOUS"]:
+        c_contiguous = True
+    elif volume_merge.flags["F_CONTIGUOUS"] and volume_merge.flags["F_CONTIGUOUS"]:
+        c_contiguous = False
+    else:
+        raise AttributeError("Expecting C- or F-contiguous arrays.")
+
+    if c_contiguous:
+        convertion_factor = np.array(
+            [volume_num_1d**2, volume_num_1d, 1], dtype=np.int64)
+        volume_m_1d = volume_merge.ravel(order='C')
+        volume_w_1d = volume_weight.ravel(order='C')
+    else:
+        convertion_factor = np.array(
+            [1, volume_num_1d, volume_num_1d**2], dtype=np.int64)
+        volume_m_1d = volume_merge.ravel(order='F')
+        volume_w_1d = volume_weight.ravel(order='F')
+
+    # Ensure it's a view, not a copy
+    assert not volume_m_1d.flags['OWNDATA']
+    assert not volume_w_1d.flags['OWNDATA']
 
     index_2d = np.reshape(local_index, [pixel_num, 8, 3])
     index_2d = np.matmul(index_2d, convertion_factor)
