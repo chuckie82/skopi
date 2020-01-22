@@ -14,7 +14,7 @@ class LibSaxsCompareDataTest(unittest.TestCase):
         min_q = 0.0
         max_q = 3.0
         delta_q = 0.01
-        self.verbose = 0
+        
         pdb = '../../../examples/input/SAXS_10atoms_mod.pdb'
         c1 = 1.0
         c2 = 0.0
@@ -42,9 +42,9 @@ class LibSaxsCompareDataTest(unittest.TestCase):
         #sys.exit()
         #def test_assign_form_factors_2_profiles(self):
 
-        self.prof, water_ff,r_size = ps.solvent_form_factor.saxs_profile.assign_form_factors_2_profile(self.particles,self.prof,self.saxs_sa,self.vff,self.dff,self.ft,self.num_atoms,self.r_size,self.verbose)
+        self.prof, water_ff,r_size = ps.solvent_form_factor.saxs_profile.assign_form_factors_2_profile(self.particles,self.prof,self.saxs_sa,self.vff,self.dff,self.ft,self.num_atoms,self.r_size)
 
-        self.intensity = ps.solvent_form_factor.saxs_profile.calculate_profile_partial(self.prof, self.particles, self.saxs_sa, self.ft, self.vff,self.dff,self.verbose, c1,c2)
+        self.intensity = ps.solvent_form_factor.saxs_profile.calculate_profile_partial(self.prof, self.particles, self.saxs_sa, self.ft, self.vff,self.dff, c1,c2)
 
     
     def test_vacuum_form_factor_data(self):
