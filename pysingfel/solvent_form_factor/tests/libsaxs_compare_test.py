@@ -9,7 +9,7 @@ class LibSaxsCompareDataTest(unittest.TestCase):
     
     def setUp(self):
        
-        print "Testing code against libsaxs...\n"
+        #print "Testing code against libsaxs...\n"
         ff_table_file = None
         min_q = 0.0
         max_q = 3.0
@@ -40,7 +40,7 @@ class LibSaxsCompareDataTest(unittest.TestCase):
 
     
     def test_vacuum_form_factor_data(self):
-        print "Testing vacuum form factor data against libsaxs...\n"
+        #print "Testing vacuum form factor data against libsaxs...\n"
         vls = np.loadtxt('../data/vacuum_ls.txt')
    
         vpy = self.prof.vacuum_ff[:,0]
@@ -49,7 +49,7 @@ class LibSaxsCompareDataTest(unittest.TestCase):
 
     def test_dummy_form_factor_data(self):
 
-        print "Testing dummy form factor data against libsaxs...\n"
+        #print "Testing dummy form factor data against libsaxs...\n"
         dpy = self.prof.dummy_ff[:,0]
         dls = np.loadtxt('../data/dummy_ls.txt')
         
@@ -59,7 +59,7 @@ class LibSaxsCompareDataTest(unittest.TestCase):
        
         partial = self.prof.get_partial_profiles().T
        
-        print "Testing partial profile data against libsaxs...\n"
+        #print "Testing partial profile data against libsaxs...\n"
         vv_ls = np.loadtxt('../data/vac_vac_ls.txt')
         self.assertTrue(np.allclose(vv_ls,partial[0,:]))
 
@@ -70,39 +70,39 @@ class LibSaxsCompareDataTest(unittest.TestCase):
         self.assertTrue(np.allclose(vd_ls,partial[2,:]))
 
     def test_sinc_data(self):
-        print "Testing sinc data against libsaaxs...\n"
+        #print "Testing sinc data against libsaaxs...\n"
         sincls = np.loadtxt('../data/sinc_ls.txt')
         sincc = np.loadtxt('../data/sinc_impPy.txt')
     
         self.assertTrue(np.allclose(sincls,sincc))
 
     def test_distance_data(self):
-        print "Testing atomic distance data against libsaxs...\n"
+        #print "Testing atomic distance data against libsaxs...\n"
         dls = np.loadtxt('../data/dist_ls.txt')
         dist = np.loadtxt('../data/dist_impPy.txt')
         self.assertTrue(np.allclose(dls,dist))
         
     def test_qd_data(self):
-        print "Testing qd data against libsaxs...\n"
+        #print "Testing qd data against libsaxs...\n"
         qdls = np.loadtxt('../data/qd_ls.txt')
         qd = np.loadtxt('../data/qd_impPy.txt')
         self.assertTrue(np.allclose(qdls,qd))
         
     def test_q_data(self):
-        print "Testing q data against libsaxs...\n"
+        #print "Testing q data against libsaxs...\n"
         qls = np.loadtxt('../data/q_ls.txt')
         self.q_entries = np.array(self.q_entries).T
         self.assertTrue(np.allclose(qls,self.q_entries))
     
     def test_Gq_data(self):
-        print "Testing Gq data against libsaxs...\n"
+        #print "Testing Gq data against libsaxs...\n"
         gqls = np.loadtxt('../data/gq_ls.txt')
         gq = np.loadtxt('../data/gq_impPy.txt')
         self.assertTrue(np.allclose(gqls,gq))
     
     def test_intensity_data(self):
         
-        print "Testing intensity data against libsaxs...\n"
+        #print "Testing intensity data against libsaxs...\n"
         ils = np.loadtxt('../data/intensity_ls.txt')
         self.intensity = np.array(self.intensity).T
         self.assertTrue(np.allclose(ils,self.intensity))
