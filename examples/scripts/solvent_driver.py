@@ -18,14 +18,12 @@ def main():
     pdb = params['pdb']
     c1 = params['c1']
     c2 = params['c2']
-    verbose = params['verbose']
     ff_table_file = params['form_factor_table']
 
   
     
     particles = ps.particle.Particle()
     particles.read_pdb(pdb,'CM')
-    lp = particles.get_num_atoms()
 
     elements = np.unique(particles.get_atom_type()).astype(np.int32)
     q_entries = particles.get_q_sample() 
@@ -38,9 +36,7 @@ def main():
     ft = ps.solvent_form_factor.form_factor_table.FormFactorTable(ff_table_file,min_q,max_q,delta_q)
 
 
-    for i in range(len(elements)):
     
-       excl_vol[i] = ft.get_vanderwaals_volume(elements[i])
 
     vacuum_ff = ft.get_vacuum_form_factors()
     dummy_ff = ft.get_dummy_form_factors()
@@ -68,11 +64,11 @@ def main():
            radius.append(ft.ff_radii[idx])
 
     radius = np.asarray(radius)
-    radius = radius.reshape((lp,1))
-
+    radius = radius.reshape((len(xyz),1))
+    print radius.shape
     radius = np.array(radius)
     print radius
-   
+    
     xyz_plus_radius = np.hstack((xyz,radius))
     start = time.time()
 
@@ -86,7 +82,7 @@ def main():
     start = time.time()
     model_profile = ps.solvent_form_factor.saxs_profile.Profile(min_q,max_q,delta_q)
 
-    intensity  = ps.solvent_form_factor.saxs_profile.calculate_profile_partial(model_profile,particles,fraction,ft,vacuum_ff,dummy_ff,verbose,c1,c2)
+    intensity  = ps.solvent_form_factor.saxs_profile.calculate_profile_partial(model_profile,particles,fraction,ft,vacuum_ff,dummy_ff,c1,c2)
     model_profile.write_SAXS_file('SAXS_intensities.txt')
     model_profile.write_partial_profiles('SAXS_partial_profiles.txt')
 
@@ -99,7 +95,7 @@ def parse_input_arguments(args):
 
     del args[0]
     parser = argparse.ArgumentParser()
-    parser.add_argument("--verbose", default=0, type=int, help="turn on  output verbosity")
+
     parser.add_argument("--pdb", type=str,help="PDB filename")
     parser.add_argument("--c1", default = 1.0, type=float,help="excluded volume SAXS (c1) parameter")
     parser.add_argument("--c2", default = 0.0, type=float, help="hydration layer SAXS (c2) parameter")
