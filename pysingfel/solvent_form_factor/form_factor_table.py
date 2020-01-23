@@ -3,7 +3,6 @@
 
 import numpy as np
 import sys
-import elements_constants
 sys.path.append('../..')
 import pysingfel as ps
 
@@ -31,56 +30,6 @@ class FormFactorTable(object):
         # Elements for Cromer-Mann dictionary
         self.ff_cm_dict = { 'H':0,'HE':1,'C':2,'N':3,'O':4,'NE':5,'SOD+':6,'MG+2':7,'P':8,'S':9,'CAL2+':10,'FE2+':11,'ZN2+':12,'SE':13,'AU':14,'CH':15,'CH2':16,'CH3':17,'NH':18,'NH2':19,'NH3':20,'OH':21,'OH2':22,'SH':23}
         
-        self.zero_form_factors = np.array([
-        
-        -0.720147, -0.720228,1.591,     2.591,     3.591,   0.50824,  6.16294, 4.94998, 7.591,   6.993,
-        # Li     Be      B     C       N        O       F      Ne - line 2
-        7.9864,    8.9805,    9.984,   10.984,   13.0855, 9.36656, 13.984,  16.591,
-        #  Na      Mg        Al       Si        P        S       Cl    Ar - line 3
-        15.984,    14.9965,   20.984,  21.984,   20.9946, 23.984,
-        # K       Ca2+       Cr      Mn      Fe2+      Co - line 4
-        24.984,   25.984,     24.9936, 30.9825,  31.984,  43.984, 49.16,
-        #Ni     Cu          Zn2+      Se       Br       Ag      I
-        70.35676,  71.35676,  72.324,  73.35676,
-        #Ir         Pt      Au      Hg
-        -0.211907, -0.932054, -1.6522, 5.44279,  4.72265, 4.0025,  4.22983, 3.50968,
-        8.64641])
-        #  CH        CH2        CH3     NH       NH2       NH3     OH       OH2
-        # SH
-
-
-        self.dummy_zero_form_factors = np.array(
-
-        [1.7201,  1.7201,  1.399,   1.399,   1.399,   5.49096, 0.83166, 3.04942, 1.399,   3.006,
-        #  H     He     Li    Be    B       C        N        O      F?     Ne
-        3.006,   3.006,   3.006,   3.006,   1.91382, 6.63324, 3.006,   1.399,
-        # Na     Mg    Al    Si      P        S      Cl    Ar
-        3.006,   3.006,   3.006,   3.006,   3.006,   3.006,
-        # K   Ca2+    Cr    Mn   Fe2+   Co
-        3.006,   3.006,   3.006,   3.006,   3.006,
-        # Ni   Cu   Zn2+    Se     Br
-        3.006,   3.83,    6.63324, 6.63324, 6.63324, 6.63324,
-        # Ag   I       Ir      Pt       Au      Hg
-        7.21106, 8.93116, 10.6513, 2.55176, 4.27186, 5.99196, 4.76952, 6.48962,
-        8.35334])
-        # CH      CH2     CH3     NH       NH2       NH3     OH      OH2      SH
-        
-        self.vanderwaals_radius = np.array(
-
-        [1.20,1.40,1.82,1.93,1.92,1.70,1.55,1.52,1.47,1.54,
-        # H He Li Be B C N O F Ne
-
-        2.27,1.73,1.84, 2.10, 1.80, 1.80,1.75,1.88,
-        # Na Mg Al Si P S Cl Ar
-
-        2.75,2.31,2.00,2.00,2.00,2.00,
-        # K Ca2+ Cr Mn Fe2+ Co
-
-        1.63,1.40,1.39, 1.90,1.90,1.85,
-        # Ni Cu Zn2+ Se Br
-
-        1.72,1.98,2.00,1.75,1.66,1.55])
-        # Ag I Ir Pt Au Hg
 
         
         #                i=1,5
@@ -155,14 +104,7 @@ class FormFactorTable(object):
         self.compute_radii()
 
 
-    def get_dummy_zero_form_factors(self,i):
-
-        return self.dummy_zero_form_factors[i]
-
-    def get_zero_form_factors(self,i):
-        
-        return self.zero_form_factors[i]
-
+   
 
     def get_volume(self,p):
 
@@ -171,14 +113,6 @@ class FormFactorTable(object):
         return form_factor/self.rho
 
 
-    def get_vanderwaals_radius(self,i):
-
-        return self.vanderwaals_radius[i]
-
-
-    def get_vanderwaals_volume(self,i):
-        
-        return (4.0/3.0) * np.pi * np.power(self.vanderwaals_radius[i],3.0)
     
 
     def get_dummy_form_factors(self):
@@ -226,13 +160,6 @@ class FormFactorTable(object):
 
         self.dummy_form_factors = dum
 
-    def get_zero_form_factors(self):
-
-        return self.zero_form_factors
-
-    def set_zero_form_factors(self,z):
-
-        self.zero_form_factors = z
         
     def get_water_form_factor(self):
         
@@ -291,16 +218,6 @@ class FormFactorTable(object):
                     self.vacuum_form_factors[i,iq] += self.a[i,j] * np.exp(-self.b[i,j]*s[iq]*s[iq])
 
 
-
-            self.zero_form_factors[i] = self.c[i]
-
-            for j in range(5):
-
-                self.zero_form_factors[i] += self.a[i,j]
-
-
-            self.zero_form_factors[i] -= self.rho * self.excl_vol[i]
-      
         
             
 
@@ -712,30 +629,29 @@ class FormFactorTable(object):
        
        return ret_type;
 
+
     def get_radii(self,particles):
 
-        num_atoms = particles.get_num_atoms()
-        radii = np.zeros((num_atoms+1,),dtype=np.float64)
+       """
+       Gets the radii of the particle's atoms from the excluded volume (dummy form factor)
+       :param  particles: the structure containing the atom info
+       :return radii: the radii of all the atoms
+       """
+
+       num_atoms = particles.get_num_atoms()
+       radii = np.zeros((num_atoms+1,),dtype=np.float64)
       
-        symbols = particles.get_atomic_symbol()
-        atomic_variant = particles.get_atomic_variant()
-        residue = particles.get_residue()
+       symbols = particles.get_atomic_symbol()
+       atomic_variant = particles.get_atomic_variant()
+       residue = particles.get_residue()
            
-        table = self.get_ff_cm_dict()
+       table = self.get_ff_cm_dict()
            
-        for i in range(num_atoms+1):
+       for i in range(num_atoms+1):
     
-            ret_type = self.get_form_factor_atom_type(symbols[i],atomic_variant[i], residue[i])
+           ret_type = self.get_form_factor_atom_type(symbols[i],atomic_variant[i], residue[i])
 
-            idx = table[ret_type]
-            radii[i] = self.ff_radii[idx]
+           idx = table[ret_type]
+           radii[i] = self.ff_radii[idx]
 
-        return radii
-          
-
-           
-           
-
-           
-           
-
+       return radii

@@ -170,7 +170,7 @@ def symmpdb(fname, ff='WK'):
                 atom_variant = line[13:16].strip()
                 residue = line[17:21].strip()
 
-                list_dict.append(tmp[0],tmp[1],tmp[2],tmp[3] ,atom_symbol,atom_variant,residue) # Get the atom type
+                list_dict.append([tmp[0],tmp[1],tmp[2],tmp[3] ,atom_symbol,atom_variant,residue]) # Get the atom type
 
                 if line[76:78].strip() in atom_types.keys():
                     tmp[3] = atom_types[line[76:78].strip()]

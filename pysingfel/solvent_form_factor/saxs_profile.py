@@ -24,35 +24,38 @@ class Profile:
         
         self.average_radius = 1.58
         self.average_volume_  = 17.5
-        self.experimental_ = False
+        self.experimental_ = False # to fit experimental data, currently not used
         self.q[0] = q_min
         
         for i in range(1,self.nsamples):
 
             self.q[i] = self.q[i-1] + q_delta
         # since form factors are approximate, use scaling factor
-        # 0.23 is average modulation factor of 30 proteins 
+        # 0.23 is average modulation factor of 30 proteins (experimental fit)
         self.sf = np.exp(-0.23 * self.q * self.q)
 
-        #print self.q       
+              
         self.vacuum_ff = None
 
         self.dummy_ff = None
         
-        self.rgyration = 0.0
+        self.rgyration = 0.0 # not currently ysed
         self.npartials = 0
         
         # components of intensity
-        self.vac_vac = np.zeros((self.nsamples,1),dtype=np.float64)  
-        self.vac_dum = np.zeros((self.nsamples,1),dtype=np.float64)  
-        self.dum_dum = np.zeros((self.nsamples,1),dtype=np.float64)
-        self.vac_h2o = np.zeros((self.nsamples,1),dtype=np.float64)
-        self.dum_h2o = np.zeros((self.nsamples,1),dtype=np.float64)
-        self.h2o_h2o = np.zeros((self.nsamples,1),dtype=np.float64)  #
+        # see Equation 5 in Schneidman-Duhovny et al. 2013
+        self.vac_vac = np.zeros((self.nsamples,1),dtype=np.float64)  # f_vac^2
+        self.vac_dum = np.zeros((self.nsamples,1),dtype=np.float64)  # f_vac * f_dum
+        self.dum_dum = np.zeros((self.nsamples,1),dtype=np.float64)  # f_dum^2
+        self.vac_h2o = np.zeros((self.nsamples,1),dtype=np.float64)  # f_vac * f_water
+        self.dum_h2o = np.zeros((self.nsamples,1),dtype=np.float64)  # f_dum * f_water
+        self.h2o_h2o = np.zeros((self.nsamples,1),dtype=np.float64)  # f_water^2 
 
+    # return I(q)
     def get_intensities(self):
         return self.In
     
+    # returns length of q
     def get_q_size(self):
         
         return self.nsamples
@@ -80,11 +83,13 @@ class Profile:
     def set_delta_q(self,dq):
         
         self.delta_q = dq
-        
+    
+    # gets q[i]
     def get_q(self,i):
     
         return self.q[i]
     
+    # gets all q values
     def get_all_q(self):
 
         return self.q
@@ -110,7 +115,12 @@ class Profile:
         self.In = np.zeros((self.nsamples,1),dtype=np.float64)
 
     def write_partial_profiles(self,file_name):
-  
+
+        """
+        Writes partial profiles to text file
+        :param file_name: the name of the output text file
+        """
+
         try:
             fp = open(file_name,'w')
         except IOError as ioe:
@@ -140,11 +150,14 @@ class Profile:
         fp.write("\n")
         fp.close()
 
+    # get all 6 partials for all q values
     def get_partial_profiles(self):
         
         partials = np.hstack((self.vac_vac,self.dum_dum,self.vac_dum,self.vac_h2o,self.dum_h2o,self.h2o_h2o))
         return partials
 
+
+    # add noise to profile
     def add_errors(self):
 
         for i in range(self.nsamples):
@@ -156,8 +169,14 @@ class Profile:
             self.experimental_ = True
             self.In[i] += self.err[i]
             
-
+    
+    # write out SAXS profile with q-values, intensities, and errors (
     def write_SAXS_file(self,file_name,max_q=3.0):
+
+       """
+       Writes SAXS profile to text file
+       :param file_name: the name of the output text file
+       """
 
        try:
            outFile = open(file_name,'w')
@@ -201,7 +220,7 @@ class Profile:
        outFile.close()
 
 
-def assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms,r_size,verbose):
+def assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms,r_size):
     
     """
     Assigns form factor values based on atom type
@@ -214,18 +233,13 @@ def assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms,r_
     :param ft: form factor table object
     :param num_atoms: number of atoms
     :param r_size: size of radial distribution function list
-    :param verbose: verbose write mode (on:1, off:0)
     :return prof: profile object
     :return water_ff; array of water form factors by atom
     :return r_size: size of radial distribution function list
     """
     
           
-    if verbose ==1:
-        fp = open('data/atomtypes.txt','w')
-        fv = open('data/vacuum_impPy.txt','w')
-        fd = open('data/dummy_impPy.txt','w')
-    
+
     prof.vacuum_ff = np.zeros((num_atoms,prof.nsamples),dtype=np.float64)
 
     prof.dummy_ff = np.zeros((num_atoms,prof.nsamples),dtype=np.float64)
@@ -237,14 +251,14 @@ def assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms,r_
     symbols = particles.get_atomic_symbol() # element
     residue  = particles.get_residue() # residue type that contains atom
     
-    table = ft.get_ff_cm_dict()
+    table = ft.get_ff_cm_dict() # cromer-mann table for 24 elements and complexes
     for m in range(num_atoms):
            if m % 1000 == 0:
               print m
+
            # for each atom, get the appropriate form factor 
            ret_type = ft.get_form_factor_atom_type(symbols[m],atomic_variant[m], residue[m])
-           if verbose == 1:
-               fp.write("%s %s %s %s\n" % (symbols[m],atomic_variant[m],residue[m],ret_type))
+
            idx =   table[ret_type]
            
 	   # assign this to the profile's vacuum/dummy array
@@ -252,12 +266,10 @@ def assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms,r_
            
            prof.dummy_ff[m,:]   = dff[idx,:]
            
-           if verbose == 1:
-               fv.write("%.6f\n" % prof.vacuum_ff[m,0])
-               fd.write("%.6f\n" % prof.dummy_ff[m,0])
+
     
     
-    # 3 extra  solvent terms included 
+    # 3 extra solvent terms included 
     #if all atoms have solvent accessible surface calculated
 
     if len(saxs_sa) == num_atoms:
@@ -270,7 +282,7 @@ def assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms,r_
     return prof, water_ff,r_size
 
 
-def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,verbose,c1,c2,ff_type='HEAVY_ATOMS'):
+def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,c1,c2):
     
     """
     Pre-computes partial profiles based on 6 equations
@@ -282,17 +294,13 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,verbose,c1,c2,f
     :param ft: form factor table object
     :param vff: table of vacuum form factors
     :param dff:  table of dummy form factors
-    :param verbose: writing to files for testing
     :param c1: excluded volume parameter
     :param c2: hydration layer parameter
     :return intensity: the intensity
     """ 
     
     # can write output files containing atomtypes, vacuum/dummy form factors
-    if verbose ==1:
-        fp = open('data/atomtypes_ImpPy.txt','w')
-        fv = open('data/vacuum_ImpPy.txt','w')
-        fd = open('data/dummy_ImpPy.txt','w')
+
     
     r_size = 3
     
@@ -309,7 +317,7 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,verbose,c1,c2,f
     num_atoms = len(coordinates)
     t_start_aff2p = time.time() 
     # assign form factors based on atomic type/residue/element or water
-    prof, water_ff, r_size = assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms,r_size,verbose)
+    prof, water_ff, r_size = assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms,r_size)
     t_end_aff2p  = time.time()
  
     r_dist = []
@@ -326,8 +334,8 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,verbose,c1,c2,f
     cd = scipy.spatial.distance.cdist(coordinates,coordinates)
     
     
-    # radial distribution functions
-    r0 = np.zeros((nbins,1),dtype=np.float64)
+    # radial distribution functions, relating to 6 equations				
+    r0 = np.zeros((nbins,1),dtype=np.float64) 
     r1 = np.zeros((nbins,1),dtype=np.float64)
     r2 = np.zeros((nbins,1),dtype=np.float64)
     r3 = np.zeros((nbins,1),dtype=np.float64)
@@ -341,14 +349,14 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,verbose,c1,c2,f
     t_start_outer = time.time()
     vacuum2 =  np.outer(prof.vacuum_ff[:,0],prof.vacuum_ff[:, 0]) 
     dummy2  =  np.outer(prof.dummy_ff[:,0],prof.dummy_ff[:,0])
-    vd = np.outer(prof.vacuum_ff[:,0],prof.dummy_ff[:,0])
+    vd = np.outer(prof.vacuum_ff[:,0],prof.dummy_ff[:,0]) # vacuum * dummy
     
     if r_size == 6:
        vach2o = np.outer(prof.vacuum_ff[:,0],water_ff)
        dumh2o = np.outer(prof.dummy_ff[:,0],water_ff)
        h2o2 = np.outer(water_ff,water_ff)
     t_end_outer = time.time()
-    # autocorrelations, (distance = 0, bin = 0)
+    # autocorrelations, (distance = 0, bin = 0), diagonals
     r0[0] = np.sum(np.diag(vacuum2)) 
     r1[0] = np.sum(np.diag(dummy2))
     r2[0] = 2.0 * np.sum(np.diag(vd))
@@ -363,26 +371,13 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,verbose,c1,c2,f
     dummy2 = np.triu(dummy2,k=1)
     if r_size == 6:
        h2o2 = np.triu(h2o2,k=1)
-    # vacuum * dummy,  don't sum auto correlation diagonal terms now
+    # vacuum * dummy,  already used the diagonal in autocorrelation, so set 0 here
     vd[np.diag_indices(vd.shape[0])] = 0
     
    
     if r_size == 6:
        vach2o[np.diag_indices(vach2o.shape[0])]
        dumh2o[np.diag_indices(dumh2o.shape[0])]
-
-    if verbose == 1:
-        fp.close()
-        fv.close()
-        fd.close()
-        fdist = open('data/dist_impPy.txt','w')
-
-        for a in range(len(coordinates)):
-            for c in range(len(coordinates)):
-        
-                fdist.write("%.6f\n" % cd[a,c])
-            
-        fdist.close()
     
     flat = bins.ravel()
     vacuum2 = vacuum2.ravel()
@@ -396,6 +391,7 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,verbose,c1,c2,f
     t_start_sort = time.time()
     # sort the indices for each bin and split
     lin_idx = np.argsort(flat, kind='quicksort')
+
     t_end_sort = time.time()
     t_start_split = time.time()
     sp = np.split(lin_idx, np.cumsum(np.bincount(flat)[:-1]))
@@ -408,7 +404,7 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,verbose,c1,c2,f
       
         if len(sp[b]) == 0:
            continue
-        # add the form factors for each bin
+        # add the form factor products for each bin
         r0[b] += 2.0*np.sum(vacuum2[sp[b]])  # constant
         r1[b] += 2.0*np.sum(dummy2[sp[b]])   # c1^2 
         r2[b] += 2.0*np.sum(vd[sp[b]])  # -c1
@@ -430,18 +426,15 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,verbose,c1,c2,f
     # radial distributions in real space
     # partial profiles, reciprocal space
     t_start_rdf2p = time.time() 
-    new_prof = radial_distribution_function.radial_distributions_to_partials(prof,r_size,r_dist,verbose)
+    new_prof = radial_distribution_function.radial_distributions_to_partials(prof,r_size,r_dist)
     t_end_rdf2p = time.time()
-    newpartials = np.hstack((new_prof.q, new_prof.vac_vac,new_prof.dum_dum, new_prof.vac_dum))
+    newpartials = np.hstack((new_prof.q, new_prof.vac_vac,new_prof.dum_dum, new_prof.vac_dum, new_prof.vac_h2o,new_prof.dum_h2o, new_prof.h2o_h2o))
   
-    if verbose == 1:
-       np.savetxt('data/partials_ImpPy.txt',newpartials,fmt='%.6f',delimiter=' ' , newline='\n')
+
     t_start_spp = time.time()
-    intensity = sum_profile_partials(new_prof,c1, c2,verbose)  #c1 = 1.0, c2 = 0.0
+    intensity = sum_profile_partials(new_prof,c1, c2)  #c1 = 1.0, c2 = 0.0 default
     t_end_spp  = time.time()
-    if verbose == 1:
-       np.savetxt('data/intensity_ImpPy.txt',intensity,fmt='%.6f',delimiter=' ' , newline='\n')
-     
+  
     print "assign_form_factors_2_profile takes %f seconds.\n"  % (t_end_aff2p - t_start_aff2p)
     print "max distance takes %f seconds.\n"  % (t_end_md - t_start_md)
     print "calculate_profile_partial matrices total takes %f seconds\n" % (t_end_profile_matrices-t_start_profile_matrices)
@@ -454,7 +447,7 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,verbose,c1,c2,f
 
    
 
-def sum_profile_partials(p, c1,c2,verbose):
+def sum_profile_partials(p, c1,c2):
 
     """
     Computes full profile for given c1/c2  parameters
@@ -462,7 +455,6 @@ def sum_profile_partials(p, c1,c2,verbose):
     :param p: profile object
     :param c1: excluded volume parameter
     :param c2: hydration layer parameter
-    :param verbose: verbose mode (on:1, off:0)
     :return I: intensity of full profile
     """
 
@@ -479,9 +471,6 @@ def sum_profile_partials(p, c1,c2,verbose):
     #Initialize profile
     p.saxs_profile_reset_In()
     
-    if verbose == 1:
-        gqq = []
-    
     # Add profiles
     for iq in range(p.nsamples):
     
@@ -490,9 +479,6 @@ def sum_profile_partials(p, c1,c2,verbose):
 
         if np.abs(coeff) > 1e-8:
            G_q *= np.exp(coeff*p.q[iq]*p.q[iq])
-
-        if verbose == 1:
-            gqq.append(G_q)
 
         p.In[iq] += p.vac_vac[iq]+p.dum_dum[iq] * (G_q * G_q) + \
         p.vac_dum[iq] * (-G_q)
@@ -504,14 +490,18 @@ def sum_profile_partials(p, c1,c2,verbose):
 
     I = p.In
     
-    if verbose  == 1:
-	gqq = np.asarray(gqq)
-        np.savetxt('data/gq_ImpPy.txt',  gqq,fmt='%.6f', delimiter =' ',newline='\n')
-
+   
     return I
                            
 
 def calculate_max_distance(coordinates):
+
+    """
+    Calculates the maximum distance between atoms in the particle
+    :param coordinates: the x,y,z coordinates of the atoms 
+    :return distance: the maximum distance
+    """ 
+
     dist = scipy.spatial.distance.cdist(coordinates,coordinates)
   
     distance = np.max(dist)

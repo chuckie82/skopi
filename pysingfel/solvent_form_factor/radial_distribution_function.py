@@ -4,7 +4,7 @@ import saxs_profile
 
 class RadialDistributionFunction:
 
-    def __init__(self,bin_size=0.5,max_dist=50):
+    def __init__(self,bin_size=0.5,max_dist=50): # in Angstroms
         
         self.max_distance = max_dist
         self.bin_size = bin_size;
@@ -37,22 +37,21 @@ class RadialDistributionFunction:
         return self.max_distance
 
 
-def radial_distributions_to_partials(p , ndists, r_dists,verbose,modulation_function_parameter=0.23):
+def radial_distributions_to_partials(p , ndists, r_dists,modulation_function_parameter=0.23):
+
+    """
+    Calculates the partial profiles from the corresponding radial distribution functions
+    :param p: Profile object
+    :param ndist: number of radial distribution functions
+    :param r_dist list of radial distribution functions
+    :param modulation function parameter: I(q) = I(0) * exp(-b*q*q), where b is this constant
+    :return p: Profile object with calculated partial profiles
+    """
   
     nbins = r_dists[0].get_nbins()
     
     delta_x = r_dists[0].get_bin_size()
 
-    if verbose == 1:
-        fp = open("data/sinc_ImpPy.txt",'w')
-        fqd = open("data/qd_ImpPy.txt",'w')
-        fq = open("data/q_ImpPy.txt",'w')
-        fr0 = open("data/r0_ImpPy.txt",'w')
-        fr1 = open("data/r1_ImpPy.txt",'w')
-        fr2 = open("data/r2_ImpPy.txt",'w')
-        fvv = open("data/vacvac_ImpPy.txt",'w')
-        fdd = open("data/dumdum_ImpPy.txt",'w')
-        fvd = open("data/vacdum_ImpPy.txt",'w')
 
     for iq in range(p.nsamples):
         
@@ -67,10 +66,6 @@ def radial_distributions_to_partials(p , ndists, r_dists,verbose,modulation_func
             p.dum_dum[iq] += r_dists[1].values[r] * x
             p.vac_dum[iq] += r_dists[2].values[r] * x
             
-            if verbose == 1:
-               fr0.write("%.6f\n" % r_dists[0].values[r])
-               fr1.write("%.6f\n" % r_dists[1].values[r])
-               fr2.write("%.6f\n" % r_dists[2].values[r])
             
             if ndists == 6:
             
@@ -107,14 +102,6 @@ def radial_distributions_to_partials(p , ndists, r_dists,verbose,modulation_func
         p.vac_h2o *= scaling_factor
         p.dum_h2o *= scaling_factor
         p.h2o_h2o *= scaling_factor
-    
-    if verbose == 1:
-        fq.close()
-        fr0.close()
-        fr1.close()
-        fr2.close()
-        fvv.close()
-        fdd.close()
-        fvd.close()
+ 
     return p
     
