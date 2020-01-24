@@ -319,7 +319,8 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,c1,c2):
     # assign form factors based on atomic type/residue/element or water
     prof, water_ff, r_size = assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms,r_size)
     t_end_aff2p  = time.time()
- 
+    #print "assign_form_factors_2_profile takes %f seconds.\n"  % (t_end_aff2p - t_start_aff2p)
+    #sys.exit()
     r_dist = []
     t_start_md = time.time()
     max_dist = calculate_max_distance(coordinates)
@@ -391,7 +392,7 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,c1,c2):
     t_start_sort = time.time()
     # sort the indices for each bin and split
     lin_idx = np.argsort(flat, kind='quicksort')
-
+    
     t_end_sort = time.time()
     t_start_split = time.time()
     sp = np.split(lin_idx, np.cumsum(np.bincount(flat)[:-1]))
