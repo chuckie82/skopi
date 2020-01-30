@@ -141,10 +141,13 @@ def symmpdb(fname, ff='WK'):
     trans_dict = {}  # dict to save the symmetry translations and chain id
     atom_count = 0
     line = fin.readline()
+    list_dict = []  # dict for x,y,z,atomtype,atom_symbol,atom_variant,residue
     if ff == 'WK':
         dbase = load_waaskirf_database()
     elif ff == 'CM':
         dbase = load_cromermann_database()
+    elif ff == 'SFF':
+        dbase = load_waaskirf_database()
     else:
         raise ValueError("Undefined form factor type")
 
@@ -163,8 +166,12 @@ def symmpdb(fname, ff='WK'):
                 # [x, y, z, atomtype, charge]
                 # Notice that here, one has set the default charge to be 0
                 tmp = [float(line[30:38].strip()), float(line[38:46].strip()), float(line[46:54].strip()), 0, 0]
+                atom_symbol = line[76:78].strip()
+                atom_variant = line[13:16].strip()
+                residue = line[17:21].strip()
 
-                # Get the atom type
+                list_dict.append([tmp[0],tmp[1],tmp[2],tmp[3] ,atom_symbol,atom_variant,residue]) # Get the atom type
+
                 if line[76:78].strip() in atom_types.keys():
                     tmp[3] = atom_types[line[76:78].strip()]
                     idxs = [i for i in range(len(list1)) if list1[i] == tmp[3]]
@@ -248,7 +255,7 @@ def symmpdb(fname, ff='WK'):
         # Delete the first fake atom
         atom_info = atoms[1:, :]
         # sort based on atomtype and charge
-        return atom_info[np.lexsort((atoms[1:, 4].astype(int), atoms[1:, 3].astype(int)))]
+        return atom_info[np.lexsort((atoms[1:, 4].astype(int), atoms[1:, 3].astype(int)))],list_dict
 
     ##################################################################################################################
     # Deal with the case where we have remark 350
@@ -285,5 +292,5 @@ def symmpdb(fname, ff='WK'):
     # Delete the first fake atom
     atom_info = atoms[1:, :]
     # sort based on atomtype and charge
-    return atom_info[np.lexsort((atom_info[:, 4].astype(int), atom_info[:, 3].astype(int)))]
+    return atom_info[np.lexsort((atom_info[:, 4].astype(int), atom_info[:, 3].astype(int)))],list_dict
     # return atom_info, sym_dict, atoms_array
