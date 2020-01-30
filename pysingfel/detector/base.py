@@ -7,6 +7,9 @@ import pysingfel.util as pu
 import pysingfel.crosstalk as pc
 import pysingfel.gpu.diffraction as pgd
 from pysingfel.util import deprecation_message
+from pysingfel import particle
+from pysingfel.geometry import quaternion2rot3d, get_random_rotation, get_random_translations
+from scipy.spatial import distance
 
 
 class DetectorBase(object):
@@ -143,6 +146,27 @@ class DetectorBase(object):
 
         return diffraction_pattern
 
+
+    def get_fxs_pattern_without_corrections(self, particle, coords, device=None, return_type="intensity"):
+        """
+        Generate a single diffraction pattern without any correction from the particle object.
+
+        :param particle: The particle object.
+        :return: A diffraction pattern.
+        """
+        if device:
+            deprecation_message(
+                "Device option is deprecated. "
+                "Everything now runs on the GPU.")
+
+        diffraction_pattern = pgd.calculate_fxs_diffraction_pattern_gpu(
+            self.pixel_position_reciprocal,
+            particle,
+            coords,
+            return_type)
+
+        return diffraction_pattern
+
     def get_intensity_field(self, particle, device=None):
         """
         Generate a single diffraction pattern without any correction from the particle object.
@@ -246,8 +270,58 @@ class DetectorBase(object):
                 "Device option is deprecated. "
                 "Everything now runs on the GPU.")
 
-        raw_data = self.get_pattern_without_corrections(particle=particle)
+        raw_data = self.get_pattern_without_corrections(particle=particle,return_type="intensity")
         return self.add_correction_and_quantization(raw_data)
+
+
+    def maxRadius(self, particles):
+        radius_current = 0
+        for particle in particles:
+            print (particle, '->', particles[particle])
+            radius_arr = particle.atom_pos - np.mean(particle.atom_pos, axis=0)
+            for row in radius_arr:
+                radius = np.sqrt(row[0]**2+row[1]**2+row[2]**2)
+                if radius > radius_current:
+                    radius_current = radius
+        radius_max = radius_current
+        return radius_max
+
+
+    def distribute(self, particles, beam_focus_radius, jet_radius): #beam_focus_radius = 10e-6 #jet_radius = 1e-4
+        state = []
+        for particle in particles:
+            for count in range(particles[particle]):
+                state.append(particle)
+        radius_max = self.maxRadius(particles)
+        N = sum(particles.values()) # total number of particles
+        coords = np.zeros((N,3)) # initialize N*3 array
+        # generate N*3 random positions
+        for i in range(N):
+            coords[i,0] = beam_focus_radius*np.random.uniform(-1, 1)
+            coords[i,1] = beam_focus_radius*np.random.uniform(-1, 1)
+            coords[i,2] = jet_radius*np.random.uniform(-1, 1)
+        # calculate N*N distance matrix
+        dist_matrix = distance.cdist(coords, coords, 'euclidean')
+        # collision detection check (<2 maxRadius)
+        collision = dist_matrix < 2*radius_max
+        checkList = [collision[i][j] for i in range(N) for j in range(N) if j > i]
+        if any(item == True for item in checkList):
+            self.distribute(particles, beam_focus_radius, jet_radius)
+        return state, coords
+
+
+    def get_fxs_photons(self, particles, beam_focus_radius, jet_radius, device=None):
+        raw_data = None
+        state, coords = self.distribute(particles, beam_focus_radius, jet_radius)
+        for i in range(len(state)):
+            this_data = self.get_pattern_without_corrections(particle=state[i], return_type="complex_field")
+            this_data *= np.exp(1j * 2 * np.pi * 1e-10 * np.dot(self.pixel_position_reciprocal, coords[i]))
+            if raw_data is None:
+                raw_data = this_data
+            else:
+                raw_data += this_data
+        return self.add_correction_and_quantization(np.square(np.abs(raw_data)))
+
 
     def get_adu(self, particle, path, device=None):
         """

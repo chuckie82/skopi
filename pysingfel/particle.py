@@ -306,6 +306,7 @@ class Particle(object):
         atom_type, idx = np.unique(np.sort(tmp), return_index=True)
         self.num_atom_types = len(atom_type)
         self.split_idx = np.append(idx, [len(tmp)])
+        bohr_radius = 0.529177206
         qs = np.linspace(0, 10, 101) / (2.0 * np.pi * bohr_radius  * 2.0)
         self.q_sample = qs
         self.compton_q_sample = qs
@@ -355,15 +356,3 @@ class Particle(object):
                         print('Atom number = ' + str(zz) + ' with charge ' + str(qq))
                         raise ValueError('Unrecognized atom type!')
 
-
-def rotate_particle(quaternion, particle):
-    """
-    Apply one quaternion to rotate the particle.
-
-    :param quaternion:
-    :param particle:
-    :return:
-    """
-    rot3d = quaternion2rot3d(quaternion)
-    new_pos = np.dot(particle.atom_pos, rot3d.T)
-    particle.set_atom_pos(new_pos)
