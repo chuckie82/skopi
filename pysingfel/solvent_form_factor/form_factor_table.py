@@ -296,13 +296,13 @@ class FormFactorTable(object):
         # CB
         if atomic_variant_type == 'CB':
            if residue_type == 'ILE' or  residue_type == 'THR' or residue_type == 'VAL':
-              #print 'CH'
+              
               
               return 'CH'
             
            if residue_type == 'ALA':
               return 'CH3'
-           #print 'CH2'
+           
            
            return 'CH2'
           
