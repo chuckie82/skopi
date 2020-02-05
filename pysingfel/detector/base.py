@@ -171,7 +171,7 @@ class DetectorBase(object):
         :return: modified complex field pattern.
         """
         return pattern * np.exp(
-            1j * 1e-10 * np.dot(self.pixel_position_reciprocal, displ))
+            1j * np.dot(self.pixel_position_reciprocal, displ))
 
     def add_static_noise(self, pattern):
         """
