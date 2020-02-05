@@ -42,7 +42,7 @@ class TestAddPhaseShift(object):
             ("O", 2*cst.vecy + cls.part_coord_1),
             ("O", 3*cst.vecz + cls.part_coord_1),
         ])
-        cls.part_coord_1 *= 1e-10  # Angstrom * meter
+        cls.part_coord_1 *= 1e-10  # Angstrom -> meter
         cls.pattern_1 = pg.calculate_diffraction_pattern_gpu(
             cls.pos_recip, cls.particle_1, return_type="complex_field")
 
