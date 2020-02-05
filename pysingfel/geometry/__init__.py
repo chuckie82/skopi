@@ -220,7 +220,7 @@ def assemble_image_stack_batch(image_stack, index_map):
 # The following functions are utilized to work on the particles
 ######################################################################
 
-def get_random_translations(atom_pos, beam_focus_size):
+def get_random_translations(atom_pos, beam_focus_size, jet_radius):
     """
     Get translations in real space
 
@@ -229,16 +229,18 @@ def get_random_translations(atom_pos, beam_focus_size):
     :return: List of dictionaries containing translations of all particles within the beam focus
     """
     N = len(atom_pos)
-
+    beam_focus_radius = beam_focus_size/2
     flag = True
     while(flag):
-        x_trans = beam_focus_size*np.random.uniform(-1, 1)
-        y_trans = beam_focus_size*np.random.uniform(-1, 1)
-        trans = [[x_trans, y_trans, 0]]*N
+        x_trans = beam_focus_radius*np.random.uniform(-1, 1)
+        y_trans = beam_focus_radius*np.random.uniform(-1, 1)
+        z_trans = jet_radius*np.random.uniform(-1, 1)
+        trans = [[x_trans, y_trans, z_trans]]*N
         trans = np.asarray(trans)
         new_pos = atom_pos + trans
+        print ("trans_new_pos", new_pos)
         for i in range(N):
-            if (np.sqrt(new_pos[i][0]**2 + new_pos[i][1]**2) >= beam_focus_size):
+            if (np.sqrt(new_pos[i][0]**2 + new_pos[i][1]**2) >= beam_focus_radius):
                 flag = False
                 break
             else:
