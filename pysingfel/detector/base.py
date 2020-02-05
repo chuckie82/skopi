@@ -186,6 +186,17 @@ class DetectorBase(object):
 
         return np.multiply(diffraction_pattern, self.linear_correction)
 
+    def add_phase_shift(self, pattern, displ):
+        """
+        Add phase shift corresponding to displ to complex pattern.
+
+        :param pattern: complex field pattern.
+        :param displ: displ(acement) (position) of the particle (m).
+        :return: modified complex field pattern.
+        """
+        return pattern * np.exp(
+            1j * np.dot(self.pixel_position_reciprocal, displ))
+
     def add_static_noise(self, pattern):
         """
         Add static noise to the diffraction pattern.
