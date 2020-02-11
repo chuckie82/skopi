@@ -43,7 +43,6 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
     """
     """This function can be used to calculate the diffraction field for
     arbitrary reciprocal space """
-    print "Hello!!!!!!"
     # convert the reciprocal space into a 1d series.
     shape = reciprocal_space.shape
     pixel_number = np.prod(shape[:-1])
@@ -78,15 +77,15 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
         pixel_number)
 
     if return_type == "intensity":
-        #print "np.square(np.abs(pattern_cos + 1j * pattern_sin))", np.square(np.abs(pattern_cos + 1j * pattern_sin))
         pattern = np.reshape(np.square(np.abs(pattern_cos + 1j * pattern_sin)), shape[:-1])
-        print "intensity_pattern", pattern
         return pattern
     elif return_type == "complex_field":
-        #print "pattern_cos + 1j * pattern_sin", pattern_cos + 1j * pattern_sin
         pattern = np.reshape(pattern_cos + 1j * pattern_sin, shape[:-1])
-        print "complex_field_pattern", pattern
         return pattern
+    else:
+        print("Please set the parameter return_type = 'intensity' or 'complex_field'")
+        print("This time, this program return the complex field.")
+        return np.reshape(pattern_cos + 1j * pattern_sin, shape[:-1])
 
 
 def calculate_fxs_diffraction_pattern_gpu(reciprocal_space, particle, coords, return_type='intensity'):
@@ -100,7 +99,6 @@ def calculate_fxs_diffraction_pattern_gpu(reciprocal_space, particle, coords, re
     """
     """This function can be used to calculate the diffraction field for
     arbitrary reciprocal space """
-    print "Hi!!!!!!"
     # convert the reciprocal space into a 1d series.
     shape = reciprocal_space.shape
     pixel_number = np.prod(shape[:-1])
@@ -113,7 +111,9 @@ def calculate_fxs_diffraction_pattern_gpu(reciprocal_space, particle, coords, re
                                              pixel_num=pixel_number)
 
     # Get atom position
-    atom_position = np.ascontiguousarray(particle.atom_pos[:])
+    print ("particle.atom_pos[:].shape", particle.atom_pos[:].shape)
+    print ("coords.shape", coords.shape)
+    atom_position = np.ascontiguousarray(particle.atom_pos[:]+coords)
     atom_type_num = len(particle.split_idx) - 1
 
     # create
