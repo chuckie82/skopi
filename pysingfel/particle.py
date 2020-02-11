@@ -1,9 +1,8 @@
 import h5py
 import numpy as np
-import sys
-from util import symmpdb
-#from geometry import quaternion2rot3d, get_random_rotation, get_random_translations
-from ff_waaskirf_database import *
+from pysingfel.util import symmpdb
+from pysingfel.geometry import quaternion2rot3d, get_random_rotation, get_random_translations
+from pysingfel.ff_waaskirf_database import *
 
 
 class Particle(object):
