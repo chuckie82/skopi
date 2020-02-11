@@ -189,7 +189,6 @@ class DetectorBase(object):
     def add_phase_shift(self, pattern, displ):
         """
         Add phase shift corresponding to displ to complex pattern.
-        
         :param pattern: complex field pattern.
         :param displ: displ(acement) (position) of the particle (m).
         :return: modified complex field pattern.
