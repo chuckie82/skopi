@@ -2,14 +2,15 @@ import numpy as np
 import os
 import sys
 
+import pysingfel as ps
 import pysingfel.geometry as pg
 import pysingfel.util as pu
 import pysingfel.crosstalk as pc
 import pysingfel.gpu.diffraction as pgd
 from pysingfel.util import deprecation_message
 from pysingfel import particle
+from pysingfel.particlePlacement import max_radius, distribute_particles
 from pysingfel.geometry import quaternion2rot3d, get_random_rotation, get_random_translations
-from scipy.spatial import distance
 
 
 class DetectorBase(object):
@@ -146,7 +147,6 @@ class DetectorBase(object):
 
         return diffraction_pattern
 
-
     def get_fxs_pattern_without_corrections(self, particle, coords, device=None, return_type="intensity"):
         """
         Generate a single diffraction pattern without any correction from the particle object.
@@ -189,13 +189,11 @@ class DetectorBase(object):
     def add_phase_shift(self, pattern, displ):
         """
         Add phase shift corresponding to displ to complex pattern.
-
         :param pattern: complex field pattern.
         :param displ: displ(acement) (position) of the particle (m).
         :return: modified complex field pattern.
         """
-        return pattern * np.exp(
-            1j * np.dot(self.pixel_position_reciprocal, displ))
+        return pattern * np.exp(1j * np.dot(self.pixel_position_reciprocal, displ))
 
     def add_static_noise(self, pattern):
         """
@@ -285,54 +283,45 @@ class DetectorBase(object):
         return self.add_correction_and_quantization(raw_data)
 
 
-    def maxRadius(self, particles):
-        radius_current = 0
-        for particle in particles:
-            print (particle, '->', particles[particle])
-            radius_arr = particle.atom_pos - np.mean(particle.atom_pos, axis=0)
-            for row in radius_arr:
-                radius = np.sqrt(row[0]**2+row[1]**2+row[2]**2)
-                if radius > radius_current:
-                    radius_current = radius
-        radius_max = radius_current
-        return radius_max
-
-
-    def distribute(self, particles, beam_focus_radius, jet_radius): #beam_focus_radius = 10e-6 #jet_radius = 1e-4
-        state = []
-        for particle in particles:
-            for count in range(particles[particle]):
-                state.append(particle)
-        radius_max = self.maxRadius(particles)
-        N = sum(particles.values()) # total number of particles
-        coords = np.zeros((N,3)) # initialize N*3 array
-        # generate N*3 random positions
-        for i in range(N):
-            coords[i,0] = beam_focus_radius*np.random.uniform(-1, 1)
-            coords[i,1] = beam_focus_radius*np.random.uniform(-1, 1)
-            coords[i,2] = jet_radius*np.random.uniform(-1, 1)
-        # calculate N*N distance matrix
-        dist_matrix = distance.cdist(coords, coords, 'euclidean')
-        # collision detection check (<2 maxRadius)
-        collision = dist_matrix < 2*radius_max
-        checkList = [collision[i][j] for i in range(N) for j in range(N) if j > i]
-        if any(item == True for item in checkList):
-            self.distribute(particles, beam_focus_radius, jet_radius)
-        return state, coords
-
-
     def get_fxs_photons(self, particles, beam_focus_radius, jet_radius, device=None):
         raw_data = None
-        state, coords = self.distribute(particles, beam_focus_radius, jet_radius)
+        state, coords = distribute_particles(particles, beam_focus_radius, jet_radius)
         for i in range(len(state)):
             this_data = self.get_pattern_without_corrections(particle=state[i], return_type="complex_field")
-            this_data *= np.exp(1j * 2 * np.pi * 1e-10 * np.dot(self.pixel_position_reciprocal, coords[i]))
+            this_data *= np.exp(1j*np.dot(self.pixel_position_reciprocal, coords[i]))
             if raw_data is None:
                 raw_data = this_data
             else:
                 raw_data += this_data
         return self.add_correction_and_quantization(np.square(np.abs(raw_data)))
 
+
+    def get_fxs_photons_slices(self, particles, beam_focus_radius, jet_radius, mesh_length, device=None):
+        mesh, voxel_length= self.get_reciprocal_mesh(voxel_number_1d = mesh_length)
+        state, coords = distribute_particles(particles, beam_focus_radius, jet_radius)
+        count = 0
+        field_acc = np.zeros((4, 512, 512), dtype=np.complex128)
+        for particle in particles:
+            if particles[particle] > 0:
+                volume = pgd.calculate_diffraction_pattern_gpu(mesh, particle, return_type="complex_field")
+                orientations = ps.geometry.get_random_quat(num_pts=particles[particle])
+                slices = ps.geometry.take_n_slices(volume = volume, voxel_length = voxel_length, pixel_momentum = self.pixel_position_reciprocal, orientations = orientations)
+                for i in range(particles[particle]):
+                    field_acc += self.add_phase_shift(slices[i], coords[count])
+                    count += 1
+        return self.add_correction_and_quantization(np.square(np.abs(field_acc)))
+
+
+    def get_fxs_photons_unittest(self, particles, beam_focus_radius, jet_radius, device=None):
+        raw_data = None
+        state, coords = distribute_particles(particles, beam_focus_radius, jet_radius)
+        for i in range(len(state)):
+            this_data = self.get_fxs_pattern_without_corrections(particle=state[i], coords=coords[i], return_type="complex_field")
+            if raw_data is None:
+                raw_data = this_data
+            else:
+                raw_data += this_data
+        return self.add_correction_and_quantization(np.square(np.abs(raw_data)))
 
     def get_adu(self, particle, path, device=None):
         """
@@ -371,6 +360,7 @@ class DetectorBase(object):
 
         return voxel_length
 
+
     def preferred_reciprocal_mesh_number(self, wave_vector):
         """
         If one want to put the diffraction pattern into 3D reciprocal space, then one needs to
@@ -389,6 +379,7 @@ class DetectorBase(object):
         voxel_num_1d = int(2 * voxel_half_num_1d + 1)
         return voxel_num_1d
 
+
     def get_reciprocal_mesh(self, voxel_number_1d):
         """
         Get the proper reciprocal mesh.
@@ -398,3 +389,4 @@ class DetectorBase(object):
         """
         dist_max = np.max(self.pixel_distance_reciprocal)
         return pg.get_reciprocal_mesh(voxel_number_1d, dist_max)
+
