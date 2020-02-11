@@ -41,7 +41,7 @@ class LibSaxsCompareDataTest(unittest.TestCase):
     
     def test_vacuum_form_factor_data(self):
         #print "Testing vacuum form factor data against libsaxs...\n"
-        vls = np.loadtxt('../data/vacuum_ls.txt')
+        vls = np.loadtxt('../data/vacuum_ls.txt') # these files are generated from 10atoms on libsaxs
    
         vpy = self.prof.vacuum_ff[:,0]
         self.assertTrue(np.allclose(vls,vpy))
