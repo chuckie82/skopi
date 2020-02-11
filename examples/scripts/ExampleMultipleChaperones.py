@@ -1,10 +1,10 @@
 import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import h5py as h5
 import pysingfel as ps
 import time
-import collections
-
+from pysingfel.particlePlacement import position_in_3d
 
 # Create a particle object
 particleOp = ps.Particle()
@@ -29,7 +29,7 @@ patternCl = det.get_photons(device='gpu', particle=particleCl)
 print("It takes {:.2f} seconds to finish the calculation.".format(toc-tic))
 
 # Calculates 1 diffraction pattern from 1 open chaperones + 1 closed chaperones
-pattern = det.get_fxs_photons(device='gpu', beam_focus_radius=beam.focus_xFWHM/2, jet_radius=1e-4, particles={particleOp:5,particleCl:1})
+pattern = det.get_fxs_photons_slices(device='gpu', beam_focus_radius=beam.focus_xFWHM/2, jet_radius=1e-4, mesh_length=151, particles={particleOp:50,particleCl:10})
 
 fig = plt.figure(figsize=(10, 8))
 plt.subplot(131)
