@@ -17,8 +17,7 @@ class TestDiffractionPattern(object):
 
         # Load and initialize the detector
         det = ps.PnccdDetector(
-            geom=ex_dir_+'/lcls/amo86615/'
-                 'PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data',
+            geom=ex_dir_+'/input/geometry/0-end.data',
             beam=beam)
 
         cls.mesh_length = 15
