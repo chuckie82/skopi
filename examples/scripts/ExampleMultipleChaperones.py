@@ -6,6 +6,9 @@ import pysingfel as ps
 import time
 from pysingfel.particlePlacement import position_in_3d
 
+numOpen = 1
+numClosed = 1
+
 # Create a particle object
 particleOp = ps.Particle()
 particleOp.read_pdb('../input/3iyf.pdb', ff='WK')
@@ -29,7 +32,7 @@ patternCl = det.get_photons(device='gpu', particle=particleCl)
 print("It takes {:.2f} seconds to finish the calculation.".format(toc-tic))
 
 # Calculates 1 diffraction pattern from 1 open chaperones + 1 closed chaperones
-pattern = det.get_fxs_photons_slices(device='gpu', beam_focus_radius=beam.focus_xFWHM/2, jet_radius=1e-4, mesh_length=151, particles={particleOp:50,particleCl:10})
+pattern = det.get_fxs_photons_slices(device='gpu', beam_focus_radius=beam.focus_xFWHM/2, jet_radius=1e-4, mesh_length=151, particles={particleOp:numOpen,particleCl:numClosed})
 
 fig = plt.figure(figsize=(10, 8))
 plt.subplot(131)
