@@ -33,21 +33,6 @@ class TestRadialDistributionFunction(unittest.TestCase):
         v = self.rdf.get_values()
         np.allclose(v,r)
     
-
-    def test_qd_var_ts(self):
-        pyQd10= np.loadtxt("../data/qd_impPy.txt")
-        lsQd10 = np.loadtxt("../data/qd_ls.txt")
-         
-        self.assertTrue(np.allclose(pyQd10,lsQd10))
-
-    def test_sinc_func(self):
-
-        
-        pySinc10 = np.loadtxt("../data/sinc_impPy.txt")
-        lsSinc10 =  np.loadtxt("../data/sinc_ls.txt")
-
-        self.assertTrue(np.allclose(pySinc10,lsSinc10))
-
 if __name__ == '__main__':
     unittest.main()
 
