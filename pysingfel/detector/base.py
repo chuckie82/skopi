@@ -301,14 +301,16 @@ class DetectorBase(object):
         mesh, voxel_length= self.get_reciprocal_mesh(voxel_number_1d = mesh_length)
         state, coords = distribute_particles(particles, beam_focus_radius, jet_radius)
         count = 0
-        field_acc = np.zeros((4, 512, 512), dtype=np.complex128)
         for particle in particles:
             if particles[particle] > 0:
                 volume = pgd.calculate_diffraction_pattern_gpu(mesh, particle, return_type="complex_field")
                 orientations = ps.geometry.get_random_quat(num_pts=particles[particle])
                 slices = ps.geometry.take_n_slices(volume = volume, voxel_length = voxel_length, pixel_momentum = self.pixel_position_reciprocal, orientations = orientations)
                 for i in range(particles[particle]):
-                    field_acc += self.add_phase_shift(slices[i], coords[count])
+                    if i == 0:
+                        field_acc = self.add_phase_shift(slices[i], coords[count])
+                    else:
+                        field_acc += self.add_phase_shift(slices[i], coords[count])
                     count += 1
         return self.add_correction_and_quantization(np.square(np.abs(field_acc)))
 
