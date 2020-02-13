@@ -19,7 +19,7 @@ class TestDiffractionPattern(object):
         ex_dir_ = os.path.dirname(__file__) + '/../../examples'
 
         # Load beam
-        beam = ps.Beam(ex_dir_+'/input/exp_chuck.beam')
+        beam = ps.Beam(ex_dir_+'/input/beam/amo86615.beam')
 
         # Load and initialize the detector
         det = ps.PnccdDetector(

@@ -2,7 +2,6 @@ import unittest
 import numpy as np
 import os
 import sys
-#sys.path.append("../../..")
 import pysingfel as ps
 
 class LibSaxsCompareDataTest(unittest.TestCase):
@@ -16,7 +15,7 @@ class LibSaxsCompareDataTest(unittest.TestCase):
         max_q = 3.0
         delta_q = 0.01
         
-        pdb = os.path.join(self.ex_dir_,'input/SAXS_10atoms_mod.pdb')
+        pdb = os.path.join(self.ex_dir_,'input/pdb/SAXS_10atoms_mod.pdb')
         c1 = 1.0
         c2 = 0.0
 

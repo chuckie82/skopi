@@ -18,7 +18,7 @@ def test_take_n_slice():
     ex_dir_ = os.path.dirname(__file__) + '/../../../examples'
 
     # Load beam
-    beam = ps.Beam(ex_dir_+'/input/exp_chuck.beam')
+    beam = ps.Beam(ex_dir_+'/input/beam/amo86615.beam')
 
     # Load and initialize the detector
     det = ps.PnccdDetector(
@@ -29,7 +29,7 @@ def test_take_n_slice():
     mesh, voxel_length = det.get_reciprocal_mesh(
         voxel_number_1d=mesh_length)
 
-    with h5.File(ex_dir_+'/input/imStack-test.hdf5','r') as f:
+    with h5.File(ex_dir_+'/input/lcls/volume/imStack-test.hdf5','r') as f:
         volume_in = f['volume'][:]
         slices_in = f['imUniform'][:]
         orientations_in = f['imOrientations'][:]

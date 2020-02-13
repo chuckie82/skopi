@@ -1,6 +1,16 @@
 # Pysingfel
 Python-based Single Particle Imaging Simulation for Free-Electron Lasers
 
+## Getting Started for LCLS simulations
+
+Start by downloading a copy of pysingfel package and data folder  
+```
+git clone https://github.com/chuckie82/pysingfel.git  
+cd pysingfel/examples/input  
+Download a copy of lcls.tar.gz in the /input folder from https://stanford.box.com/s/e7c30tvhfz0485j2xr48rnrvel8a4yby
+tar -xvf lcls.tar.gz
+```
+
 ## Unit Test
 
 Run unit tests
