@@ -3,10 +3,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import h5py as h5
 import time
+import pytest
 
 import pysingfel as ps
 from pysingfel.geometry import slice_
 
+import six 
+if six.PY2:
+    PSCalib = pytest.importorskip("PSCalib")
+if six.PY3:
+    psana = pytest.importorskip("psana")
 
 def test_take_n_slice():
     ex_dir_ = os.path.dirname(__file__) + '/../../../examples'
@@ -16,8 +22,8 @@ def test_take_n_slice():
 
     # Load and initialize the detector
     det = ps.PnccdDetector(
-        geom=ex_dir_+'/input/geometry/0-end.data',
-        beam=beam)
+        geom=ex_dir_+'/input/lcls/amo86615/'
+             'PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data',                   beam=beam)
 
     mesh_length = 128
     mesh, voxel_length = det.get_reciprocal_mesh(

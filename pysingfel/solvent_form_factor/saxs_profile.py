@@ -1,10 +1,9 @@
 import sys
-import form_factor_table
-import radial_distribution_function
 import numpy as np
 import scipy
 import matplotlib.pyplot as plt
 import time
+from pysingfel.solvent_form_factor import radial_distribution_function 
 
 class Profile:
 
@@ -253,8 +252,6 @@ def assign_form_factors_2_profile(particles,prof,saxs_sa,vff,dff,ft,num_atoms,r_
     
     table = ft.get_ff_cm_dict() # cromer-mann table for 24 elements and complexes
     for m in range(num_atoms):
-           if m % 1000 == 0:
-              print m
 
            # for each atom, get the appropriate form factor 
            ret_type = ft.get_form_factor_atom_type(symbols[m],atomic_variant[m], residue[m])
@@ -401,8 +398,6 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,c1,c2):
     t_start_bins = time.time()
     # iterate over each bin in the distribution
     for b in range(0,nbins):
-        print b
-      
         if len(sp[b]) == 0:
            continue
         # add the form factor products for each bin
@@ -412,7 +407,7 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,c1,c2):
         if r_size == 6:
            r3[b] += 2.0*np.sum(h2o2[sp[b]]) # c2^2
            r4[b] += 2.0*np.sum(vach2o[sp[b]]) # c2
-	   r5[b] += 2.0*np.sum(dumh2o[sp[b]]) # -c1*c2
+           r5[b] += 2.0*np.sum(dumh2o[sp[b]]) # -c1*c2
     t_end_bins = time.time()
     # total radial distributions 
     r_dist[0].values = r0
@@ -436,14 +431,14 @@ def calculate_profile_partial (prof,particles,saxs_sa,ft,vff,dff,c1,c2):
     intensity = sum_profile_partials(new_prof,c1, c2)  #c1 = 1.0, c2 = 0.0 default
     t_end_spp  = time.time()
   
-    print "assign_form_factors_2_profile takes %f seconds.\n"  % (t_end_aff2p - t_start_aff2p)
-    print "max distance takes %f seconds.\n"  % (t_end_md - t_start_md)
-    print "calculate_profile_partial matrices total takes %f seconds\n" % (t_end_profile_matrices-t_start_profile_matrices)
-    print "calculate_profile_partial outer takes %f seconds\n" % (t_end_outer - t_start_outer)
-    print "calculate_profile_partial sort takes %f seconds\n" % (t_end_sort - t_start_sort)
-    print "calculate_profile_partial bins takes %f seconds\n" % (t_end_bins - t_start_bins)
-    print "radial2profile takes %f seconds.\n" % (t_end_rdf2p - t_start_rdf2p)
-    print "sum_partial_profiles takes %f seconds.\n" % (t_end_spp - t_start_spp)
+    print("assign_form_factors_2_profile takes %f seconds.\n"  % (t_end_aff2p - t_start_aff2p))
+    print("max distance takes %f seconds.\n"  % (t_end_md - t_start_md))
+    print("calculate_profile_partial matrices total takes %f seconds\n" % (t_end_profile_matrices-t_start_profile_matrices))
+    print("calculate_profile_partial outer takes %f seconds\n" % (t_end_outer - t_start_outer))
+    print("calculate_profile_partial sort takes %f seconds\n" % (t_end_sort - t_start_sort))
+    print("calculate_profile_partial bins takes %f seconds\n" % (t_end_bins - t_start_bins))
+    print("radial2profile takes %f seconds.\n" % (t_end_rdf2p - t_start_rdf2p))
+    print("sum_partial_profiles takes %f seconds.\n" % (t_end_spp - t_start_spp))
     return intensity
 
    

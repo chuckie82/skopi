@@ -1,4 +1,0 @@
-import radial_distribution_test
-import libsaxs_compare_test
-import form_factor_test
-import form_factor_variants_test

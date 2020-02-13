@@ -113,7 +113,7 @@ class SolventAccessibleSurface(object):
             radius = atom_i[3] + max_radius + probe # TODO: this could move out of the for loop
 
             n_accessible_point = 0
-	    time_start_double_loop = time.time()
+            time_start_double_loop = time.time()
             
             for point in sphere_points:
                 is_accessible = True
@@ -154,10 +154,10 @@ class SolventAccessibleSurface(object):
         f = np.array(fractions) # TODO: no need if fractions is already np array
         a = np.array(areas)
         s = np.array(sas)
-        print "Time to generate sphere points: %s\n" % (time_end_sphere_point - time_start_sphere_point)
-        print "Time to generate KD neighbor tree: %s\n" % (time_end_tree_neighbor - time_start_tree_neighbor)
-        print "Time for triple loop %s\n" % (time_end_triple_loop - time_start_triple_loop)
-        print "Time for double loop %s\n" % (time_end_double_loop - time_start_double_loop)
+        print("Time to generate sphere points: %s\n" % (time_end_sphere_point - time_start_sphere_point))
+        print("Time to generate KD neighbor tree: %s\n" % (time_end_tree_neighbor - time_start_tree_neighbor))
+        print("Time for triple loop %s\n" % (time_end_triple_loop - time_start_triple_loop))
+        print("Time for double loop %s\n" % (time_end_double_loop - time_start_double_loop))
         
         
               

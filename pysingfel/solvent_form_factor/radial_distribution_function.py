@@ -1,6 +1,6 @@
 import numpy as np
 import sys
-import saxs_profile
+import pysingfel.solvent_form_factor.saxs_profile
 
 class RadialDistributionFunction:
 

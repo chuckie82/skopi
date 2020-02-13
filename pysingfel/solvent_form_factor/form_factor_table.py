@@ -426,7 +426,7 @@ class FormFactorTable(object):
         if atomic_variant_type == 'C8':
            return 'CH'
 
-        print "Carbon atom not found, using default C form factor for atomic_variant=%s, residue=%s\n" % (atomic_variant_type,residue_type)
+        print("Carbon atom not found, using default C form factor for atomic_variant=%s, residue=%s\n" % (atomic_variant_type,residue_type))
         return 'C'
         
 
@@ -518,7 +518,7 @@ class FormFactorTable(object):
            return 'N'
 
       
-         print "Nitrogen atom not found, using default N form factor for atomic_variant=%s, residue=%s\n" % (atomic_variant_type, residue_type)
+         print("Nitrogen atom not found, using default N form factor for atomic_variant=%s, residue=%s\n" % (atomic_variant_type, residue_type))
                     
          return 'N'
     
@@ -541,7 +541,7 @@ class FormFactorTable(object):
               return 'SH'
            return 'S'
             
-        print "Sulfur atom not found, using default S form factor for atomic_variant=%s, residue=%s\n" % (atomic_variant_type,residue_type)
+        print("Sulfur atom not found, using default S form factor for atomic_variant=%s, residue=%s\n" % (atomic_variant_type,residue_type))
         return 'S'
         
 
@@ -590,7 +590,7 @@ class FormFactorTable(object):
         if residue_type == 'HOH':
            return 'OH2'
 
-        print "Oxygen atom not found, using default O form factor for atomic_variant=%s, residue_type =%s\n" % (atomic_variant_type, residue_type)
+        print("Oxygen atom not found, using default O form factor for atomic_variant=%s, residue_type =%s\n" % (atomic_variant_type, residue_type))
                  
         return 'O'
  
@@ -624,7 +624,7 @@ class FormFactorTable(object):
 
        # default N form factor if not found
        else:
-          print "Can't find form factor for atom, using default value of nitrogen \n"
+          print("Can't find form factor for atom, using default value of nitrogen \n")
           ret_type = 'N'
        
        return ret_type;

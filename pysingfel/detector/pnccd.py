@@ -3,13 +3,16 @@ import os
 import six
 import sys
 
-if six.PY2:
-    from PSCalib.GenericCalibPars import GenericCalibPars
-    from PSCalib.CalibParsBasePnccdV1 import CalibParsBasePnccdV1
-    from PSCalib.GeometryAccess import GeometryAccess
-else:
-    from psana.pscalib.geometry.GeometryAccess import GeometryAccess
-    from psana.pscalib.calib.MDBWebUtils import calib_constants
+try:
+    if six.PY2:
+        from PSCalib.GenericCalibPars import GenericCalibPars
+        from PSCalib.CalibParsBasePnccdV1 import CalibParsBasePnccdV1
+        from PSCalib.GeometryAccess import GeometryAccess
+    else:
+        from psana.pscalib.geometry.GeometryAccess import GeometryAccess
+        from psana.pscalib.calib.MDBWebUtils import calib_constants
+except:
+    print("Psana functionality is not available.")
 
 import pysingfel.geometry as pg
 import pysingfel.util as pu
@@ -51,7 +54,6 @@ class PnccdDetector(DetectorBase):
                 "The experiment_name is also essential in Python 3.")
 
         self.initialize(geom=geom, run_num=run_num)
-
         # Initialize the pixel effects
         self.initialize_pixels_with_beam(beam=beam)
 
@@ -63,7 +65,6 @@ class PnccdDetector(DetectorBase):
                         pixel pixel properties.
         :return:  None
         """
-
         # Redirect the output stream
         old_stdout = sys.stdout
         f = six.StringIO()
@@ -118,7 +119,6 @@ class PnccdDetector(DetectorBase):
         # first we should parse the path
         parsed_path = geom.split('/')
         source = parsed_path[-3]
-
         if six.PY2:
             cbase = CalibParsBasePnccdV1()
             calibdir = '/'.join(parsed_path[:-4])

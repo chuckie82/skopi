@@ -1,9 +1,11 @@
 import h5py
 import numpy as np
 import sys
-from util import symmpdb
-from ff_waaskirf_database import *
-import particle
+#from util import symmpdb
+from pysingfel.util import symmpdb
+#from ff_waaskirf_database import *
+from pysingfel.ff_waaskirf_database import *
+#import particle
 from scipy.spatial import distance
 
 def max_radius(particles):

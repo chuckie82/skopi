@@ -21,9 +21,9 @@ particleCl.read_pdb('../input/3j03.pdb', ff='WK')
 beam = ps.Beam('../input/exp_chuck.beam')
 
 # Load and initialize the detector
-det = ps.PnccdDetector(geom = '../input/geometry/0-end.data',
+det = ps.PnccdDetector(geom='../input/lcls/amo86615/'
+                       'PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data',
                        beam = beam)
-
 tic = time.time()
 patternOp = det.get_photons(device='gpu', particle=particleOp)
 toc = time.time()

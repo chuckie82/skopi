@@ -1,10 +1,16 @@
 import numpy as np
 import os
+import pytest
 
 import pysingfel as ps
 import pysingfel.gpu as pg
 import pysingfel.constants as cst
 
+import six 
+if six.PY2:
+    PSCalib = pytest.importorskip("PSCalib")
+if six.PY3:
+    psana = pytest.importorskip("psana")
 
 class TestDiffractionPattern(object):
     """Test calculate_diffraction_pattern_gpu."""
@@ -17,7 +23,8 @@ class TestDiffractionPattern(object):
 
         # Load and initialize the detector
         det = ps.PnccdDetector(
-            geom=ex_dir_+'/input/geometry/0-end.data',
+            geom=ex_dir_+'/input/lcls/amo86615/'
+                 'PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data',
             beam=beam)
 
         cls.mesh_length = 15
