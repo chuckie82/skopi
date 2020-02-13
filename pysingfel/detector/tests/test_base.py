@@ -56,3 +56,6 @@ class TestAddPhaseShift(object):
         """Test phase shift from translation."""
         pattern = self.det.add_phase_shift(self.pattern_0, self.part_coord_1)
         assert np.allclose(pattern, self.pattern_1)
+
+    def test_pedestal_nonzero(self):
+        assert np.sum(abs(self.det._pedestals[:])) > np.finfo(float).eps
