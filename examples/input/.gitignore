@@ -1,0 +1,11 @@
+# Reserved folders
+/lcls/
+/local/
+
+# Auto-generated folders
+.idea
+.ipynb_checkpoints
+__pycache__
+
+# Auto-generated files
+*.egg-info
