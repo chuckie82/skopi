@@ -41,3 +41,19 @@ mpi4py         >=2.0
   
 Optional:  
 psana-conda    >1.3  (Required for LCLS simulations only)
+
+## Quick-install on Summit
+
+To quickly install a standalone version of pysingfel with psana2 on Summit, run
+```
+./setup/easy_install_summit_psana2.sh
+```
+from the root of the package.
+
+This will:
+  - downloads a fresh copy of Conda;
+  - creates an environment with Python 3 and all the required packages for psana and pysingfel;
+  - downloads and installs psana2; and
+  - installs pysingfel.
+
+To recover the environment, run `source setup/env.sh`.
