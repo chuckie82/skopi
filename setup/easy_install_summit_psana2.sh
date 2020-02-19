@@ -2,6 +2,9 @@
 
 set -e
 
+root_dir="$(dirname "${BASH_SOURCE[0]}")"
+cd "$root_dir"
+
 # Setup environment.
 cat > env.sh <<EOF
 module load gcc/7.4.0
@@ -30,8 +33,6 @@ if [[ -e \$LCLS2_DIR/setup_env.sh ]]; then
     export PYTHONPATH="\$LCLS2_DIR/install/lib/python\$PYVER/site-packages:\$PYTHONPATH"
 fi
 EOF
-
-root_dir=$PWD
 
 # Clean up any previous installs.
 rm -rf conda
