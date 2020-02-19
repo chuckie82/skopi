@@ -70,6 +70,7 @@ PACKAGE_LIST=(
     numba
     scipy
     llvmlite
+    scikit-learn
 )
 
 conda create -y -n myenv "${PACKAGE_LIST[@]}" -c defaults -c anaconda
