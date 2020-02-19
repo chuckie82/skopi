@@ -13,14 +13,14 @@ pwd = os.path.dirname(__file__)
 
 # Create a particle object
 particleOp = ps.Particle()
-particleOp.read_pdb(os.path.join(pwd,'../input/3iyf.pdb'), ff='WK')
+particleOp.read_pdb(os.path.join(pwd,'../input/pdb/3iyf.pdb'), ff='WK')
 
 
 particleCl = ps.Particle()
-particleCl.read_pdb(os.path.join(pwd,'../input/3j03.pdb'), ff='WK')
+particleCl.read_pdb(os.path.join(pwd,'../input/pdb/3j03.pdb'), ff='WK')
 
 # Load beam
-beam = ps.Beam(os.path.join(pwd,'../input/exp_chuck.beam'))
+beam = ps.Beam(os.path.join(pwd,'../input/beam/amo86615.beam'))
 
 geom = os.path.join(pwd,'../input/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data')
 
