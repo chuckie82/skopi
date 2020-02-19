@@ -5,15 +5,13 @@ set -e
 root_dir="$(dirname "${BASH_SOURCE[0]}")"
 cd "$root_dir"
 
-CUDA_VER=10.1.168
-
 # Setup environment.
 cat > env.sh <<EOF
 module load gcc/7.4.0
-module load cuda/$CUDA_VER
+module load cuda/10.1.168
 
 export PYVER=3.7
-export CUDA_HOME=/sw/summit/cuda/$CUDA_VER
+export CUDA_HOME=\$OLCF_CUDA_ROOT
 
 # variables needed for conda
 export CONDA_PREFIX=$PWD/conda
