@@ -260,13 +260,25 @@ class DetectorBase(object):
         """
         return np.random.poisson(pattern_batch)
 
-    def add_correction_and_quantization_batch(self, pattern_batch ):
+    def add_correction_and_quantization_batch(self, pattern_batch):
         """
         Add corrections to a batch of image stack and apply quantization to the batch
         :param pattern_batch: [image stack index, image stack shape]
         :return:
         """
         return np.random.poisson(np.multiply(pattern_batch, self.linear_correction[np.newaxis]))
+
+    def remove_polarization(self, img, res=None):
+        """
+        img: assembled (2D) or unassembled (3D) diffraction image
+        res: diffraction resolution in Angstroms
+        """
+        if res is not None:
+            mask = self.pixel_distance_reciprocal < (1./res)
+        else:
+            mask = 1
+        correction = mask * self.polarization_correction + (1-mask)
+        return img / correction
 
     def get_photons(self, particle, device=None):
         """
@@ -296,24 +308,20 @@ class DetectorBase(object):
                 raw_data += this_data
         return self.add_correction_and_quantization(np.square(np.abs(raw_data)))
 
-
     def get_fxs_photons_slices(self, particles, beam_focus_radius, jet_radius, mesh_length, device=None):
         mesh, voxel_length= self.get_reciprocal_mesh(voxel_number_1d = mesh_length)
         state, coords = distribute_particles(particles, beam_focus_radius, jet_radius)
         count = 0
+        field_acc = np.zeros(self.pixel_position_reciprocal.shape[:3], dtype=np.complex128)
         for particle in particles:
             if particles[particle] > 0:
                 volume = pgd.calculate_diffraction_pattern_gpu(mesh, particle, return_type="complex_field")
                 orientations = ps.geometry.get_random_quat(num_pts=particles[particle])
                 slices = ps.geometry.take_n_slices(volume = volume, voxel_length = voxel_length, pixel_momentum = self.pixel_position_reciprocal, orientations = orientations)
                 for i in range(particles[particle]):
-                    if i == 0:
-                        field_acc = self.add_phase_shift(slices[i], coords[count])
-                    else:
-                        field_acc += self.add_phase_shift(slices[i], coords[count])
+                    field_acc += self.add_phase_shift(slices[i], coords[count])
                     count += 1
         return self.add_correction_and_quantization(np.square(np.abs(field_acc)))
-
 
     def get_fxs_photons_unittest(self, particles, beam_focus_radius, jet_radius, device=None):
         raw_data = None
