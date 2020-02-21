@@ -312,7 +312,7 @@ class DetectorBase(object):
         mesh, voxel_length= self.get_reciprocal_mesh(voxel_number_1d = mesh_length)
         state, coords = distribute_particles(particles, beam_focus_radius, jet_radius)
         count = 0
-        field_acc = np.zeros((4, 512, 512), dtype=np.complex128)
+        field_acc = np.zeros(self.pixel_position_reciprocal.shape[:3], dtype=np.complex128)
         for particle in particles:
             if particles[particle] > 0:
                 volume = pgd.calculate_diffraction_pattern_gpu(mesh, particle, return_type="complex_field")
@@ -322,7 +322,6 @@ class DetectorBase(object):
                     field_acc += self.add_phase_shift(slices[i], coords[count])
                     count += 1
         return self.add_correction_and_quantization(np.square(np.abs(field_acc)))
-        #return np.random.poisson(np.multiply(np.square(np.abs(field_acc)), (self.linear_correction/self.polarization_correction)))
 
     def get_fxs_photons_unittest(self, particles, beam_focus_radius, jet_radius, device=None):
         raw_data = None

@@ -1,9 +1,9 @@
 import h5py
 import numpy as np
 import sys
-from util import symmpdb
-from ff_waaskirf_database import *
-import particle
+from pysingfel.util import symmpdb
+from pysingfel.ff_waaskirf_database import *
+import pysingfel.particle
 from scipy.spatial import distance
 
 def max_radius(particles):
@@ -28,7 +28,6 @@ def distribute_particles(particles, beam_focus_radius, jet_radius): #beam_focus_
     N = sum(particles.values()) # total number of particles
     coords = np.zeros((N,3)) # initialize N*3 array
     # generate N*3 random positions
-    np.random.seed(10)
     for i in range(N):
         coords[i,0] = beam_focus_radius*np.random.uniform(-1, 1)
         coords[i,1] = beam_focus_radius*np.random.uniform(-1, 1)
