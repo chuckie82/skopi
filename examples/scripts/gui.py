@@ -9,6 +9,11 @@ import matplotlib.pyplot as plt
 import h5py as h5
 import time
 
+from PyQt5 import QtWidgets, QtCore
+from matplotlib.backends.backend_qt5agg import (
+        FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
+from matplotlib.figure import Figure
+
 import pysingfel as ps
 import pysingfel.gpu as pg
 
@@ -48,5 +53,35 @@ slice_ = ps.geometry.take_slice(
 
 img = det.assemble_image_stack(slice_)
 
-plt.imshow(img)
-plt.show()
+
+class ApplicationWindow(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self._main = QtWidgets.QWidget()
+        self.setCentralWidget(self._main)
+        layout = QtWidgets.QHBoxLayout(self._main)
+
+        real_canvas = FigureCanvas(Figure(figsize=(5, 5)))
+        layout.addWidget(real_canvas)
+        self.addToolBar(NavigationToolbar(real_canvas, self))
+
+        recip_canvas = FigureCanvas(Figure(figsize=(5, 5)))
+        layout.addWidget(recip_canvas)
+        self.addToolBar(NavigationToolbar(recip_canvas, self))
+
+        self._real_ax = real_canvas.figure.subplots()
+        self._real_ax.plot(
+            particle.atom_pos[:, 1],
+            particle.atom_pos[:, 0],
+            ".")
+
+        self._recip_ax = recip_canvas.figure.subplots()
+        self._recip_ax.imshow(img)
+
+
+app = QtWidgets.QApplication(sys.argv)
+
+window = ApplicationWindow()
+window.show()
+
+app.exec_()
