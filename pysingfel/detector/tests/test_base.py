@@ -12,8 +12,9 @@ if six.PY2:
 if six.PY3:
     psana = pytest.importorskip("psana")
 
-class TestAddPhaseShift(object):
-    """Test add_phase_shift."""
+
+class TestDetectorBase(object):
+    """Test base detector functions."""
     @classmethod
     def setup_class(cls):
         ex_dir_ = os.path.dirname(__file__) + '/../../../examples'
@@ -58,4 +59,5 @@ class TestAddPhaseShift(object):
         assert np.allclose(pattern, self.pattern_1)
 
     def test_pedestal_nonzero(self):
-        assert np.sum(abs(self.det._pedestals[:])) > np.finfo(float).eps
+        """Test existence of pedestals."""
+        assert np.sum(abs(self.det.pedestals[:])) > np.finfo(float).eps
