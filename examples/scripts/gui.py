@@ -164,12 +164,16 @@ if __name__ == "__main__":
         '-c', dest='colors', action='store_const',
         const=True, default=False,
         help='use colors for atoms')
+    parser.add_argument(
+        '-d', dest='debug', action='store_const',
+        const=True, default=False,
+        help='use debug mode')
 
     args = parser.parse_args()
 
     app = QtWidgets.QApplication(sys.argv)
 
-    window = ApplicationWindow(colors=args.colors, debug=False)
+    window = ApplicationWindow(colors=args.colors, debug=args.debug)
     window.show()
 
     app.exec_()
