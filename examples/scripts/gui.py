@@ -28,6 +28,13 @@ matplotlib.rcParams['image.cmap'] = 'jet'
 # Create a particle object
 particle = ps.Particle()
 particle.read_pdb('../input/pdb/3iyf.pdb', ff='WK')
+# import pysingfel.constants as cst
+# particle.create_from_atoms([  # Angstrom
+#     ("O", cst.vecx),
+#     ("O", cst.vecy),
+#     ("O", cst.vecz),
+#     ("O", (cst.vecx+cst.vecy)/2),
+# ])
 
 # Load beam
 beam = ps.Beam('../input/beam/amo86615.beam') 
@@ -78,7 +85,28 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             ".")
 
         self._recip_ax = recip_canvas.figure.subplots()
-        self._recip_ax.imshow(img)
+
+        self._timer = recip_canvas.new_timer(
+            1000, [(self._update_canvas, (), {})])
+        self._timer.start()
+
+    def _update_canvas(self):
+        print("{:.2f} - {:.2f}".format(self._real_ax.azim, self._real_ax.elev))
+        azim = np.radians(self._real_ax.azim)
+        elev = np.radians(self._real_ax.elev)
+        axis_azim = np.array([0., 0., 1.])
+        axis_elev = np.array([0., 1., 0.])
+        rot_azim = ps.geometry.angle_axis_to_rot3d(axis_azim, -azim)
+        rot_elev = ps.geometry.angle_axis_to_rot3d(axis_elev, elev)
+        rot = np.matmul(rot_elev, rot_azim)
+        rpos = np.matmul(rot, particle.atom_pos.T)
+
+        self._recip_ax.clear()
+        self._recip_ax.plot(
+            rpos[1],
+            rpos[2],
+            ".")
+        self._recip_ax.figure.canvas.draw()
 
 
 app = QtWidgets.QApplication(sys.argv)
