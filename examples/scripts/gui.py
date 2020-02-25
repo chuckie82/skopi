@@ -31,33 +31,32 @@ matplotlib.rcParams['image.interpolation'] = None
 matplotlib.rcParams['image.cmap'] = 'jet'
 
 
-# Create a particle object
-particle = ps.Particle()
-particle.read_pdb('../input/pdb/3iyf.pdb', ff='WK')
-
-# Load beam
-beam = ps.Beam('../input/beam/amo86615.beam') 
-
-# Load and initialize the detector
-det = ps.PnccdDetector(
-    geom='../input/lcls/amo86615/PNCCD::CalibV1/'
-         'Camp.0:pnCCD.1/geometry/0-end.data', 
-    beam=beam)
-
-mesh_length = 151
-
-mesh, voxel_length = det.get_reciprocal_mesh(voxel_number_1d=mesh_length)
-
-volume = pg.calculate_diffraction_pattern_gpu(
-    mesh, particle, return_type='intensity')
-
-pixel_momentum = det.pixel_position_reciprocal
-
-
 class ApplicationWindow(QtWidgets.QMainWindow):
     def __init__(self, colors=False, debug=False):
         super(ApplicationWindow, self).__init__()
         self.debug = debug
+
+        # Create a particle object
+        particle = ps.Particle()
+        particle.read_pdb('../input/pdb/3iyf.pdb', ff='WK')
+
+        # Load beam
+        beam = ps.Beam('../input/beam/amo86615.beam') 
+
+        # Load and initialize the detector
+        self.det = ps.PnccdDetector(
+            geom='../input/lcls/amo86615/PNCCD::CalibV1/'
+                 'Camp.0:pnCCD.1/geometry/0-end.data', 
+            beam=beam)
+
+        mesh_length = 151
+        mesh, self.voxel_length = self.det.get_reciprocal_mesh(
+            voxel_number_1d=mesh_length)
+
+        self.volume = pg.calculate_diffraction_pattern_gpu(
+            mesh, particle, return_type='intensity')
+
+        self.pixel_momentum = self.det.pixel_position_reciprocal
 
         if colors:
             color_map = collections.defaultdict(lambda: "#000000", {
@@ -65,7 +64,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 "N": "#00ff00",
                 "O": "#0000ff",
             })
-            colors = [color_map[s] for s in particle.atomic_symbol]
+            colors = [color_map[s] for s in self.particle.atomic_symbol]
         else:
             colors = None
 
@@ -138,7 +137,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         if self.debug:
             print("{:.2f} - {:.2f}".format(azim, elev))
 
-            rpos = np.matmul(rot, particle.atom_pos.T)
+            rpos = np.matmul(rot, self.particle.atom_pos.T)
 
             self._real2d_ax.clear()
             self._real2d_ax.plot(
@@ -149,8 +148,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         quat = ps.geometry.rotmat_to_quaternion(rot)
         slice_ = ps.geometry.take_slice(
-        volume, voxel_length, pixel_momentum, quat, inverse=True)
-        img = det.assemble_image_stack(slice_)
+            self.volume, self.voxel_length,
+            self.pixel_momentum, quat, inverse=True)
+        img = self.det.assemble_image_stack(slice_)
         self._recip_ax.clear()
         self._recip_ax.imshow(img, norm=LogNorm())
         self._recip_ax.figure.canvas.draw()
