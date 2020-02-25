@@ -9,8 +9,12 @@ import matplotlib.pyplot as plt
 import h5py as h5
 import time
 
-from PyQt5 import QtWidgets, QtCore
-from matplotlib.backends.backend_qt5agg import (
+from matplotlib.backends.qt_compat import QtWidgets, QtCore, is_pyqt5
+if is_pyqt5():
+    from matplotlib.backends.backend_qt5agg import (
+            FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
+else:
+    from matplotlib.backends.backend_qt4agg import (
         FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
 from matplotlib.colors import LogNorm
@@ -58,7 +62,7 @@ pixel_momentum = det.pixel_position_reciprocal
 
 class ApplicationWindow(QtWidgets.QMainWindow):
     def __init__(self, debug=False):
-        super().__init__()
+        super(ApplicationWindow, self).__init__()
         self.debug = debug
 
         self._azim = None
