@@ -69,31 +69,31 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(self._main)
         layout = QtWidgets.QHBoxLayout(self._main)
 
-        real_canvas = FigureCanvas(Figure(figsize=(5, 5)))
-        layout.addWidget(real_canvas)
-        self.addToolBar(NavigationToolbar(real_canvas, self))
+        real3d_canvas = FigureCanvas(Figure(figsize=(5, 5)))
+        layout.addWidget(real3d_canvas)
+        self.addToolBar(NavigationToolbar(real3d_canvas, self))
 
-        recip_canvas = FigureCanvas(Figure(figsize=(5, 5)))
-        layout.addWidget(recip_canvas)
-        self.addToolBar(NavigationToolbar(recip_canvas, self))
+        real2d_canvas = FigureCanvas(Figure(figsize=(5, 5)))
+        layout.addWidget(real2d_canvas)
+        self.addToolBar(NavigationToolbar(real2d_canvas, self))
 
-        self._real_ax = real_canvas.figure.subplots(subplot_kw={"projection":'3d'})
-        self._real_ax.plot(
+        self._real3d_ax = real3d_canvas.figure.subplots(subplot_kw={"projection":'3d'})
+        self._real3d_ax.plot(
             particle.atom_pos[:, 0],
             particle.atom_pos[:, 1],
             particle.atom_pos[:, 2],
             ".")
 
-        self._recip_ax = recip_canvas.figure.subplots()
+        self._real2d_ax = real2d_canvas.figure.subplots()
 
-        self._timer = recip_canvas.new_timer(
+        self._timer = real2d_canvas.new_timer(
             1000, [(self._update_canvas, (), {})])
         self._timer.start()
 
     def _update_canvas(self):
-        print("{:.2f} - {:.2f}".format(self._real_ax.azim, self._real_ax.elev))
-        azim = np.radians(self._real_ax.azim)
-        elev = np.radians(self._real_ax.elev)
+        print("{:.2f} - {:.2f}".format(self._real3d_ax.azim, self._real3d_ax.elev))
+        azim = np.radians(self._real3d_ax.azim)
+        elev = np.radians(self._real3d_ax.elev)
         axis_azim = np.array([0., 0., 1.])
         axis_elev = np.array([0., 1., 0.])
         rot_azim = ps.geometry.angle_axis_to_rot3d(axis_azim, -azim)
@@ -101,12 +101,12 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         rot = np.matmul(rot_elev, rot_azim)
         rpos = np.matmul(rot, particle.atom_pos.T)
 
-        self._recip_ax.clear()
-        self._recip_ax.plot(
+        self._real2d_ax.clear()
+        self._real2d_ax.plot(
             rpos[1],
             rpos[2],
             ".")
-        self._recip_ax.figure.canvas.draw()
+        self._real2d_ax.figure.canvas.draw()
 
 
 app = QtWidgets.QApplication(sys.argv)
