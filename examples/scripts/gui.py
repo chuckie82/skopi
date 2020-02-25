@@ -13,6 +13,7 @@ from PyQt5 import QtWidgets, QtCore
 from matplotlib.backends.backend_qt5agg import (
         FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
+from matplotlib.colors import LogNorm
 from mpl_toolkits.mplot3d import Axes3D
 
 import pysingfel as ps
@@ -54,17 +55,12 @@ volume = pg.calculate_diffraction_pattern_gpu(
 
 pixel_momentum = det.pixel_position_reciprocal
 
-orientation = np.array([1., 0., 0., 0.])
-
-slice_ = ps.geometry.take_slice(
-    volume, voxel_length, pixel_momentum, orientation, inverse=True)
-
-img = det.assemble_image_stack(slice_)
-
 
 class ApplicationWindow(QtWidgets.QMainWindow):
-    def __init__(self):
+    def __init__(self, debug=False):
         super().__init__()
+        self.debug = debug
+
         self._main = QtWidgets.QWidget()
         self.setCentralWidget(self._main)
         layout = QtWidgets.QHBoxLayout(self._main)
@@ -73,10 +69,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         layout.addWidget(real3d_canvas)
         self.addToolBar(NavigationToolbar(real3d_canvas, self))
 
-        real2d_canvas = FigureCanvas(Figure(figsize=(5, 5)))
-        layout.addWidget(real2d_canvas)
-        self.addToolBar(NavigationToolbar(real2d_canvas, self))
-
         self._real3d_ax = real3d_canvas.figure.subplots(subplot_kw={"projection":'3d'})
         self._real3d_ax.plot(
             particle.atom_pos[:, 0],
@@ -84,9 +76,20 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             particle.atom_pos[:, 2],
             ".")
 
-        self._real2d_ax = real2d_canvas.figure.subplots()
+        if self.debug:
+            real2d_canvas = FigureCanvas(Figure(figsize=(5, 5)))
+            layout.addWidget(real2d_canvas)
+            self.addToolBar(NavigationToolbar(real2d_canvas, self))
 
-        self._timer = real2d_canvas.new_timer(
+            self._real2d_ax = real2d_canvas.figure.subplots()
+
+        recip_canvas = FigureCanvas(Figure(figsize=(5, 5)))
+        layout.addWidget(recip_canvas)
+        self.addToolBar(NavigationToolbar(recip_canvas, self))
+
+        self._recip_ax = recip_canvas.figure.subplots()
+
+        self._timer = recip_canvas.new_timer(
             1000, [(self._update_canvas, (), {})])
         self._timer.start()
 
@@ -99,19 +102,29 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         rot_azim = ps.geometry.angle_axis_to_rot3d(axis_azim, -azim)
         rot_elev = ps.geometry.angle_axis_to_rot3d(axis_elev, elev)
         rot = np.matmul(rot_elev, rot_azim)
-        rpos = np.matmul(rot, particle.atom_pos.T)
 
-        self._real2d_ax.clear()
-        self._real2d_ax.plot(
-            rpos[1],
-            rpos[2],
-            ".")
-        self._real2d_ax.figure.canvas.draw()
+        if self.debug:
+            rpos = np.matmul(rot, particle.atom_pos.T)
+
+            self._real2d_ax.clear()
+            self._real2d_ax.plot(
+                rpos[1],
+                rpos[2],
+                ".")
+            self._real2d_ax.figure.canvas.draw()
+
+        quat = ps.geometry.rotmat_to_quaternion(rot)
+        slice_ = ps.geometry.take_slice(
+        volume, voxel_length, pixel_momentum, quat, inverse=True)
+        img = det.assemble_image_stack(slice_)
+        self._recip_ax.clear()
+        self._recip_ax.imshow(img, norm=LogNorm())
+        self._recip_ax.figure.canvas.draw()
 
 
 app = QtWidgets.QApplication(sys.argv)
 
-window = ApplicationWindow()
+window = ApplicationWindow(debug=True)
 window.show()
 
 app.exec_()
