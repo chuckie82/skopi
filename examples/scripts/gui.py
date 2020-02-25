@@ -118,7 +118,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             return
 
         self._uptodate = True
-        print("{:.2f} - {:.2f}".format(azim, elev))
 
         axis_azim = np.array([1., 0., 0.])
         axis_elev = np.array([0., 1., 0.])
@@ -127,6 +126,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         rot = np.matmul(rot_elev, rot_azim)
 
         if self.debug:
+            print("{:.2f} - {:.2f}".format(azim, elev))
+
             rpos = np.matmul(rot, particle.atom_pos.T)
 
             self._real2d_ax.clear()
@@ -147,7 +148,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
 app = QtWidgets.QApplication(sys.argv)
 
-window = ApplicationWindow(debug=True)
+window = ApplicationWindow(debug=False)
 window.show()
 
 app.exec_()
