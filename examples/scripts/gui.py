@@ -1,6 +1,7 @@
 import sys
 sys.path.append("../..")
 
+import argparse
 import collections
 import os
 import numpy as np
@@ -156,9 +157,19 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self._recip_ax.figure.canvas.draw()
 
 
-app = QtWidgets.QApplication(sys.argv)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description='Minimal GUI for pysingfel.')
+    parser.add_argument(
+        '-c', dest='colors', action='store_const',
+        const=True, default=False,
+        help='use colors for atoms')
 
-window = ApplicationWindow(colors=False, debug=False)
-window.show()
+    args = parser.parse_args()
 
-app.exec_()
+    app = QtWidgets.QApplication(sys.argv)
+
+    window = ApplicationWindow(colors=args.colors, debug=False)
+    window.show()
+
+    app.exec_()
