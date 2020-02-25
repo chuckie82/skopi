@@ -61,6 +61,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         super().__init__()
         self.debug = debug
 
+        self._azim = None
+        self._elev = None
+
         self._main = QtWidgets.QWidget()
         self.setCentralWidget(self._main)
         layout = QtWidgets.QHBoxLayout(self._main)
@@ -71,9 +74,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         self._real3d_ax = real3d_canvas.figure.subplots(subplot_kw={"projection":'3d'})
         self._real3d_ax.plot(
-            particle.atom_pos[:, 0],
+            -particle.atom_pos[:, 2],
             particle.atom_pos[:, 1],
-            particle.atom_pos[:, 2],
+            particle.atom_pos[:, 0],
             ".")
 
         if self.debug:
@@ -97,7 +100,13 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         print("{:.2f} - {:.2f}".format(self._real3d_ax.azim, self._real3d_ax.elev))
         azim = np.radians(self._real3d_ax.azim)
         elev = np.radians(self._real3d_ax.elev)
-        axis_azim = np.array([0., 0., 1.])
+
+        if azim == self._azim and elev == self._elev:
+            return
+        self._azim = azim
+        self._elev = elev
+
+        axis_azim = np.array([1., 0., 0.])
         axis_elev = np.array([0., 1., 0.])
         rot_azim = ps.geometry.angle_axis_to_rot3d(axis_azim, -azim)
         rot_elev = ps.geometry.angle_axis_to_rot3d(axis_elev, elev)
@@ -109,7 +118,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             self._real2d_ax.clear()
             self._real2d_ax.plot(
                 rpos[1],
-                rpos[2],
+                rpos[0],
                 ".")
             self._real2d_ax.figure.canvas.draw()
 
