@@ -40,6 +40,13 @@ particle.read_pdb('../input/pdb/3iyf.pdb', ff='WK')
 #     ("O", cst.vecz),
 #     ("O", (cst.vecx+cst.vecy)/2),
 # ])
+from collections import defaultdict
+color_map = defaultdict(lambda: "#000000", {
+    "C": "#ff0000",
+    "N": "#00ff00",
+    "O": "#0000ff",
+})
+colors = [color_map[s] for s in particle.atomic_symbol]
 
 # Load beam
 beam = ps.Beam('../input/beam/amo86615.beam') 
@@ -79,11 +86,13 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.addToolBar(NavigationToolbar(real3d_canvas, self))
 
         self._real3d_ax = real3d_canvas.figure.subplots(subplot_kw={"projection":'3d'})
-        self._real3d_ax.plot(
+        self._real3d_ax.scatter(
             -particle.atom_pos[:, 2],
             particle.atom_pos[:, 1],
             particle.atom_pos[:, 0],
-            ".")
+            s=1,
+            c=colors,
+        )
 
         if self.debug:
             real2d_canvas = FigureCanvas(Figure(figsize=(5, 5)))
