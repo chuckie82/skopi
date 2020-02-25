@@ -50,7 +50,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                  'Camp.0:pnCCD.1/geometry/0-end.data', 
             beam=beam)
 
-        mesh_length = 151
+        mesh_length = 151 if not debug else 31
         mesh, self.voxel_length = self.det.get_reciprocal_mesh(
             voxel_number_1d=mesh_length)
 
@@ -136,7 +136,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         rot = np.matmul(rot_elev, rot_azim)
 
         if self.debug:
-            print("{:.2f} - {:.2f}".format(azim, elev))
+            print("Azim: {:.2f} - elev: {:.2f}".format(azim, elev))
 
             rpos = np.matmul(rot, self.particle.atom_pos.T)
 
