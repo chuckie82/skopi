@@ -37,8 +37,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.debug = debug
 
         # Create a particle object
-        particle = ps.Particle()
-        particle.read_pdb('../input/pdb/3iyf.pdb', ff='WK')
+        self.particle = ps.Particle()
+        self.particle.read_pdb('../input/pdb/3iyf.pdb', ff='WK')
 
         # Load beam
         beam = ps.Beam('../input/beam/amo86615.beam') 
@@ -54,7 +54,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             voxel_number_1d=mesh_length)
 
         self.volume = pg.calculate_diffraction_pattern_gpu(
-            mesh, particle, return_type='intensity')
+            mesh, self.particle, return_type='intensity')
 
         self.pixel_momentum = self.det.pixel_position_reciprocal
 
@@ -83,9 +83,9 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         self._real3d_ax = real3d_canvas.figure.subplots(subplot_kw={"projection":'3d'})
         self._real3d_ax.scatter(
-            -particle.atom_pos[:, 2],
-            particle.atom_pos[:, 1],
-            particle.atom_pos[:, 0],
+            -self.particle.atom_pos[:, 2],
+            self.particle.atom_pos[:, 1],
+            self.particle.atom_pos[:, 0],
             s=1,
             c=colors,
         )
