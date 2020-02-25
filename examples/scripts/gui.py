@@ -46,7 +46,7 @@ det = ps.PnccdDetector(
          'Camp.0:pnCCD.1/geometry/0-end.data', 
     beam=beam)
 
-mesh_length = 51
+mesh_length = 151
 
 mesh, voxel_length = det.get_reciprocal_mesh(voxel_number_1d=mesh_length)
 
@@ -63,6 +63,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         self._azim = None
         self._elev = None
+        self._time = 0.
+        self._uptodate = False
 
         self._main = QtWidgets.QWidget()
         self.setCentralWidget(self._main)
@@ -93,18 +95,30 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self._recip_ax = recip_canvas.figure.subplots()
 
         self._timer = recip_canvas.new_timer(
-            1000, [(self._update_canvas, (), {})])
+            100, [(self._update_canvas, (), {})])
         self._timer.start()
 
     def _update_canvas(self):
-        print("{:.2f} - {:.2f}".format(self._real3d_ax.azim, self._real3d_ax.elev))
         azim = np.radians(self._real3d_ax.azim)
         elev = np.radians(self._real3d_ax.elev)
 
-        if azim == self._azim and elev == self._elev:
+        if azim != self._azim or elev != self._elev:
+            # Record and mark for update
+            self._azim = azim
+            self._elev = elev
+            self._time = time.time()
+            self._uptodate = False
             return
-        self._azim = azim
-        self._elev = elev
+
+        if self._uptodate:
+            return
+
+        if time.time() - self._time < 1.:
+            # Wait a bit more
+            return
+
+        self._uptodate = True
+        print("{:.2f} - {:.2f}".format(azim, elev))
 
         axis_azim = np.array([1., 0., 0.])
         axis_elev = np.array([0., 1., 0.])
