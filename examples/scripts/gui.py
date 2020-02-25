@@ -1,6 +1,7 @@
 import sys
 sys.path.append("../..")
 
+import collections
 import os
 import numpy as np
 import numba
@@ -33,20 +34,6 @@ matplotlib.rcParams['image.cmap'] = 'jet'
 # Create a particle object
 particle = ps.Particle()
 particle.read_pdb('../input/pdb/3iyf.pdb', ff='WK')
-# import pysingfel.constants as cst
-# particle.create_from_atoms([  # Angstrom
-#     ("O", cst.vecx),
-#     ("O", cst.vecy),
-#     ("O", cst.vecz),
-#     ("O", (cst.vecx+cst.vecy)/2),
-# ])
-from collections import defaultdict
-color_map = defaultdict(lambda: "#000000", {
-    "C": "#ff0000",
-    "N": "#00ff00",
-    "O": "#0000ff",
-})
-colors = [color_map[s] for s in particle.atomic_symbol]
 
 # Load beam
 beam = ps.Beam('../input/beam/amo86615.beam') 
@@ -68,9 +55,19 @@ pixel_momentum = det.pixel_position_reciprocal
 
 
 class ApplicationWindow(QtWidgets.QMainWindow):
-    def __init__(self, debug=False):
+    def __init__(self, colors=False, debug=False):
         super(ApplicationWindow, self).__init__()
         self.debug = debug
+
+        if colors:
+            color_map = collections.defaultdict(lambda: "#000000", {
+                "C": "#ff0000",
+                "N": "#00ff00",
+                "O": "#0000ff",
+            })
+            colors = [color_map[s] for s in particle.atomic_symbol]
+        else:
+            colors = None
 
         self._azim = None
         self._elev = None
@@ -161,7 +158,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
 app = QtWidgets.QApplication(sys.argv)
 
-window = ApplicationWindow(debug=False)
+window = ApplicationWindow(colors=False, debug=False)
 window.show()
 
 app.exec_()
