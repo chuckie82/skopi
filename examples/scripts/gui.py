@@ -13,6 +13,7 @@ from PyQt5 import QtWidgets, QtCore
 from matplotlib.backends.backend_qt5agg import (
         FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
+from mpl_toolkits.mplot3d import Axes3D
 
 import pysingfel as ps
 import pysingfel.gpu as pg
@@ -69,10 +70,11 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         layout.addWidget(recip_canvas)
         self.addToolBar(NavigationToolbar(recip_canvas, self))
 
-        self._real_ax = real_canvas.figure.subplots()
+        self._real_ax = real_canvas.figure.subplots(subplot_kw={"projection":'3d'})
         self._real_ax.plot(
-            particle.atom_pos[:, 1],
             particle.atom_pos[:, 0],
+            particle.atom_pos[:, 1],
+            particle.atom_pos[:, 2],
             ".")
 
         self._recip_ax = recip_canvas.figure.subplots()
