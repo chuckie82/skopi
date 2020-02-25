@@ -33,13 +33,13 @@ matplotlib.rcParams['image.cmap'] = 'jet'
 
 
 class ApplicationWindow(QtWidgets.QMainWindow):
-    def __init__(self, colors=False, debug=False):
+    def __init__(self, pdb_file, colors=False, debug=False):
         super(ApplicationWindow, self).__init__()
         self.debug = debug
 
         # Create a particle object
         self.particle = ps.Particle()
-        self.particle.read_pdb('../input/pdb/3iyf.pdb', ff='WK')
+        self.particle.read_pdb(pdb_file, ff='WK')
 
         # Load beam
         beam = ps.Beam('../input/beam/amo86615.beam') 
@@ -173,6 +173,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Minimal GUI for pysingfel.')
     parser.add_argument(
+        'pdb_file', type=str, nargs='?',
+        default='../input/pdb/3iyf.pdb',
+        help='path to PDB file')
+    parser.add_argument(
         '-c', dest='colors', action='store_const',
         const=True, default=False,
         help='use colors for atoms')
@@ -183,9 +187,13 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    if not os.path.exists(args.pdb_file):
+        sys.exit("Failure: PDB file {} does not exist.".format(args.pdb_file))
+
     app = QtWidgets.QApplication(sys.argv)
 
-    window = ApplicationWindow(colors=args.colors, debug=args.debug)
+    window = ApplicationWindow(
+        args.pdb_file, colors=args.colors, debug=args.debug)
     window.show()
 
     app.exec_()
