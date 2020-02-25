@@ -78,7 +78,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(self._main)
         layout = QtWidgets.QHBoxLayout(self._main)
 
-        real3d_canvas = FigureCanvas(Figure(figsize=(5, 5)))
+        real3d_canvas = FigureCanvas(Figure(figsize=(4, 4)))
         layout.addWidget(real3d_canvas)
         self.addToolBar(NavigationToolbar(real3d_canvas, self))
 
@@ -90,15 +90,19 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             s=1,
             c=colors,
         )
+        self._real3d_ax.set_title("3D Protein")
+        self._real3d_ax.set_xlabel('-Z')
+        self._real3d_ax.set_ylabel('Y')
+        self._real3d_ax.set_zlabel('X')
 
         if self.debug:
-            real2d_canvas = FigureCanvas(Figure(figsize=(5, 5)))
+            real2d_canvas = FigureCanvas(Figure(figsize=(4, 4)))
             layout.addWidget(real2d_canvas)
             self.addToolBar(NavigationToolbar(real2d_canvas, self))
 
             self._real2d_ax = real2d_canvas.figure.subplots()
 
-        recip_canvas = FigureCanvas(Figure(figsize=(5, 5)))
+        recip_canvas = FigureCanvas(Figure(figsize=(4, 4)))
         layout.addWidget(recip_canvas)
         self.addToolBar(NavigationToolbar(recip_canvas, self))
 
@@ -145,6 +149,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
                 rpos[1],
                 rpos[0],
                 ".")
+            self._real2d_ax.set_title("Real-space XY projection")
+            self._real2d_ax.set_aspect('equal')
+            self._real2d_ax.set_xlabel('Y')
+            self._real2d_ax.set_ylabel('X')
             self._real2d_ax.figure.canvas.draw()
 
         quat = ps.geometry.rotmat_to_quaternion(rot)
@@ -154,6 +162,10 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         img = self.det.assemble_image_stack(slice_)
         self._recip_ax.clear()
         self._recip_ax.imshow(img, norm=LogNorm())
+        self._recip_ax.set_title("Diffraction pattern")
+        self._recip_ax.set_xlabel('K')
+        self._recip_ax.set_ylabel('H')
+        self._recip_ax.figure.canvas.draw()
         self._recip_ax.figure.canvas.draw()
 
 
