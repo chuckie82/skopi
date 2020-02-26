@@ -192,6 +192,8 @@ if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
 
+    print("Application starting, please be patient.")
+
     window = ApplicationWindow(
         args.pdb_file, colors=args.colors, debug=args.debug)
     window.show()
