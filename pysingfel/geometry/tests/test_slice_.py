@@ -6,39 +6,84 @@ import time
 import pytest
 
 import pysingfel as ps
+import pysingfel.constants as cst
 from pysingfel.geometry import slice_
 
-import six 
-if six.PY2:
-    PSCalib = pytest.importorskip("PSCalib")
-if six.PY3:
-    psana = pytest.importorskip("psana")
 
-def test_take_n_slice():
-    ex_dir_ = os.path.dirname(__file__) + '/../../../examples'
+class TestSlice(object):
+    """Test slicing functions."""
+    @classmethod
+    def setup_class(cls):
+        indices = np.arange(8)
+        eps = 1e-12
+        cls.volume = (indices+1.).reshape((2, 2, 2))
+        cls.voxel_length = 2. + eps
 
-    # Load beam
-    beam = ps.Beam(ex_dir_+'/input/beam/amo86615.beam')
+        # Create a momentum array that matches the voxels positions
+        b0 = indices // 4
+        b1 = (indices // 2) % 2
+        b2 = indices % 2
+        bin_indices = np.vstack([b0, b1, b2])
+        cls.pixel_momentum = (2*bin_indices-1).T.reshape(2, 2, 2, 3)
 
-    # Load and initialize the detector
-    det = ps.PnccdDetector(
-        geom=ex_dir_+'/input/lcls/amo86615/'
-             'PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data',                   beam=beam)
+    def test_take_slice_center_value(self):
+        """Test take_slice on center value."""
+        orientation = cst.quat1
+        pixel_momentum = np.array([[[[0., 0., 0.]]]])
+        slice_ = ps.take_slice(self.volume, self.voxel_length,
+                               pixel_momentum, orientation)
+        assert np.isclose(slice_[0, 0, 0], self.volume.mean())
 
-    mesh_length = 128
-    mesh, voxel_length = det.get_reciprocal_mesh(
-        voxel_number_1d=mesh_length)
+    def test_take_slice_default_orientation(self):
+        """Test take_slice with the default orientation."""
+        orientation = cst.quat1
+        slice_ = ps.take_slice(self.volume, self.voxel_length,
+                               self.pixel_momentum, orientation)
+        assert np.allclose(slice_, self.volume)
 
-    with h5.File(ex_dir_+'/input/lcls/volume/imStack-test.hdf5','r') as f:
-        volume_in = f['volume'][:]
-        slices_in = f['imUniform'][:]
-        orientations_in = f['imOrientations'][:]
+    def test_take_slice_x_orientation(self):
+        """Test take_slice with 180 degrees x rotation."""
+        orientation = cst.quatx
+        slice_ = ps.take_slice(self.volume, self.voxel_length,
+                               self.pixel_momentum, orientation)
+        assert np.allclose(slice_[:, ::-1, ::-1], self.volume)
 
-    slices_rec = slice_.take_n_slices(
-        volume=volume_in,
-        voxel_length=voxel_length,
-        pixel_momentum=det.pixel_position_reciprocal,
-        orientations=orientations_in)
+    def test_take_slice_y_orientation(self):
+        """Test take_slice with 180 degrees y rotation."""
+        orientation = cst.quaty
+        slice_ = ps.take_slice(self.volume, self.voxel_length,
+                               self.pixel_momentum, orientation)
+        assert np.allclose(slice_[::-1, :, ::-1], self.volume)
 
-    # Note: This does not work if orientations is stored as float32
-    assert np.allclose(slices_in, slices_rec)
+    def test_take_slice_z_orientation(self):
+        """Test take_slice with 180 degrees z rotation."""
+        orientation = cst.quatz
+        slice_ = ps.take_slice(self.volume, self.voxel_length,
+                               self.pixel_momentum, orientation)
+        assert np.allclose(slice_[::-1, ::-1, :], self.volume)
+
+    def test_take_slice_x90_orientation(self):
+        """Test take_slice with 90 degrees x rotation."""
+        orientation = cst.quatx90
+        slice_ = ps.take_slice(self.volume, self.voxel_length,
+                               self.pixel_momentum, orientation)
+        assert np.allclose(slice_[:, :, ::-1].swapaxes(1, 2), self.volume)
+
+    def test_take_slice_x270_orientation(self):
+        """Test take_slice with 270 degrees x rotation."""
+        orientation = cst.quatx270
+        slice_ = ps.take_slice(self.volume, self.voxel_length,
+                               self.pixel_momentum, orientation)
+        assert np.allclose(slice_[:, ::-1, :].swapaxes(1, 2), self.volume)
+
+    def test_take_slices(self):
+        """Test take_slices with 90 & 270 degrees y & z rotations."""
+        # Slices
+        orientations = np.vstack(
+            [cst.quaty90, cst.quaty270, cst.quatz90, cst.quatz270])
+        slices = ps.take_n_slices(self.volume, self.voxel_length,
+                                  self.pixel_momentum, orientations)
+        assert np.allclose(slices[0, ::-1, :, :].swapaxes(0, 2), self.volume)
+        assert np.allclose(slices[1, :, :, ::-1].swapaxes(0, 2), self.volume)
+        assert np.allclose(slices[2, :, ::-1, :].swapaxes(0, 1), self.volume)
+        assert np.allclose(slices[3, ::-1, :, :].swapaxes(0, 1), self.volume)
