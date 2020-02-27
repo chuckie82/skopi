@@ -55,6 +55,26 @@ class FormFactorTable(object):
         'C8': defaultdict(lambda: 'CH'),
     }
 
+    _NITROGEN_ATOMS_DICT = {
+        'N': defaultdict(lambda: 'NH', {'PRO': 'N'}),
+        'ND': defaultdict(lambda: 'N'),
+        'ND1': defaultdict(lambda: 'N', {'HIS':  'NH'}),
+        'ND2': defaultdict(lambda: 'N', {'ASN': 'NH2'}),
+        'NH1': defaultdict(lambda: 'N', {'ARG': 'NH2'}),
+        'NH2': defaultdict(lambda: 'N', {'ARG': 'NH2'}),
+        'NE': defaultdict(lambda: 'N', {'ARG': 'NH'}),
+        'NE1': defaultdict(lambda: 'N', {'TRP': 'NH'}),
+        'NE2': defaultdict(lambda: 'N', {'GLN': 'NH2'}),
+        'NZ': defaultdict(lambda: 'N', {'LYS': 'NH3'}),
+        'N1': defaultdict(lambda: 'N', {'DGUA': 'NH', 'GUA': 'NH'}),
+        'N2': defaultdict(lambda: 'NH2'),
+        'N4': defaultdict(lambda: 'NH2'),
+        'N6': defaultdict(lambda: 'NH2'),
+        'N3': defaultdict(lambda: 'N', {'DURA': 'NH', 'URA': 'NH'}),
+        'N7': defaultdict(lambda: 'N'),
+        'N9': defaultdict(lambda: 'N'),
+    }
+
     # table name currently not used
     def __init__(self,table_name=None,mnq=0.0,mxq=3.0,dq=0.01):
     
@@ -315,98 +335,22 @@ class FormFactorTable(object):
                 "" % (atomic_variant_type,residue_type))
           return 'C'
 
-    def get_nitrogen_atom_type(self,atomic_variant_type,residue_type):
 
-         """
-         Determining the nitrogen complex for the form factor
+    def get_nitrogen_atom_type(self, atomic_variant_type, residue_type):
+        """
+        Determining the nitrogen complex for the form factor
         :param atomic_variant_type: atomic variant of nitrogen
         :param residue_type: the residue that contains the nitrogen
         :return nitrogen complex returned as string constant
 
         """
-    
-         # protein atoms
-         #  N
-         if atomic_variant_type == 'N':
-            if residue_type == 'PRO':
-                return 'N'
-            return 'NH'
-      
-         
-         # ND
-         if atomic_variant_type == 'ND':
-            return 'N'
-            
-         # ND1
-         if atomic_variant_type == 'ND1':
-            if residue_type == 'HIS':
-     
-                return 'NH'
-            return 'N'
-      
-         # ND2
-         if atomic_variant_type == 'ND2':
-            if residue_type == 'ASN':
-                return 'NH2'
-            return 'N'
-      
-         # NH1, NH2
-         if atomic_variant_type == 'NH1' or atomic_variant_type == 'NH2':
-            if residue_type == 'ARG':
-               return 'NH2'
-            return 'N'
-      
-         # NE
-         if atomic_variant_type == 'NE':
-            if residue_type == 'ARG':
-               return 'NH'
-            return 'N'
-      
-         # NE1
-         if atomic_variant_type == 'NE1':
-            if residue_type == 'TRP':
-                return 'NH'
-            return 'N'
-      
-         # NE2
-         if atomic_variant_type == 'NE2':
-            if residue_type == 'GLN':
-                return 'NH2'
-            return 'N'
-      
-         # NZ
-         if atomic_variant_type == 'NZ':
-            if residue_type == 'LYS':
-                return 'NH3'
-            return 'N'
-      
-
-         # DNA/RNA atoms
-         #N1
-         if atomic_variant_type == 'N1':
-            if residue_type == 'DGUA' or residue_type == 'GUA':
-                return 'NH'
-            return 'N'
-      
-         # N2, N4, N6
-         if atomic_variant_type == 'N2' or atomic_variant_type == 'N4' or atomic_variant_type == 'N6':
-            return 'NH2'
-      
-         # N3
-         if atomic_variant_type == 'N3':
-            if residue_type == 'DURA' or residue_type == 'URA':
-                return 'NH'
-            return 'N'
-      
-         # N7, N9
-         if atomic_variant_type == 'N7' or atomic_variant_type == 'N9':
-           return 'N'
-
-      
-         print("Nitrogen atom not found, using default N form factor for atomic_variant=%s, residue=%s\n" % (atomic_variant_type, residue_type))
-                    
-         return 'N'
-    
+        try:
+          return self._NITROGEN_ATOMS_DICT[atomic_variant_type][residue_type]
+        except KeyError:
+          print("Nitrogen atom not found, using default N form factor for"
+                "atomic_variant=%s, residue=%s"
+                "" % (atomic_variant_type,residue_type))
+          return 'N'
 
     def get_sulfur_atom_type(self,atomic_variant_type,residue_type):
 
