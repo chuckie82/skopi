@@ -125,10 +125,13 @@ def read_geomfile(fname):
 
 
 # Read pdb file and return atom position and type
-def symmpdb(fname, ff='WK'):
+def symmpdb(fname, ff='WK', filter_occupancy=False):
     """
     Parse the pdb file. This function can handle the REMARK 350 correctly.
     :param fname: The address of the pdb file.
+    :param filter_occupancy: Boolean.
+        If False, take all atoms.
+        If True, only take atoms with > 50% occupancy.
     :return: Numpy array containing the type and position of each atom in the pdb file.
     """
 
@@ -161,7 +164,9 @@ def symmpdb(fname, ff='WK'):
             if chain_id not in atoms_dict.keys():
                 atoms_dict[chain_id] = []
             # occupany > 50 % || one of either if occupany = 50 %
-            if (float(line[56:60]) > 0.5) or (float(line[56:60]) == 0.5 and line[16] != 'B'):
+            if (not filter_occupancy or
+                float(line[56:60]) > 0.5 or
+                (float(line[56:60]) == 0.5 and line[16] != 'B')):
 
                 # [x, y, z, atomtype, charge]
                 # Notice that here, one has set the default charge to be 0
