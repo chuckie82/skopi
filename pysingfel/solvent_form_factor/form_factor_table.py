@@ -1,6 +1,7 @@
 
 # form_factor_table.py
 
+from collections import defaultdict
 import numpy as np
 import sys
 sys.path.append('../..')
@@ -18,7 +19,42 @@ class FormFactorTable:
    
 """
 
+
 class FormFactorTable(object):
+    _CARBON_ATOMS_DICT = {
+        'CH': defaultdict(lambda: 'CH'),
+        'CH2': defaultdict(lambda: 'CH2'),
+        'CH3': defaultdict(lambda: 'CH3'),
+        'C': defaultdict(lambda: 'C'),
+        'CA': defaultdict(lambda: 'CH', {'GLY': 'CH2'}),  # Gly has 2 H
+        'CB': defaultdict(lambda: 'CH2', {'ILE': 'CH','THR': 'CH','VAL': 'CH','ALA': 'CH3'}),
+        'CG': defaultdict(lambda: 'CH2', {'ASN': 'C','ASP': 'C','HIS': 'C','PHE': 'C','TRP': 'C','TYR': 'C','LEU': 'CH'}),
+        'CG1': {'ILE': 'CH2', 'VAL': 'CH3'},  # No default
+        'CG2': defaultdict(lambda: 'CH3'),
+        'CD': defaultdict(lambda: 'CH2', {'GLU': 'C','GLN': 'C'}),
+        'CD1': defaultdict(lambda: 'C', {'LEU': 'CH3', 'ILE': 'CH3', 'PHE': 'CH', 'TRP': 'CH', 'TYR': 'CH'}),
+        'CD2': defaultdict(lambda: 'C', {'LEU': 'CH3','PHE': 'CH','HIS': 'CH', 'TYR': 'CH'}),
+        'CE': defaultdict(lambda: 'C', {'LYS': 'CH2','MET': 'CH3'}),
+        'CE1': defaultdict(lambda: 'C', {'PHE': 'CH','HIS': 'CH','TYR': 'CH'}),
+        'CE2': defaultdict(lambda: 'C', {'PHE': 'CH','TYR': 'CH'}),
+        'CZ': defaultdict(lambda: 'C', {'PHE': 'CH'}),
+        'CZ1': defaultdict(lambda: 'C'),
+        'CZ2': defaultdict(lambda: 'C', {'TRP': 'CH'}),
+        'CZ3': defaultdict(lambda: 'C', {'TRP': 'CH'}),
+        'CE3': defaultdict(lambda: 'C', {'TRP': 'CH'}),
+        'C1p': defaultdict(lambda: 'CH'),
+        'C2p': defaultdict(lambda: 'CH'),
+        'C3p': defaultdict(lambda: 'CH'),
+        'C4p': defaultdict(lambda: 'CH'),
+        'C5p': defaultdict(lambda: 'CH2'),
+        'C2': defaultdict(lambda: 'C', {'DADE': 'CH','ADE': 'CH'}),
+        'C4': defaultdict(lambda: 'C'),
+        'C5': defaultdict(lambda: 'C', {'DCYT': 'CH','CYT': 'CH','DURA': 'CH','URA': 'CH'}),
+        'C6': defaultdict(lambda: 'C', {'DCYT': 'CH','CYT': 'CH','DURA': 'CH','URA': 'CH','DTHY': 'CH','THY': 'CH'}),
+        'C7': defaultdict(lambda: 'CH3'),
+        'C8': defaultdict(lambda: 'CH'),
+    }
+
     # table name currently not used
     def __init__(self,table_name=None,mnq=0.0,mxq=3.0,dq=0.01):
     
@@ -263,172 +299,21 @@ class FormFactorTable(object):
         self.dummy_form_factors = np.vstack((self.dummy_form_factors,heavy_dummy_form_factors))
        
         
-    
-    def get_carbon_atom_type(self,atomic_variant_type,residue_type):
-    
+
+    def get_carbon_atom_type(self, atomic_variant_type,residue_type):
         """
          Determining the carbon complex for the form factor
         :param atomic_variant_type: atomic variant of carbon
         :param residue_type: the resdiue that contains the carbon
         :return carbon complex returned as string constant
-
         """
-        # protein atoms
-        # CH
-        if atomic_variant_type == 'CH':
-           return 'CH'
-        # CH2
-        if atomic_variant_type == 'CH2':
-           return 'CH2'
-        # CH3
-        if atomic_variant_type == 'CH3':
-           return 'CH3'
-        # C
-        if atomic_variant_type == 'C':
-           return 'C'
-
-        # CA
-        if atomic_variant_type == 'CA':
-           if residue_type == 'GLY':
-              return 'CH2'  # Glycine has 2 hydrogens
-           return 'CH'
-          
-        # CB
-        if atomic_variant_type == 'CB':
-           if residue_type == 'ILE' or  residue_type == 'THR' or residue_type == 'VAL':
-              
-              
-              return 'CH'
-            
-           if residue_type == 'ALA':
-              return 'CH3'
-           
-           
-           return 'CH2'
-          
-        # CG
-        if atomic_variant_type == 'CG':
-           if residue_type == 'ASN' or residue_type == 'ASP' or residue_type == 'HIS' or residue_type == 'PHE' or residue_type == 'TRP' or residue_type == 'TYR':
-              return 'C'
-            
-           if residue_type == 'LEU':
-              return 'CH'
-           return 'CH2'
-          
-        # CG1
-        if atomic_variant_type == 'CG1':
-           if residue_type == 'ILE':
-              return 'CH2'
-           if residue_type == 'VAL':
-              return 'CH3'
-          
-        # CG2 - only VAL, ILE, and THR
-        if atomic_variant_type == 'CG2':
-           return 'CH3'
-        
-        # CD
-        if atomic_variant_type == 'CD':
-           if residue_type == 'GLU' or residue_type == 'GLN':
-              return 'C'
-           return 'CH2'
-        
-        # CD1
-        if atomic_variant_type == 'CD1':
-            if residue_type == 'LEU' or residue_type == 'ILE':
-               return 'CH3'
-            if residue_type == 'PHE' or residue_type == 'TRP' or residue_type == 'TYR':
-               return 'CH'
-            
-            return 'C'
-          
-        # CD2
-        if atomic_variant_type == 'CD2':
-           if residue_type == 'LEU':
-              return 'CH3'
-           if residue_type == 'PHE' or residue_type == 'HIS' or residue_type =='TYR':
-              return 'CH'
-            
-           return 'C'
-          
-        # CE
-        if atomic_variant_type == 'CE':
-        
-           if residue_type == 'LYS':
-              return 'CH2'
-           if residue_type == 'MET':
-           
-              return 'CH3'
-           return 'C'
-          
-        # CE1
-        if atomic_variant_type == 'CE1':
-           if residue_type == 'PHE' or residue_type == 'HIS' or residue_type == 'TYR':
-              return 'CH'
-            
-           return 'C'
-          
-        # CE2
-        if atomic_variant_type == 'CE2':
-           if residue_type == 'PHE' or residue_type == 'TYR':
-              return 'CH'
-           return 'C'
-        
-        # CZ
-        if atomic_variant_type == 'CZ':
-           if residue_type == 'PHE':
-              return 'CH'
-           return 'C'
-          
-        # CZ1
-        if atomic_variant_type == 'CZ1':
-           return 'C'
-           
-        # CZ2, CZ3, CE3
-        if atomic_variant_type == 'CZ2' or atomic_variant_type == 'CZ3' or atomic_variant_type == 'CE3':
-           if residue_type == 'TRP':
-              return 'CH'
-           return 'C'
-        # DNA/RNA atoms
-        # C5'
-        if atomic_variant_type == 'C5p':
-           return 'CH2'
-           #C1', C2', C3', C4'
-           if atomic_variant_type == 'C4p' or atomic_variant_type == 'C3p' or atomic_variant_type == 'C2' or atomic_variant_type == 'C1p':
-              return 'CH'
-          
-        # C2
-        if atomic_variant_type == 'C2':
-           if residue_type == 'DADE' or residue_type == 'ADE':
-              return 'CH'
-           
-           return 'C'
-          
-        # C4
-        if atomic_variant_type == 'C4':
-           return 'C'
-        
-        # C5
-        if atomic_variant_type == 'C5':
-           if residue_type == 'DCYT' or residue_type == 'CYT' or residue_type == 'DURA' or residue_type == 'URA':
-                return 'CH'
-           return 'C'
-          
-        # C6
-        if atomic_variant_type == 'C6':
-           if residue_type == 'DCYT' or residue_type == 'CYT' or residue_type == 'DURA' or residue_type == 'URA' or residue_type == 'DTHY' or residue_type == 'THY':
-              return 'CH'
-           return 'C'
-          
-        # C7
-        if atomic_variant_type == 'C7':
-           return 'CH3'
-        # C8
-        if atomic_variant_type == 'C8':
-           return 'CH'
-
-        print("Carbon atom not found, using default C form factor for atomic_variant=%s, residue=%s\n" % (atomic_variant_type,residue_type))
-        return 'C'
-        
+        try:
+          return self._CARBON_ATOMS_DICT[atomic_variant_type][residue_type]
+        except KeyError:
+          print("Carbon atom not found, using default C form factor for"
+                "atomic_variant=%s, residue=%s"
+                "" % (atomic_variant_type,residue_type))
+          return 'C'
 
     def get_nitrogen_atom_type(self,atomic_variant_type,residue_type):
 
