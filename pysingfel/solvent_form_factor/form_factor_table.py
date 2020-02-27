@@ -93,10 +93,10 @@ class FormFactorTable(object):
         'OE2': defaultdict(lambda: 'O'),
         'OD1': defaultdict(lambda: 'O'),
         'OD2': defaultdict(lambda: 'O'),
-        'O1A': defaultdict(lambda: 'O'),
-        'O2A': defaultdict(lambda: 'O'),
-        'OT1': defaultdict(lambda: 'O'),
-        'OT2': defaultdict(lambda: 'O'),
+        #'O1A': defaultdict(lambda: 'O'),  # Commented-out in source
+        #'O2A': defaultdict(lambda: 'O'),  # Commented-out in source
+        #'OT1': defaultdict(lambda: 'O'),  # Commented-out in source
+        #'OT2': defaultdict(lambda: 'O'),  # Commented-out in source
         'OXT': defaultdict(lambda: 'O'),
         'OG': defaultdict(lambda: 'O', {'SER': 'OH'}),
         'OG1': defaultdict(lambda: 'O', {'THR': 'OH'}),
