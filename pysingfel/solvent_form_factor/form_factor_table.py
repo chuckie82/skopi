@@ -75,6 +75,11 @@ class FormFactorTable(object):
         'N9': defaultdict(lambda: 'N'),
     }
 
+    _SULFUR_ATOMS_DICT = {
+        'SD': defaultdict(lambda: 'S'),
+        'SG': defaultdict(lambda: 'S', {'CYS': 'SH'}),
+    }
+
     # table name currently not used
     def __init__(self,table_name=None,mnq=0.0,mxq=3.0,dq=0.01):
     
@@ -352,7 +357,7 @@ class FormFactorTable(object):
                 "" % (atomic_variant_type,residue_type))
           return 'N'
 
-    def get_sulfur_atom_type(self,atomic_variant_type,residue_type):
+    def get_sulfur_atom_type(self, atomic_variant_type, residue_type):
 
         """
          Determining the sulfur complex for the form factor
@@ -361,17 +366,13 @@ class FormFactorTable(object):
         :return sulfur complex returned as string constant
 
         """
-        # SD
-        if atomic_variant_type == 'SD':
-           return 'S'
-        #SG
-        if atomic_variant_type == 'SG':
-           if residue_type == 'CYS':
-              return 'SH'
-           return 'S'
-            
-        print("Sulfur atom not found, using default S form factor for atomic_variant=%s, residue=%s\n" % (atomic_variant_type,residue_type))
-        return 'S'
+        try:
+          return self._SULFUR_ATOMS_DICT[atomic_variant_type][residue_type]
+        except KeyError:
+          print("Sulfur atom not found, using default S form factor for"
+                "atomic_variant=%s, residue=%s"
+                "" % (atomic_variant_type,residue_type))
+          return 'S'
         
 
     def get_oxygen_atom_type(self,atomic_variant_type,residue_type):
