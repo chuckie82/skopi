@@ -80,6 +80,32 @@ class FormFactorTable(object):
         'SG': defaultdict(lambda: 'S', {'CYS': 'SH'}),
     }
 
+    _OXYGEN_ATOMS_DICT = {
+        'O': defaultdict(lambda: 'O'),
+        'OE1': defaultdict(lambda: 'O'),
+        'OE2': defaultdict(lambda: 'O'),
+        'OD1': defaultdict(lambda: 'O'),
+        'OD2': defaultdict(lambda: 'O'),
+        'O1A': defaultdict(lambda: 'O'),
+        'O2A': defaultdict(lambda: 'O'),
+        'OT1': defaultdict(lambda: 'O'),
+        'OT2': defaultdict(lambda: 'O'),
+        'OXT': defaultdict(lambda: 'O'),
+        'OG': defaultdict(lambda: 'O', {'SER': 'OH'}),
+        'OG1': defaultdict(lambda: 'O', {'THR': 'OH'}),
+        'OH': defaultdict(lambda: 'O', {'TYR': 'OH'}),
+        'OP1': defaultdict(lambda: 'O'),
+        'O3p': defaultdict(lambda: 'O'),
+        'OP2': defaultdict(lambda: 'O'),
+        #'O2p': defaultdict(lambda: 'O'),  # Conflicts with 02p below.
+        'O4p': defaultdict(lambda: 'O'),
+        'O5p': defaultdict(lambda: 'O'),
+        'O2': defaultdict(lambda: 'O'),
+        'O4': defaultdict(lambda: 'O'),
+        'O6': defaultdict(lambda: 'O'),
+        'O2p': defaultdict(lambda: 'OH'),
+    }
+
     # table name currently not used
     def __init__(self,table_name=None,mnq=0.0,mxq=3.0,dq=0.01):
     
@@ -375,7 +401,7 @@ class FormFactorTable(object):
           return 'S'
         
 
-    def get_oxygen_atom_type(self,atomic_variant_type,residue_type):
+    def get_oxygen_atom_type(self, atomic_variant_type, residue_type):
 
         """
         Determining the oxygen complex for the form factor
@@ -384,45 +410,15 @@ class FormFactorTable(object):
         :return oxygen complex returned as string constant
 
         """
- 
-        # O OE1 OE2 OD1 OD2 O1A O2A OXT OT1 OT2
-        if atomic_variant_type == 'O' or atomic_variant_type == 'OE1' or atomic_variant_type == 'OE2' or atomic_variant_type == 'OD1' or atomic_variant_type == 'OD2' or atomic_variant_type == 'O1A' or atomic_variant_type == 'O2A' or atomic_variant_type == 'OT1' or atomic_variant_type == 'OT2' or atomic_variant_type == 'OXT':
-           return 'O'
-   
-        # OG
-        if atomic_variant_type == 'OG':
-            if residue_type == 'SER':
-                return 'OH'
-            return 'O'
-   
-        # OG1
-        if atomic_variant_type == 'OG1':
-            if residue_type == 'THR':
-                return 'OH'
-            return 'O'
-   
-        # OH
-        if atomic_variant_type == 'OH':
-            if residue_type == 'TYR':
-                return 'OH'
-            return 'O'
-   
-        # DNA/RNA atoms
-        # O1P, O3', O2P, O2',O4',05', O2,O4,O6
-        if atomic_variant_type == 'OP1' or atomic_variant_type == 'O3p' or atomic_variant_type == 'OP2' or atomic_variant_type == 'O2p' or atomic_variant_type == 'O4p' or  atomic_variant_type == 'O5p' or atomic_variant_type == 'O2' or atomic_variant_type == 'O4' or atomic_variant_type == 'O6':
-           return 'O'
-   
-        #  O2'
-        if atomic_variant_type == 'O2p':
-           return 'OH'
-
-        # water molecule
-        if residue_type == 'HOH':
-           return 'OH2'
-
-        print("Oxygen atom not found, using default O form factor for atomic_variant=%s, residue_type =%s\n" % (atomic_variant_type, residue_type))
-                 
-        return 'O'
+        try:
+          return self._OXYGEN_ATOMS_DICT[atomic_variant_type][residue_type]
+        except KeyError:
+          if residue_type == 'HOH':
+            return 'OH2'
+          print("Oxygen atom not found, using default O form factor for"
+                "atomic_variant=%s, residue=%s"
+                "" % (atomic_variant_type,residue_type))
+          return 'O'
  
     def get_form_factor_atom_type(self,atomic_type,atomic_variant_type, residue_type):
        """  
