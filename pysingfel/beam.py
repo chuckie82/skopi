@@ -43,23 +43,120 @@ class Beam(object):
     Basic beam object
     """
 
-    def __init__(self, fname=None):
+    def __init__(self, fname=None, **kwargs):
         """
         :param fname: The beam profile
         """
-        self._wavelength = 0  # (m) wavelength
-        self._photon_energy = 0  # (eV) photon energy
-        self._wavenumber = 0  # (m^-1)
-        self._focus_xFWHM = 0  # (m) beam focus diameter in x direction
-        self._focus_yFWHM = 0  # (m) beam focus diameter in y direction
-        self._focus_shape = 'circle'  # focus shape: {square, ellipse, default:circle}
-        self._focus_area = 0  # (m^2)
-        self._n_phot = 0  # number of photons per pulse
-        self._phi_in = 0  # number of photon per pulse per area (m^-2)
+        if fname and kwargs:
+            raise TypeError("Beam cannot accept fname and other arguments.")
+        elif fname:
+            self.read_beamfile(fname)
+        else:
+            self.init_from_arg_dict(kwargs)
+
         # Default polarization angle, requires input from user or file in the future
         self.Polarization = np.array([1, 0, 0])
-        if fname is not None:
-            self.read_beamfile(fname)
+
+    def init_from_arg_dict(self, arg_dict):
+        self.set_wave_parameters_from_arg_dict(arg_dict)
+        self.set_focus_from_arg_dict(arg_dict)
+        try:
+            fluence = arg_dict.pop("fluence")
+        except KeyError:
+            raise TypeError("Beam requires fluence argument.")
+        self.set_photons_per_pulse(fluence)
+        if arg_dict:
+            raise TypeError("Non-understood Beam arguments: "
+                            "{}".format(arg_dict))
+
+    def set_wave_parameters_from_arg_dict(self, arg_dict):
+        wave_arguments = {"wavelength", "photon_energy", "wavenumber"}
+        given_wave_arguments = wave_arguments.intersection(arg_dict)
+        number_of_wave_arguments = len(given_wave_arguments)
+
+        if number_of_wave_arguments > 1:
+            raise TypeError("Beam can only accept a single wavelength, "
+                            "photon_energy, or wavenumber.")
+        elif number_of_wave_arguments == 0:
+            raise TypeError("Beam needs a wavelength, "
+                            "photon_energy, or wavenumber.")
+
+        for wave_argument in given_wave_arguments:
+            # There should only be one left.
+            # Remove used argument from dict.
+            setattr(self, wave_argument, arg_dict.pop(wave_argument))
+
+    def set_focus_from_arg_dict(self, arg_dict):
+        if "focus_radius" in arg_dict:
+            if {"focus_x", "focus_y"}.intersection(arg_dict):
+                raise TypeError("Focus radius and focus x and y are not "
+                                "compatible.")
+            if arg_dict.get("focus_shape") not in (None, "circle"):
+                raise TypeError("Focus radius only compatible with circle "
+                                "shape.")
+            arg_dict["focus_shape"] = "circle"
+            # Rename and get rid of radius.
+            arg_dict["focus_x"] = arg_dict.pop("focus_radius")
+        # No more radius. Only x, y, and/or shape.
+
+        if not "focus_x" in arg_dict:
+            raise TypeError("Focus requires at minimum x dimension or radius.")
+        focus_x = arg_dict.pop("focus_x")
+
+        if not "focus_shape" in arg_dict:
+            if "focus_y" in arg_dict:
+                arg_dict["focus_shape"] = "ellipse"
+            else:
+                arg_dict["focus_shape"] = "circle"
+        focus_shape = arg_dict.pop("focus_shape")
+
+        if focus_shape not in {'circle', 'ellipse', 'square', 'rectangle'}:
+            raise ValueError("Beam focus can only be circle, ellipse,"
+                             "square, rectangle.")
+        self._focus_shape = focus_shape
+
+        if focus_shape in {'circle', 'square'}:
+            if "focus_y" in arg_dict:
+                raise TypeError("Focus with {} shape incompatible with "
+                                "focus y.".format(focus_shape))
+            self._focus_xFWHM = focus_x
+            self._focus_yFWHM = focus_x
+        elif focus_shape in {'ellipse', 'rectange'}:
+            if "focus_y" in arg_dict:
+                raise TypeError("Focus with {} shape requires "
+                                "focus y.".format(focus_shape))
+            self._focus_xFWHM = focus_x
+            self._focus_yFWHM = focus_y
+        self.set_focus_area()
+
+    def set_focus(self, *args, **kwargs):
+        """
+        Set the focus of the beam.
+
+        The shape variable defines the shape of the transverse profile of the beam.
+        If don't know what to choose for the shape variable, leave it as default.
+        The influence is very limited in this implementatin.
+
+        :param x: The FWHM of the beam along x axis in meter.
+        :param y: The FWHM of the beam along y axis in meter.
+        :param shape:
+        :return:
+        """
+        arg_dict = {}
+        if len(args) > 0:
+            arg_dict['focus_x'] = args[0]
+        if len(args) > 1:
+            arg_dict['focus_y'] = args[1]
+        if len(args) > 2:
+            arg_dict['focus_shape'] = args[2]
+        if len(args) > 3:
+            raise TypeError("Too may arguments for set_focus.")
+
+        for key, value in kwargs:
+            new_key = key
+            if not key.startswith("focus_"):
+                new_key = "focus_" + key
+            arg_dict[new_key] = kwargs[key]
 
     @property
     def wavelength(self):
@@ -98,31 +195,6 @@ class Beam(object):
         :return:
         """
         return np.array([0, 0, 2 * np.pi / self.wavelength])
-
-    def set_focus(self, x, y=None, shape='circle'):
-        """
-        Set the focus of the beam.
-
-        The shape variable defines the shape of the transverse profile of the beam.
-        If don't know what to choose for the shape variable, leave it as default.
-        The influence is very limited in this implementatin.
-
-        :param x: The FWHM of the beam along x axis in meter.
-        :param y: The FWHM of the beam along y axis in meter.
-        :param shape:
-        :return:
-        """
-        if y is not None:
-            # ellipse
-            self._focus_xFWHM = x
-            self._focus_yFWHM = y
-            shape = 'ellipse'
-        else:
-            # By default, circle
-            self._focus_xFWHM = x
-            self._focus_yFWHM = x
-        self._focus_shape = shape
-        self.set_focus_area()
 
     def get_focus(self):
         return self._focus_xFWHM
@@ -164,9 +236,9 @@ class Beam(object):
                     if tmp[0] == 'beam/photon_energy':
                         self.photon_energy = float(tmp[1])
                     if tmp[0] == 'beam/fluence':
-                        self.n_phot = float(tmp[1])
+                        self.set_photons_per_pulse(float(tmp[1]))
                     if tmp[0] == 'beam/radius':
-                        self.set_focus(float(tmp[1]))
+                        self.set_focus(radius=float(tmp[1]))
 
     ####
     # Old-style setters and getters, for compatibility
