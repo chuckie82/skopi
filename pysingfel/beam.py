@@ -1,7 +1,6 @@
 import numpy as np
 
 
-# several converters
 def wavelength_to_wavenumber(wavelength):
     """
     Wavenumber is defined as 1/wavelength
@@ -25,7 +24,7 @@ def photon_energy_to_wavelength(photon_energy):
     """
     Conver photon energy in ev to wave length in m.
     :param photon_energy: photon energy in ev
-    :return: 
+    :return:
     """
     return 1.23984197386209e-06 / photon_energy
 
@@ -34,9 +33,8 @@ def wavelength_to_photon_energy(wavelength):
     """
     Convert wave length to photon energy in ev
     :param wavelength: wavelength in m.
-    :return: 
+    :return:
     """
-
     return 1.23984197386209e-06 / wavelength
 
 
@@ -45,68 +43,53 @@ class Beam(object):
     Basic beam object
     """
 
-    def __init__(self, *fname):
+    def __init__(self, fname=None):
         """
         :param fname: The beam profile
         """
-        self.wavelength = 0  # (m) wavelength
-        self.photon_energy = 0  # (eV) photon energy
-        self.k = 0  # (m^-1)
-        self.focus_xFWHM = 0  # (m) beam focus diameter in x direction
-        self.focus_yFWHM = 0  # (m) beam focus diameter in y direction
-        self.focus_shape = 'circle'  # focus shape: {square, ellipse, default:circle}
-        self.focus_area = 0  # (m^2)
-        self.n_phot = 0  # number of photons per pulse
-        self.phi_in = 0  # number of photon per pulse per area (m^-2)
+        self._wavelength = 0  # (m) wavelength
+        self._photon_energy = 0  # (eV) photon energy
+        self._wavenumber = 0  # (m^-1)
+        self._focus_xFWHM = 0  # (m) beam focus diameter in x direction
+        self._focus_yFWHM = 0  # (m) beam focus diameter in y direction
+        self._focus_shape = 'circle'  # focus shape: {square, ellipse, default:circle}
+        self._focus_area = 0  # (m^2)
+        self._n_phot = 0  # number of photons per pulse
+        self._phi_in = 0  # number of photon per pulse per area (m^-2)
         # Default polarization angle, requires input from user or file in the future
         self.Polarization = np.array([1, 0, 0])
         if fname is not None:
-            self.read_beamfile(fname[0])
+            self.read_beamfile(fname)
 
-    def update(self):
-        """
-        Update the related properties of the class object, after
-        a certain property is provided.
-        """
-        if self.wavelength != 0:
-            self.photon_energy = wavelength_to_photon_energy(self.wavelength)
-            self.k = wavelength_to_wavenumber(self.wavelength)
-        elif self.photon_energy != 0:
-            self.wavelength = photon_energy_to_wavelength(self.photon_energy)
-            self.k = wavelength_to_wavenumber(self.wavelength)
-        elif self.k != 0:
-            self.wavelength = wavenumber_to_wavelength(self.k)
-            self.photon_energy = wavelength_to_photon_energy(self.wavelength)
+    @property
+    def wavelength(self):
+        return self._wavelength
 
-        if self.focus_xFWHM != 0:
-            self.set_focus_area()
-            if self.n_phot != 0:
-                self.set_photons_per_pulse_per_area()
+    @wavelength.setter
+    def wavelength(self, value):
+        self._wavelength = value
+        self._photon_energy = wavelength_to_photon_energy(self._wavelength)
+        self._wavenumber = wavelength_to_wavenumber(self._wavelength)
 
-    # setters and getters
-    def set_wavelength(self, x):
-        """
-        :param x: wavelength in meter
-        """
-        self.wavelength = x
-        self.update()
+    @property
+    def photon_energy(self):
+        return self._photon_energy
 
-    def get_wavelength(self):
-        return self.wavelength
+    @photon_energy.setter
+    def photon_energy(self, value):
+        self._photon_energy = value
+        self._wavelength = photon_energy_to_wavelength(self._photon_energy)
+        self._wavenumber = wavelength_to_wavenumber(self._wavelength)
 
-    def set_photon_energy(self, ev):
-        """
-        Set photon energy
-        :param ev: photon energy in ev
-        """
-        self.photon_energy = ev
-        self.update()
+    @property
+    def wavenumber(self):
+        return self._wavenumber
 
-    def get_photon_energy(self):
-        return self.photon_energy
-
-    def get_wavenumber(self):
-        return self.k
+    @wavenumber.setter
+    def wavenumber(self, value):
+        self._wavenumber = value
+        self._wavelength = wavenumber_to_wavelength(self._wavenumber)
+        self._photon_energy = wavelength_to_photon_energy(self._wavelength)
 
     def get_wavevector(self):
         """
@@ -119,58 +102,52 @@ class Beam(object):
     def set_focus(self, x, y=None, shape='circle'):
         """
         Set the focus of the beam.
-        
-        
-        The shape variable defines the shape of the transverse profile of the beam. 
+
+        The shape variable defines the shape of the transverse profile of the beam.
         If don't know what to choose for the shape variable, leave it as default.
         The influence is very limited in this implementatin.
-        
+
         :param x: The FWHM of the beam along x axis in meter.
         :param y: The FWHM of the beam along y axis in meter.
-        :param shape: 
-        :return: 
+        :param shape:
+        :return:
         """
-
         if y is not None:
             # ellipse
-            self.focus_xFWHM = x
-            self.focus_yFWHM = y
+            self._focus_xFWHM = x
+            self._focus_yFWHM = y
             shape = 'ellipse'
         else:
             # By default, circle
-            self.focus_xFWHM = x
-            self.focus_yFWHM = x
-        self.focus_shape = shape
-        self.update()
+            self._focus_xFWHM = x
+            self._focus_yFWHM = x
+        self._focus_shape = shape
+        self.set_focus_area()
 
     def get_focus(self):
-        return self.focus_xFWHM
+        return self._focus_xFWHM
 
     def set_focus_area(self):
-        if self.focus_shape is 'square':
-            self.focus_area = self.focus_xFWHM * self.focus_yFWHM
+        if self._focus_shape is 'square':
+            self._focus_area = self._focus_xFWHM * self._focus_yFWHM
         else:
             # Both ellipse and circle have the same equation.
-            self.focus_area = np.pi / 4 * self.focus_xFWHM * self.focus_yFWHM
+            self._focus_area = np.pi/4 * self._focus_xFWHM * self._focus_yFWHM
 
     def get_focus_area(self):
-        return self.focus_area
+        return self._focus_area
 
     def set_photons_per_pulse(self, x):
         """
         :param x: photons per pulse
         """
-        self.n_phot = x
-        self.update()
+        self._n_phot = x
 
     def get_photons_per_pulse(self):
-        return self.n_phot
-
-    def set_photons_per_pulse_per_area(self):
-        self.phi_in = self.n_phot / self.focus_area
+        return self._n_phot
 
     def get_photons_per_pulse_per_area(self):
-        return self.phi_in
+        return self._n_phot / self._focus_area
 
     def read_beamfile(self, fname):
         """
@@ -190,4 +167,29 @@ class Beam(object):
                         self.n_phot = float(tmp[1])
                     if tmp[0] == 'beam/radius':
                         self.set_focus(float(tmp[1]))
-        self.update()
+
+    ####
+    # Old-style setters and getters, for compatibility
+    ####
+
+    def set_wavelength(self, x):
+        """
+        :param x: wavelength in meter
+        """
+        self.wavelength = x
+
+    def get_wavelength(self):
+        return self.wavelength
+
+    def set_photon_energy(self, ev):
+        """
+        Set photon energy
+        :param ev: photon energy in ev
+        """
+        self.photon_energy = ev
+
+    def get_photon_energy(self):
+        return self.photon_energy
+
+    def get_wavenumber(self):
+        return self.wavenumber
