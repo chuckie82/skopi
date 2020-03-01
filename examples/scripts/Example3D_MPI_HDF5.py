@@ -63,7 +63,7 @@ def main():
     dct = comm.bcast(data,root=0)
     
     if rank==0:
-       pattern_shape = det.pedestal.shape  
+       pattern_shape = det.pedestals.shape  
        fin = h5.File(os.path.join(outDir,'test_saveHDF5_parallel_intens_combined.h5'),'w')
        if savePhotons == 1:
           fph = h5.File(os.path.join(outDir,'test_saveHDF5_parallel_photons_combined.h5'),'w')
@@ -99,7 +99,7 @@ def main():
         det = dct['detector']
         particle = dct['particle']
         slices_num = ori.shape[0]
-        pattern_shape = det.pedestal.shape
+        pattern_shape = det.pedestals.shape
         pixel_momentum = det.pixel_position_reciprocal
         sliceOne = np.zeros((pattern_shape))  #left out dtype=np.float32
         mesh_length = 128
@@ -177,11 +177,9 @@ def slave_calc_intensity(rot3d, pixel_momentum, pattern_shape, volume, voxel_len
     index, weight = ps.geometry.get_weight_and_index(pixel_position=rotated_pixel_position,
                                              voxel_length=voxel_length,
                                              voxel_num_1d=volume.shape[0])
-    intensSlice = ps.geometry.take_one_slice(local_index = index,
+    intensSlice = ps.geometry.extract_slice(local_index = index,
                                           local_weight = weight, 
-                                          volume = volume, 
-                                          pixel_num = pixel_num, 
-                                          pattern_shape = pattern_shape)
+                                          volume = volume)
     
     #intensSliceWCorrection = ps.detector.add_linear_correction(intensSlice)
      
