@@ -6,7 +6,12 @@ requirements = [
     'numba',
     'scipy',
     'mpi4py',
-    'h5py'
+    'h5py',
+    'six',
+    'scikit-learn',
+    'pytest',
+    'matplotlib',
+    'setuptools'
 ]
 
 setuptools.setup(name='pysingfel',
