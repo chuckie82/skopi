@@ -86,3 +86,31 @@ def test_ellipse_lack_y():
     with pytest.raises(TypeError):
         beam = ps.Beam(photon_energy=PHOTON_ENERGY, focus_x=DIM,
                        focus_shape="ellipse", fluence=FLUENCE)
+
+def test_square():
+    beam = ps.Beam(photon_energy=PHOTON_ENERGY, focus_x=DIM,
+                   focus_shape="square", fluence=FLUENCE)
+    focus_x, focus_y, focus_shape = beam.get_focus()
+    assert np.isclose(focus_x, DIM, atol=1e-14)
+    assert np.isclose(focus_y, DIM, atol=1e-14)
+    assert focus_shape == "square"
+    assert np.isclose(beam.get_focus_area(), DIM**2, atol=1e-21)
+
+def test_square_y_clash():
+    with pytest.raises(TypeError):
+        beam = ps.Beam(photon_energy=PHOTON_ENERGY, focus_x=DIM, focus_y=2*DIM,
+                       focus_shape="square", fluence=FLUENCE)
+
+def test_rectangle():
+    beam = ps.Beam(photon_energy=PHOTON_ENERGY, focus_x=DIM, focus_y=2*DIM,
+                   focus_shape="rectangle", fluence=FLUENCE)
+    focus_x, focus_y, focus_shape = beam.get_focus()
+    assert np.isclose(focus_x, DIM, atol=1e-14)
+    assert np.isclose(focus_y, 2*DIM, atol=1e-14)
+    assert focus_shape == "rectangle"
+    assert np.isclose(beam.get_focus_area(), 2*DIM**2, atol=1e-21)
+
+def test_rectangle_lack_y():
+    with pytest.raises(TypeError):
+        beam = ps.Beam(photon_energy=PHOTON_ENERGY, focus_x=DIM,
+                       focus_shape="rectangle", fluence=FLUENCE)

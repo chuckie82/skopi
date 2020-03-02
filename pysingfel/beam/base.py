@@ -87,7 +87,7 @@ class Beam(object):
                                 "focus y.".format(focus_shape))
             self._focus_xFWHM = focus_x
             self._focus_yFWHM = focus_x
-        elif focus_shape in {'ellipse', 'rectange'}:
+        elif focus_shape in {'ellipse', 'rectangle'}:
             if not "focus_y" in arg_dict:
                 raise TypeError("Focus with {} shape requires "
                                 "focus y.".format(focus_shape))
