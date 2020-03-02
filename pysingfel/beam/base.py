@@ -1,41 +1,6 @@
 import numpy as np
 
-
-def wavelength_to_wavenumber(wavelength):
-    """
-    Wavenumber is defined as 1/wavelength
-
-    :param wavelength: wavelength in meter
-    :return:
-    """
-    return 1. / wavelength
-
-
-def wavenumber_to_wavelength(k):
-    """
-
-    :param k: The wavenumber in meter^-1.  k= 1./wavelength.
-    :return: 1./k
-    """
-    return 1. / k
-
-
-def photon_energy_to_wavelength(photon_energy):
-    """
-    Conver photon energy in ev to wave length in m.
-    :param photon_energy: photon energy in ev
-    :return:
-    """
-    return 1.23984197386209e-06 / photon_energy
-
-
-def wavelength_to_photon_energy(wavelength):
-    """
-    Convert wave length to photon energy in ev
-    :param wavelength: wavelength in m.
-    :return:
-    """
-    return 1.23984197386209e-06 / wavelength
+from . import convert
 
 
 class Beam(object):
@@ -168,8 +133,9 @@ class Beam(object):
     @wavelength.setter
     def wavelength(self, value):
         self._wavelength = value
-        self._photon_energy = wavelength_to_photon_energy(self._wavelength)
-        self._wavenumber = wavelength_to_wavenumber(self._wavelength)
+        self._photon_energy = convert.wavelength_to_photon_energy(
+            self._wavelength)
+        self._wavenumber = convert.wavelength_to_wavenumber(self._wavelength)
 
     @property
     def photon_energy(self):
@@ -178,8 +144,9 @@ class Beam(object):
     @photon_energy.setter
     def photon_energy(self, value):
         self._photon_energy = value
-        self._wavelength = photon_energy_to_wavelength(self._photon_energy)
-        self._wavenumber = wavelength_to_wavenumber(self._wavelength)
+        self._wavelength = convert.photon_energy_to_wavelength(
+            self._photon_energy)
+        self._wavenumber = convert.wavelength_to_wavenumber(self._wavelength)
 
     @property
     def wavenumber(self):
@@ -188,8 +155,9 @@ class Beam(object):
     @wavenumber.setter
     def wavenumber(self, value):
         self._wavenumber = value
-        self._wavelength = wavenumber_to_wavelength(self._wavenumber)
-        self._photon_energy = wavelength_to_photon_energy(self._wavelength)
+        self._wavelength = convert.wavenumber_to_wavelength(self._wavenumber)
+        self._photon_energy = convert.wavelength_to_photon_energy(
+            self._wavelength)
 
     def get_wavevector(self):
         """
