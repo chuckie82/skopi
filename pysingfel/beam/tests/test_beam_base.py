@@ -13,14 +13,14 @@ FLUENCE = 1e12
 
 def test_wavelength():
     beam = ps.Beam(wavelength=WAVELENGTH, focus_radius=DIM, fluence=FLUENCE)
-    assert np.isclose(beam.wavelength, WAVELENGTH)
+    assert np.isclose(beam.wavelength, WAVELENGTH, atol=1e-14)
     assert np.isclose(beam.wavenumber, WAVENUMBER)
     assert np.isclose(beam.photon_energy, PHOTON_ENERGY)
 
 
 def test_wavenumber():
     beam = ps.Beam(wavenumber=WAVENUMBER, focus_radius=DIM, fluence=FLUENCE)
-    assert np.isclose(beam.wavelength, WAVELENGTH)
+    assert np.isclose(beam.wavelength, WAVELENGTH, atol=1e-14)
     assert np.isclose(beam.wavenumber, WAVENUMBER)
     assert np.isclose(beam.photon_energy, PHOTON_ENERGY)
 
@@ -28,7 +28,7 @@ def test_wavenumber():
 def test_photon_energy():
     beam = ps.Beam(photon_energy=PHOTON_ENERGY, focus_radius=DIM,
                    fluence=FLUENCE)
-    assert np.isclose(beam.wavelength, WAVELENGTH)
+    assert np.isclose(beam.wavelength, WAVELENGTH, atol=1e-14)
     assert np.isclose(beam.wavenumber, WAVENUMBER)
     assert np.isclose(beam.photon_energy, PHOTON_ENERGY)
 
