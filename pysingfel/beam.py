@@ -152,11 +152,13 @@ class Beam(object):
         if len(args) > 3:
             raise TypeError("Too may arguments for set_focus.")
 
-        for key, value in kwargs:
+        for key, value in kwargs.items():
             new_key = key
             if not key.startswith("focus_"):
                 new_key = "focus_" + key
             arg_dict[new_key] = kwargs[key]
+
+        self.set_focus_from_arg_dict(arg_dict)
 
     @property
     def wavelength(self):
@@ -200,7 +202,7 @@ class Beam(object):
         return self._focus_xFWHM
 
     def set_focus_area(self):
-        if self._focus_shape is 'square':
+        if self._focus_shape in ('square', 'rectangle'):
             self._focus_area = self._focus_xFWHM * self._focus_yFWHM
         else:
             # Both ellipse and circle have the same equation.
