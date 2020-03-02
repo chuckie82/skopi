@@ -122,9 +122,10 @@ class Beam(object):
             self._focus_xFWHM = focus_x
             self._focus_yFWHM = focus_x
         elif focus_shape in {'ellipse', 'rectange'}:
-            if "focus_y" in arg_dict:
+            if not "focus_y" in arg_dict:
                 raise TypeError("Focus with {} shape requires "
                                 "focus y.".format(focus_shape))
+            focus_y = arg_dict.pop("focus_y")
             self._focus_xFWHM = focus_x
             self._focus_yFWHM = focus_y
         self.set_focus_area()
