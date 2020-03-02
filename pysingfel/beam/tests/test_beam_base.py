@@ -114,3 +114,10 @@ def test_rectangle_lack_y():
     with pytest.raises(TypeError):
         beam = ps.Beam(photon_energy=PHOTON_ENERGY, focus_x=DIM,
                        focus_shape="rectangle", fluence=FLUENCE)
+
+def test_fluence():
+    beam = ps.Beam(photon_energy=PHOTON_ENERGY, focus_radius=DIM,
+                   focus_shape="circle", fluence=FLUENCE)
+    assert np.isclose(beam.get_photons_per_pulse(), FLUENCE)
+    assert np.isclose(beam.get_photons_per_pulse_per_area(),
+                      FLUENCE / (np.pi * DIM**2))
