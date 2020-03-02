@@ -61,7 +61,8 @@ class Beam(object):
                                 "shape.")
             arg_dict["focus_shape"] = "circle"
             # Rename and get rid of radius.
-            arg_dict["focus_x"] = arg_dict.pop("focus_radius")
+            # Note: focus_x corresponds to diameter.
+            arg_dict["focus_x"] = 2 * arg_dict.pop("focus_radius")
         # No more radius. Only x, y, and/or shape.
 
         if not "focus_x" in arg_dict:
@@ -168,7 +169,13 @@ class Beam(object):
         return np.array([0, 0, 2 * np.pi / self.wavelength])
 
     def get_focus(self):
-        return self._focus_xFWHM
+        """
+        Return focus parameters x, y, and shape.
+
+        Lenghts x and y are FWHM. Shape is a string.
+        :return: (x, y, shape)
+        """
+        return (self._focus_xFWHM, self._focus_yFWHM, self._focus_shape)
 
     def set_focus_area(self):
         if self._focus_shape in ('square', 'rectangle'):

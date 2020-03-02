@@ -49,3 +49,26 @@ def test_wavenumber_photon_energy_clash():
     with pytest.raises(TypeError):
         beam = ps.Beam(wavenumber=WAVENUMBER, photon_energy=PHOTON_ENERGY,
                        focus_radius=DIM, fluence=FLUENCE)
+
+def test_circle_radius():
+    beam = ps.Beam(photon_energy=PHOTON_ENERGY, focus_radius=DIM,
+                   fluence=FLUENCE)
+    focus_x, focus_y, focus_shape = beam.get_focus()
+    assert np.isclose(focus_x, 2*DIM, atol=1e-14)
+    assert np.isclose(focus_y, 2*DIM, atol=1e-14)
+    assert focus_shape == "circle"
+    assert np.isclose(beam.get_focus_area(), np.pi * DIM**2, atol=1e-21)
+
+def test_circle_diameter():
+    beam = ps.Beam(photon_energy=PHOTON_ENERGY, focus_x=DIM,
+                   focus_shape="circle", fluence=FLUENCE)
+    focus_x, focus_y, focus_shape = beam.get_focus()
+    assert np.isclose(focus_x, DIM, atol=1e-14)
+    assert np.isclose(focus_y, DIM, atol=1e-14)
+    assert focus_shape == "circle"
+    assert np.isclose(beam.get_focus_area(), np.pi/4 * DIM**2, atol=1e-21)
+
+def test_circle_double_diameter_clash():
+    with pytest.raises(TypeError):
+        beam = ps.Beam(photon_energy=PHOTON_ENERGY, focus_x=DIM,
+                       focus_y=DIM, focus_shape="circle", fluence=FLUENCE)
