@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import pytest
 
 import pysingfel as ps
@@ -121,3 +122,13 @@ def test_fluence():
     assert np.isclose(beam.get_photons_per_pulse(), FLUENCE)
     assert np.isclose(beam.get_photons_per_pulse_per_area(),
                       FLUENCE / (np.pi * DIM**2))
+
+def test_file():
+    ex_dir_ = os.path.dirname(__file__) + '/../../../examples'
+    beam = ps.Beam(ex_dir_+'/input/beam/amo86615.beam')
+    focus_x, focus_y, focus_shape = beam.get_focus()
+    assert np.isclose(beam.photon_energy, 4600)
+    assert np.isclose(beam.get_photons_per_pulse(), 1e12)
+    assert np.isclose(focus_x, 2e-7)
+    assert np.isclose(focus_y, 2e-7)
+    assert focus_shape == "circle"
