@@ -186,8 +186,8 @@ def symmpdb(fname, ff='WK', filter_occupancy=False):
                      
                     # Get charge info
                     charge = line[78:80].strip()  # charge info, should be in the form of '2+' or '1-' if not blank
-                    if len(charge) is not 0:
-                        if len(charge) is not 2:
+                    if len(charge) != 0:
+                        if len(charge) != 2:
                             print('Could not interpret the charge information!\n', line)
                         else:
                             charge = int(charge[1] + charge[0])  # swap the order to be '+2' or '-1' and convert to int
