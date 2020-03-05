@@ -218,6 +218,14 @@ class Beam(object):
                     if tmp[0] == 'beam/radius':
                         self.set_focus(radius=float(tmp[1]))
 
+    def get_highest_wavenumber_beam(self):
+        """
+        For variable/polychromatic beam to return highest wavenumber.
+        """
+        # If simple Beam, return itself.
+        # Composed beams should return simple one.
+        return self
+
     ####
     # Old-style setters and getters, for compatibility
     ####
