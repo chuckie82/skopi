@@ -229,6 +229,14 @@ class Beam(object):
         # Composed beams should return simple one.
         return self
 
+    def generate_new_state(self):
+        """
+        Return list of Beams at each pulse to represent a variable spectrum.
+        """
+        # If simple Beam, return itself.
+        # Variable beams should return simple one.
+        return [self]
+
     ####
     # Old-style setters and getters, for compatibility
     ####
