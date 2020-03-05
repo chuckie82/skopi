@@ -21,6 +21,10 @@ class DetectorBase(object):
     """
 
     def __init__(self):
+        # We no longer want detectors to have direct access to the beam
+        # but we keep it for a while for retro-compatibility
+        self._has_beam = False
+
         # Define the hierarchy system. For simplicity, we only use two-layer structure.
         self.panel_num = 1
 
@@ -104,6 +108,11 @@ class DetectorBase(object):
         :param beam: The beam object
         :return: None
         """
+        if beam is None:
+            return
+
+        self._has_beam = True
+
         wavevector = beam.get_wavevector()
         polar = beam.Polarization
         intensity = beam.get_photons_per_pulse() / beam.get_focus_area()
