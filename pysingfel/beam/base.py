@@ -83,8 +83,11 @@ class Beam(object):
 
         if focus_shape in {'circle', 'square'}:
             if "focus_y" in arg_dict:
-                raise TypeError("Focus with {} shape incompatible with "
-                                "focus y.".format(focus_shape))
+                focus_y = arg_dict.pop("focus_y")
+                if focus_x != focus_y:
+                    # Complain if incompatible x and y
+                    raise TypeError("Focus with {} shape incompatible with "
+                                    "focus y.".format(focus_shape))
             self._focus_xFWHM = focus_x
             self._focus_yFWHM = focus_x
         elif focus_shape in {'ellipse', 'rectangle'}:
