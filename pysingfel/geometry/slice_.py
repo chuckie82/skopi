@@ -114,7 +114,7 @@ def take_n_slices(volume, voxel_length, pixel_momentum, orientations,
     pattern_shape = pixel_momentum.shape[:-1]
 
     # Create variable to hold the slices
-    slices_holder = np.zeros((slice_num,) + pattern_shape)
+    slices_holder = np.zeros((slice_num,) + pattern_shape, dtype=volume.dtype)
 
     for l in range(slice_num):
         slices_holder[l] = take_slice(volume, voxel_length, pixel_momentum,
