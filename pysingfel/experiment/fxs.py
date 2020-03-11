@@ -5,9 +5,16 @@ from .base import Experiment
 
 
 class FXSExperiment(Experiment):
-    def __init__(self, det, beam, particles, n_part_of_each_per_shot):
+    def __init__(self, det, beam, particles, n_part_per_shot, ratios=None):
         super(FXSExperiment, self).__init__(det, beam, particles)
-        self.n_part_of_each_per_shot = n_part_of_each_per_shot
+        self.n_part_per_shot = n_part_per_shot
+        if ratios is None:
+            ratios = np.ones(len(particles))
+        ratios = np.array(ratios)
+        if np.any(ratios < 0):
+            raise ValueError("Ratios need to be positive.")
+        ratios /= ratios.sum()  # Normalize to 1
+        self.ratios = ratios
 
     def generate_new_sample_state(self):
         """
@@ -18,11 +25,13 @@ class FXSExperiment(Experiment):
         per particle in the sample at this state.
         """
         particle_groups = []
+        particle_distribution = np.random.multinomial(
+            self.n_part_per_shot, self.ratios)
         for i in range(self.n_particle_kinds):
-            orientations = psg.get_random_quat(
-                self.n_part_of_each_per_shot)
+            n_particles = particle_distribution[i]
+            orientations = psg.get_random_quat(n_particles)
             # TODO: use realistic positions (Iris?)
             positions = np.array(  # Currently all in center.
-                [[0., 0., 0.]] * self.n_part_of_each_per_shot)
+                [[0., 0., 0.]] * n_particles)
             particle_groups.append((positions, orientations))
         return particle_groups
