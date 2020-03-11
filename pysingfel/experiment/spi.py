@@ -1,14 +1,14 @@
 import numpy as np
 import pysingfel.geometry as psg
 
-from .base import Sample
+from .base import Experiment
 
 
-class SPISample(Sample):
-    def __init__(self, particle):
-        super(SPISample, self).__init__([particle])
+class SPIExperiment(Experiment):
+    def __init__(self, det, beam, particle):
+        super(SPIExperiment, self).__init__(det, beam, [particle])
 
-    def generate_new_state(self):
+    def generate_new_sample_state(self):
         """
         Return a list of "particle group"
 

@@ -1,15 +1,15 @@
 import numpy as np
 import pysingfel.geometry as psg
 
-from .base import Sample
+from .base import Experiment
 
 
-class FXSSample(Sample):
-    def __init__(self, particles, n_part_of_each_per_shot):
-        super(FXSSample, self).__init__(particles)
+class FXSExperiment(Experiment):
+    def __init__(self, det, beam, particles, n_part_of_each_per_shot):
+        super(FXSExperiment, self).__init__(det, beam, particles)
         self.n_part_of_each_per_shot = n_part_of_each_per_shot
 
-    def generate_new_state(self):
+    def generate_new_sample_state(self):
         """
         Return a list of "particle group"
 
