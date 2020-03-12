@@ -31,27 +31,31 @@ class Experiment(object):
         for spike in beam_spectrum:
             recidet = ReciprocalDetector(self.det, spike)
 
-            slice_ = 0.
+            group_complex_pattern = 0.
             for i, particle_group in enumerate(self.generate_new_sample_state()):
-                positions, orientations = particle_group
+                group_complex_pattern += self._generate_group_complex_pattern(
+                    recidet, i, particle_group)
 
-                slices = psg.take_n_slices(
-                    volume=self.volumes[i],
-                    voxel_length=self.voxel_length,
-                    pixel_momentum=recidet.pixel_position_reciprocal,
-                    orientations=orientations,
-                    inverse=True)
-
-                for j, position in enumerate(positions):
-                    slices[j] = recidet.add_phase_shift(slices[j], position)
-
-                slice_ += slices.sum(axis=0)
-
-            intens_slice = np.abs(slice_)**2
-            raw_img = recidet.add_correction_and_quantization(intens_slice)
+            group_pattern = np.abs(group_complex_pattern)**2
+            raw_img = recidet.add_correction_and_quantization(group_pattern)
             img_stack += raw_img
 
         return self.det.assemble_image_stack(img_stack)
+
+    def _generate_group_complex_pattern(self, recidet, i, particle_group):
+        positions, orientations = particle_group
+
+        slices = psg.take_n_slices(
+            volume=self.volumes[i],
+            voxel_length=self.voxel_length,
+            pixel_momentum=recidet.pixel_position_reciprocal,
+            orientations=orientations,
+            inverse=True)
+
+        for j, position in enumerate(positions):
+            slices[j] = recidet.add_phase_shift(slices[j], position)
+
+        return slices.sum(axis=0)
 
     def generate_new_sample_state(self):
         """
