@@ -43,7 +43,7 @@ class Experiment(object):
                     inverse=True)
 
                 for j, position in enumerate(positions):
-                    recidet.add_phase_shift(slices[j], position)
+                    slices[j] = recidet.add_phase_shift(slices[j], position)
 
                 slice_ += slices.sum(axis=0)
 
