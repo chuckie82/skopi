@@ -13,6 +13,8 @@ class FXSExperiment(Experiment):
         ratios = np.array(ratios)
         if np.any(ratios < 0):
             raise ValueError("Ratios need to be positive.")
+        if len(ratios) != self.n_particle_kinds:
+            raise ValueError("Need as many ratios as particles.")
         ratios /= ratios.sum()  # Normalize to 1
         self.ratios = ratios
 
