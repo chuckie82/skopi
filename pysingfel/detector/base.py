@@ -133,6 +133,12 @@ class DetectorBase(object):
             self.polarization_correction,
             self.solid_angle_per_pixel)
 
+    def ensure_beam(self):
+        if not self._has_beam:
+            raise RuntimeError(
+                "This Detector hasn't been initialized with a beam. "
+                "Use this function from a ReciprocalDetector instead.")
+
     ###############################################################################################
     # Calculate diffraction patterns
     ###############################################################################################
@@ -144,6 +150,8 @@ class DetectorBase(object):
         :param particle: The particle object.
         :return: A diffraction pattern.
         """
+        self.ensure_beam()
+
         if device:
             deprecation_message(
                 "Device option is deprecated. "
@@ -163,6 +171,8 @@ class DetectorBase(object):
         :param particle: The particle object.
         :return: A diffraction pattern.
         """
+        self.ensure_beam()
+
         if device:
             deprecation_message(
                 "Device option is deprecated. "
@@ -183,6 +193,8 @@ class DetectorBase(object):
         :param particle: The particle object.
         :return: A diffraction pattern.
         """
+        self.ensure_beam()
+
         if device:
             deprecation_message(
                 "Device option is deprecated. "
@@ -203,6 +215,7 @@ class DetectorBase(object):
         :param displ: displ(acement) (position) of the particle (m).
         :return: modified complex field pattern.
         """
+        self.ensure_beam()
         return pattern * np.exp(1j * np.dot(self.pixel_position_reciprocal, displ))
 
     def add_static_noise(self, pattern):
@@ -219,6 +232,7 @@ class DetectorBase(object):
         :param pattern: Pattern stack
         :return:
         """
+        self.ensure_beam()
         return np.multiply(pattern, self.solid_angle_per_pixel)
 
     def add_polarization_correction(self, pattern):
@@ -227,6 +241,7 @@ class DetectorBase(object):
         :param pattern: image stack
         :return:
         """
+        self.ensure_beam()
         return np.multiply(pattern, self.polarization_correction)
 
     def add_correction(self, pattern):
@@ -235,6 +250,7 @@ class DetectorBase(object):
         :param pattern: The image stack
         :return:
         """
+        self.ensure_beam()
         return np.multiply(pattern, self.linear_correction)
 
     def add_quantization(self,pattern):
@@ -251,6 +267,7 @@ class DetectorBase(object):
         :param pattern: The image stack.
         :return:
         """
+        self.ensure_beam()
         return np.random.poisson(np.multiply(pattern, self.linear_correction))
 
     def add_correction_batch(self,pattern_batch):
@@ -259,6 +276,7 @@ class DetectorBase(object):
         :param pattern_batch [image stack index,image stack shape]
         :return:
         """
+        self.ensure_beam()
         return np.multiply(pattern_batch, self.linear_correction[np.newaxis])
 
     def add_quantization_batch(self,pattern_batch):
@@ -275,6 +293,7 @@ class DetectorBase(object):
         :param pattern_batch: [image stack index, image stack shape]
         :return:
         """
+        self.ensure_beam()
         return np.random.poisson(np.multiply(pattern_batch, self.linear_correction[np.newaxis]))
 
     def remove_polarization(self, img, res=None):
@@ -282,6 +301,7 @@ class DetectorBase(object):
         img: assembled (2D) or unassembled (3D) diffraction image
         res: diffraction resolution in Angstroms
         """
+        self.ensure_beam()
         if res is not None:
             mask = self.pixel_distance_reciprocal < (1./res)
         else:
@@ -390,6 +410,8 @@ class DetectorBase(object):
         :param wave_vector: The wavevector of in this experiment.
         :return: The reciprocal mesh number along 1 dimension
         """
+        self.ensure_beam()
+
         """ Return the prefered the reciprocal voxel grid number along 1 dimension. """
         voxel_length = self.preferred_voxel_length(wave_vector)
         reciprocal_space_range = np.max(self.pixel_distance_reciprocal)
@@ -407,6 +429,7 @@ class DetectorBase(object):
         :param voxel_number_1d: The voxel number along 1 dimension.
         :return: The reciprocal mesh, voxel length.
         """
+        self.ensure_beam()
         dist_max = np.max(self.pixel_distance_reciprocal)
         return pg.get_reciprocal_mesh(voxel_number_1d, dist_max)
 
