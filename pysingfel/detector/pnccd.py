@@ -26,7 +26,7 @@ class PnccdDetector(DetectorBase):
     Class for lcls detectors.
     """
 
-    def __init__(self, geom, beam, run_num=0):
+    def __init__(self, geom, beam=None, run_num=0):
         """
         Initialize a pnccd detector.
 
