@@ -74,7 +74,7 @@ class PnccdDetector(DetectorBase):
         ###########################################################################################
         # Initialize the geometry configuration
         ############################################################################################
-        self.geometry = GeometryAccess(geom, 0o377)
+        self.geometry = GeometryAccess(geom, 0)
         self.run_num = run_num
 
         # Set coordinate in real space
