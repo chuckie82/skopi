@@ -8,3 +8,4 @@ from pysingfel.util import *
 from pysingfel.ff_waaskirf_database import *
 from pysingfel.solvent_form_factor import *
 from pysingfel.experiment import *
+from pysingfel.visualizer import *
