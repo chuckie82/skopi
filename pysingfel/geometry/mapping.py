@@ -1,8 +1,16 @@
 import numpy as np
 import time
+import os
 from numba import jit
 
 from pysingfel.util import deprecated
+
+xp = np
+if os.environ.get('USE_CUPY') != '0':
+    try:
+        import cupy as xp
+    except ImportError:
+        pass
 
 
 ######################################################################

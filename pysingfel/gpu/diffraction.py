@@ -2,6 +2,14 @@ from numba import cuda, float64, int64, int32, complex128
 import pysingfel.diffraction as pd
 import math
 import numpy as np
+import os
+
+xp = np
+if os.environ.get('USE_CUPY') != '0':
+    try:
+        import cupy as xp
+    except ImportError:
+        pass
 
 
 @cuda.jit('void(float64[:,:], float64[:,:], float64[:,:], float64[:], float64[:], int64, int64[:], int64)')
