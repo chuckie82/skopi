@@ -4,7 +4,7 @@ import os
 from pysingfel.ff_waaskirf_database import load_waaskirf_database, load_cromermann_database
 
 xp = np
-if os.environ.get('USE_CUPY') != '0':
+if os.environ.get('USE_CUPY') == '1':
     try:
         import cupy as xp
     except ImportError:
