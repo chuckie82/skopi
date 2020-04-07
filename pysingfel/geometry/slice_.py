@@ -41,27 +41,34 @@ def extract_slice(local_index, local_weight, volume):
     :param volume: The volume to slice from.
     :return: The slice.
     """
+    local_index = xp.asarray(local_index)
+    local_weight = xp.asarray(local_weight)
+    volume = xp.asarray(volume)
+
     # Convert the index of the 3D diffraction volume to 1D
     pattern_shape = local_index.shape[:3]
-    pixel_num = np.prod(pattern_shape)
+    pixel_num = int(np.prod(pattern_shape))
 
     volume_num_1d = volume.shape[0]
-    convertion_factor = np.array(
+    convertion_factor = xp.array(
         [volume_num_1d * volume_num_1d, volume_num_1d, 1], dtype=np.int64)
 
-    index_2d = np.reshape(local_index, [pixel_num, 8, 3])
-    index_2d = np.matmul(index_2d, convertion_factor)
+    index_2d = xp.reshape(local_index, [pixel_num, 8, 3])
+    index_2d = xp.matmul(index_2d, convertion_factor)
 
-    volume_1d = np.reshape(volume, volume_num_1d ** 3)
-    weight_2d = np.reshape(local_weight, [pixel_num, 8])
+    volume_1d = xp.reshape(volume, volume_num_1d ** 3)
+    weight_2d = xp.reshape(local_weight, [pixel_num, 8])
 
     # Expand the data to merge
     data_to_merge = volume_1d[index_2d]
 
     # Merge the data
-    data_merged = np.sum(np.multiply(weight_2d, data_to_merge), axis=-1)
+    data_merged = xp.sum(xp.multiply(weight_2d, data_to_merge), axis=-1)
 
-    return np.reshape(data_merged, pattern_shape)
+    data = xp.reshape(data_merged, pattern_shape)
+    if xp is not np:
+        data = data.get()
+    return data
 
 
 def take_slice(volume, voxel_length, pixel_momentum, orientation,

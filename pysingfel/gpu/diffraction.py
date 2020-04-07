@@ -86,14 +86,15 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
 
     if return_type == "intensity":
         pattern = np.reshape(np.square(np.abs(pattern_cos + 1j * pattern_sin)), shape[:-1])
-        return pattern
+        return xp.asarray(pattern)
     elif return_type == "complex_field":
         pattern = np.reshape(pattern_cos + 1j * pattern_sin, shape[:-1])
-        return pattern
+        return xp.asarray(pattern)
     else:
         print("Please set the parameter return_type = 'intensity' or 'complex_field'")
         print("This time, this program return the complex field.")
-        return np.reshape(pattern_cos + 1j * pattern_sin, shape[:-1])
+        pattern = np.reshape(pattern_cos + 1j * pattern_sin, shape[:-1])
+        return xp.asarray(pattern)
 
 
 def calculate_fxs_diffraction_pattern_gpu(reciprocal_space, particle, coords, return_type='intensity'):
