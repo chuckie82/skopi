@@ -1,6 +1,15 @@
 import h5py
 import numpy as np
+import os
 from pysingfel.ff_waaskirf_database import load_waaskirf_database, load_cromermann_database
+
+xp = np
+if os.environ.get('USE_CUPY') != '0':
+    try:
+        import cupy as xp
+    except ImportError:
+        pass
+
 
 def deprecation_message(message):
     """Print a deprecation message.
@@ -183,7 +192,7 @@ def symmpdb(fname, ff='WK', filter_occupancy=False):
                     dbase_charges = []
                     for j in idxs:
                         np.append(dbase_charges, dbase[j][1])
-                     
+
                     # Get charge info
                     charge = line[78:80].strip()  # charge info, should be in the form of '2+' or '1-' if not blank
                     if len(charge) != 0:
@@ -228,11 +237,11 @@ def symmpdb(fname, ff='WK', filter_occupancy=False):
 
     fin.close()
 
-    
+
     # convert atom positions in numpy array
     for chain_id in atoms_dict.keys():
         atoms_dict[chain_id] = np.asarray(atoms_dict[chain_id])
-        
+
 
     # To define a fake atom to initialize the variable
     # When return, this atom is not returned

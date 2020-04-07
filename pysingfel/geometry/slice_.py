@@ -1,18 +1,10 @@
 import numpy as np
 import time
-import os
 from numba import jit
 
-from pysingfel.util import deprecated
+from pysingfel.util import deprecated, xp
 
 from . import convert, mapping
-
-xp = np
-if os.environ.get('USE_CUPY') != '0':
-    try:
-        import cupy as xp
-    except ImportError:
-        pass
 
 
 @deprecated("Please use 'take_slice' or 'extract_slice' instead. "
