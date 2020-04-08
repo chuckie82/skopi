@@ -58,8 +58,6 @@ def extract_slice(local_index, local_weight, volume):
     data_merged = xp.sum(xp.multiply(weight_2d, data_to_merge), axis=-1)
 
     data = xp.reshape(data_merged, pattern_shape)
-    if xp is not np:
-        data = data.get()
     return data
 
 
@@ -121,7 +119,7 @@ def take_n_slices(volume, voxel_length, pixel_momentum, orientations,
     pattern_shape = pixel_momentum.shape[:-1]
 
     # Create variable to hold the slices
-    slices_holder = np.zeros((slice_num,) + pattern_shape, dtype=volume.dtype)
+    slices_holder = xp.zeros((slice_num,) + pattern_shape, dtype=volume.dtype)
 
     for l in range(slice_num):
         slices_holder[l] = take_slice(volume, voxel_length, pixel_momentum,

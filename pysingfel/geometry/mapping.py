@@ -22,7 +22,8 @@ def rotate_pixels_in_reciprocal_space(rot_mat, pixels_position):
     :param pixels_position: [the other dimensions,  3 for x,y,z]
     :return: np.dot(pixels_position, rot_mat.T)
     """
-    return np.dot(pixels_position, rot_mat.T)
+    rot_mat = xp.asarray(rot_mat)
+    return xp.dot(pixels_position, rot_mat.T)
 
 
 ######################################################################

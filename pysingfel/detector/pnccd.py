@@ -101,6 +101,9 @@ class PnccdDetector(DetectorBase):
         # Get the range of the pixel index
         self.detector_pixel_num_x = xp.max(self.pixel_index_map[:, :, :, 0]) + 1
         self.detector_pixel_num_y = xp.max(self.pixel_index_map[:, :, :, 1]) + 1
+        if xp is not np:
+            self.detector_pixel_num_x = self.detector_pixel_num_x.get()
+            self.detector_pixel_num_y = self.detector_pixel_num_y.get()
 
         self.panel_pixel_num_x = np.array([self.pixel_index_map.shape[1], ] * self.panel_num)
         self.panel_pixel_num_y = np.array([self.pixel_index_map.shape[2], ] * self.panel_num)

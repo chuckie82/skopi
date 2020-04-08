@@ -9,6 +9,8 @@ if os.environ.get('USE_CUPY') == '1':
         import cupy as xp
     except ImportError:
         pass
+# Ensure arrays are cupy arrays.
+asnumpy = np.asarray if xp is np else xp.asnumpy
 
 
 def deprecation_message(message):
