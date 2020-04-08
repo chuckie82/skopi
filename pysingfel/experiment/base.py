@@ -26,13 +26,14 @@ class Experiment(object):
 
     def generate_image(self):
         beam_spectrum = self.beam.generate_new_state()
+        sample_state = self.generate_new_sample_state()
         img_stack = 0.
 
         for spike in beam_spectrum:
             recidet = ReciprocalDetector(self.det, spike)
 
             group_complex_pattern = 0.
-            for i, particle_group in enumerate(self.generate_new_sample_state()):
+            for i, particle_group in enumerate(sample_state):
                 group_complex_pattern += self._generate_group_complex_pattern(
                     recidet, i, particle_group)
 
