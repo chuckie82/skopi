@@ -432,6 +432,6 @@ class DetectorBase(object):
         :return: The reciprocal mesh, voxel length.
         """
         self.ensure_beam()
-        dist_max = np.max(self.pixel_distance_reciprocal)
+        dist_max = xp.max(self.pixel_distance_reciprocal)
         return pg.get_reciprocal_mesh(voxel_number_1d, dist_max)
 

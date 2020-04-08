@@ -161,10 +161,10 @@ def get_reciprocal_mesh(voxel_number_1d, max_value):
     :param max_value: Max (absolute) value on each axis.
     :return: The mesh grid, the voxel lenght.
     """
-    linspace = np.linspace(-max_value, max_value, voxel_number_1d)
-    reciprocal_mesh_stack = np.meshgrid(linspace, linspace, linspace,
-                                        indexing='ij')
-    reciprocal_mesh = np.moveaxis(reciprocal_mesh_stack, 0, -1)
+    linspace = xp.linspace(-max_value, max_value, voxel_number_1d)
+    reciprocal_mesh_stack = xp.asarray(
+        xp.meshgrid(linspace, linspace, linspace, indexing='ij'))
+    reciprocal_mesh = xp.moveaxis(reciprocal_mesh_stack, 0, -1)
     voxel_length = 2 * max_value / (voxel_number_1d - 1)
     return reciprocal_mesh, voxel_length
 

@@ -5,8 +5,9 @@ import pytest
 import pysingfel as ps
 import pysingfel.gpu as pg
 import pysingfel.constants as cst
+from pysingfel.util import xp
 
-import six 
+import six
 if six.PY2:
     PSCalib = pytest.importorskip("PSCalib")
 if six.PY3:
@@ -68,63 +69,63 @@ class TestDiffractionPattern(object):
 
     def test_pattern_1_h_symetry(self):
         """Test h symmetry of volume with 1 atom."""
-        assert np.allclose(self.volume_1, self.volume_1[::-1, :, :])
+        assert xp.allclose(self.volume_1, self.volume_1[::-1, :, :])
 
     def test_pattern_1_k_symetry(self):
         """Test k symmetry of volume with 1 atom."""
-        assert np.allclose(self.volume_1, self.volume_1[:, ::-1, :])
+        assert xp.allclose(self.volume_1, self.volume_1[:, ::-1, :])
 
     def test_pattern_1_l_symetry(self):
         """Test l symmetry of volume with 1 atom."""
-        assert np.allclose(self.volume_1, self.volume_1[:, :, ::-1])
+        assert xp.allclose(self.volume_1, self.volume_1[:, :, ::-1])
 
     def test_pattern_1_hk_symetry(self):
         """Test h-k symmetry of volume with 1 atom."""
-        assert np.allclose(self.volume_1, np.swapaxes(self.volume_1, 0, 1))
+        assert xp.allclose(self.volume_1, xp.swapaxes(self.volume_1, 0, 1))
 
     def test_pattern_1_kl_symetry(self):
         """Test k-l symmetry of volume with 1 atom."""
-        assert np.allclose(self.volume_1, np.swapaxes(self.volume_1, 1, 2))
+        assert xp.allclose(self.volume_1, xp.swapaxes(self.volume_1, 1, 2))
 
     def test_pattern_1_lh_symetry(self):
         """Test l-h symmetry of volume with 1 atom."""
-        assert np.allclose(self.volume_1, np.swapaxes(self.volume_1, 2, 0))
+        assert xp.allclose(self.volume_1, xp.swapaxes(self.volume_1, 2, 0))
 
     def test_pattern_2x_h_symetry(self):
         """Test h symmetry of volume with 2 atoms along x."""
-        assert np.allclose(self.volume_2x, self.volume_2x[::-1, :, :])
+        assert xp.allclose(self.volume_2x, self.volume_2x[::-1, :, :])
 
     def test_pattern_2x_k_symetry(self):
         """Test k symmetry of volume with 2 atoms along x."""
-        assert np.allclose(self.volume_2x, self.volume_2x[:, ::-1, :])
+        assert xp.allclose(self.volume_2x, self.volume_2x[:, ::-1, :])
 
     def test_pattern_2x_l_symetry(self):
         """Test l symmetry of volume with 2 atoms along x."""
-        assert np.allclose(self.volume_2x, self.volume_2x[:, :, ::-1])
+        assert xp.allclose(self.volume_2x, self.volume_2x[:, :, ::-1])
 
     def test_pattern_2z_hk_symetry(self):
         """Test h-k symmetry of volume with 2 atoms along z."""
-        assert np.allclose(self.volume_2z, np.swapaxes(self.volume_2z, 0, 1))
+        assert xp.allclose(self.volume_2z, xp.swapaxes(self.volume_2z, 0, 1))
 
     def test_pattern_2x_kl_symetry(self):
         """Test k-l symmetry of volume with 2 atoms along x."""
-        assert np.allclose(self.volume_2x, np.swapaxes(self.volume_2x, 1, 2))
+        assert xp.allclose(self.volume_2x, xp.swapaxes(self.volume_2x, 1, 2))
 
     def test_pattern_2y_lh_symetry(self):
         """Test l-h symmetry of volume with 2 atoms along y."""
-        assert np.allclose(self.volume_2y, np.swapaxes(self.volume_2y, 2, 0))
+        assert xp.allclose(self.volume_2y, xp.swapaxes(self.volume_2y, 2, 0))
 
     def test_pattern_1_vs_2x_particles(self):
         """Test diffraction equivalence of 1-2 atoms along x axis."""
-        assert np.allclose(
+        assert xp.allclose(
             (self.volume_2x - 4*self.volume_1)[self.mesh_length//2, :, :], 0.)
 
     def test_pattern_1_vs_2y_particles(self):
         """Test diffraction equivalence of 1-2 atoms along y axis."""
-        assert np.allclose(
+        assert xp.allclose(
             (self.volume_2y - 4*self.volume_1)[:, self.mesh_length//2, :], 0.)
 
     def test_pattern_1_vs_2z_particles(self):
         """Test diffraction equivalence of 1-2 atoms along z axis."""
-        assert np.allclose(
+        assert xp.allclose(
             (self.volume_2z - 4*self.volume_1)[:, :, self.mesh_length//2], 0.)

@@ -47,9 +47,9 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
     arbitrary reciprocal space """
     # convert the reciprocal space into a 1d series.
     shape = reciprocal_space.shape
-    pixel_number = np.prod(shape[:-1])
-    reciprocal_space_1d = np.reshape(reciprocal_space, [pixel_number, 3])
-    reciprocal_norm_1d = np.sqrt(np.sum(np.square(reciprocal_space_1d), axis=-1))
+    pixel_number = int(np.prod(shape[:-1]))
+    reciprocal_space_1d = xp.reshape(reciprocal_space, [pixel_number, 3])
+    reciprocal_norm_1d = xp.sqrt(xp.sum(xp.square(reciprocal_space_1d), axis=-1))
 
     # Calculate atom form factor for the reciprocal space
     form_factor = pd.calculate_atomic_factor(particle=particle,
@@ -61,11 +61,11 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
     atom_type_num = len(particle.split_idx) - 1
 
     # create
-    pattern_cos = np.zeros(pixel_number, dtype=np.float64)
-    pattern_sin = np.zeros(pixel_number, dtype=np.float64)
+    pattern_cos = xp.zeros(pixel_number, dtype=xp.float64)
+    pattern_sin = xp.zeros(pixel_number, dtype=xp.float64)
 
     # atom_number = atom_position.shape[0]
-    split_index = np.array(particle.split_idx)
+    split_index = xp.array(particle.split_idx)
 
     cuda_split_index = cuda.to_device(split_index)
     cuda_atom_position = cuda.to_device(atom_position)
