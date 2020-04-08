@@ -97,14 +97,14 @@ def get_weight_and_index(pixel_position, voxel_length, voxel_num_1d):
     indexes[:, 7, :] = tmp_index + 1
 
     # Assign the correct values to the weight
-    weight[:, 0] = np.prod(dceiling, axis=-1)
+    weight[:, 0] = xp.prod(dceiling, axis=-1)
     weight[:, 1] = dceiling[:, 0] * dceiling[:, 1] * dfloor[:, 2]
     weight[:, 2] = dceiling[:, 0] * dfloor[:, 1] * dceiling[:, 2]
     weight[:, 3] = dceiling[:, 0] * dfloor[:, 1] * dfloor[:, 2]
     weight[:, 4] = dfloor[:, 0] * dceiling[:, 1] * dceiling[:, 2]
     weight[:, 5] = dfloor[:, 0] * dceiling[:, 1] * dfloor[:, 2]
     weight[:, 6] = dfloor[:, 0] * dfloor[:, 1] * dceiling[:, 2]
-    weight[:, 7] = np.prod(dfloor, axis=-1)
+    weight[:, 7] = xp.prod(dfloor, axis=-1)
 
     # Change the shape of the index and weight variable
     indexes = xp.reshape(indexes, detector_shape + (8, 3))
