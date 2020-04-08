@@ -7,7 +7,7 @@ import pysingfel.geometry as pg
 import pysingfel.util as pu
 import pysingfel.crosstalk as pc
 import pysingfel.gpu.diffraction as pgd
-from pysingfel.util import deprecation_message
+from pysingfel.util import deprecation_message, xp
 from pysingfel import particle
 from pysingfel.particlePlacement import max_radius, distribute_particles
 from pysingfel.geometry import quaternion2rot3d, get_random_rotation, get_random_translations
@@ -216,7 +216,9 @@ class DetectorBase(object):
         :return: modified complex field pattern.
         """
         self.ensure_beam()
-        return pattern * np.exp(1j * np.dot(self.pixel_position_reciprocal, displ))
+        pattern = xp.asarray(pattern)
+        displ = xp.asarray(displ)
+        return pattern * xp.exp(1j * xp.dot(self.pixel_position_reciprocal, displ))
 
     def add_static_noise(self, pattern):
         """
