@@ -10,7 +10,7 @@ from . import convert
 # Functions to generate rotations for different cases: uniform(1d), uniform(3d), random.
 def points_on_1sphere(num_pts, rotation_axis):
     """
-    Distribute points evenly on a 1-sphere (circle) in 4D.
+    Distribute points evenly on a unit 1-sphere (circle) in 4D.
 
     :param num_pts: Number of points
     :param rotation_axis: Rotation axis.
@@ -34,7 +34,10 @@ def points_on_2sphere(num_pts):
 
 def points_on_3sphere(num_pts):
     """
-    Attempt to distribute points evenly on a 3-sphere in 4D.
+    Attempt to distribute points evenly on a unit 3-sphere in 4D.
+
+    The 3-sphere is the clasical hypersphere embedded in the 4D
+    Euclidian space.
 
     :param num_pts: Number of points
     :return: Quaternion list of shape [number of quaternion, 4]
@@ -44,7 +47,10 @@ def points_on_3sphere(num_pts):
 
 def points_on_3hemisphere(num_pts):
     """
-    Attempt to distribute points evenly on half a 3-sphere in 4D.
+    Attempt to distribute points evenly on half of a unit 3-sphere in 4D.
+
+    The 3-sphere is the clasical hypersphere embedded in the 4D
+    Euclidian space.
 
     :param num_pts: Number of points
     :return: Quaternion list of shape [number of quaternion, 4]
@@ -54,7 +60,10 @@ def points_on_3hemisphere(num_pts):
 
 def points_on_Nsphere(num_pts, N, half=False):
     """
-    Attempt to distribute points evenly on a N-sphere in N+1 dimensions.
+    Attempt to distribute points evenly on a unit N-sphere.
+
+    This N-sphere corresponds to the set of points in an N+1 dimensional
+    Euclidean space that are at a unit distance of the origin.
 
     :param num_pts: Number of points
     :param half: Bool. If True, distribute on half the N-sphere.
