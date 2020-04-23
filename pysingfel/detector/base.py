@@ -178,6 +178,7 @@ class DetectorBase(object):
                 "Device option is deprecated. "
                 "Everything now runs on the GPU.")
 
+        import pysingfel.gpu.diffraction as pgd
         diffraction_pattern = pgd.calculate_fxs_diffraction_pattern_gpu(
             self.pixel_position_reciprocal,
             particle,
