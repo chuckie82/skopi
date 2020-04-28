@@ -10,7 +10,7 @@ from . import convert
 # Functions to generate rotations for different cases: uniform(1d), uniform(3d), random.
 def points_on_1sphere(num_pts, rotation_axis):
     """
-    Distribute points evenly on a 1-sphere (circle) in 4D.
+    Distribute points evenly on a unit 1-sphere (circle) in 4D.
 
     :param num_pts: Number of points
     :param rotation_axis: Rotation axis.
@@ -34,42 +34,103 @@ def points_on_2sphere(num_pts):
 
 def points_on_3sphere(num_pts):
     """
-    Distribute points evenly on a 3-sphere in 4D.
+    Attempt to distribute points evenly on a unit 3-sphere in 4D.
+
+    The 3-sphere is the clasical hypersphere embedded in the 4D
+    Euclidian space.
 
     :param num_pts: Number of points
     :return: Quaternion list of shape [number of quaternion, 4]
     """
-    points = np.zeros((2 * num_pts, 4))
-    dim_num = 4
-    # Surface area for unit sphere when dim_num is even
-    surface_area = dim_num * np.pi ** (dim_num / 2) / (dim_num / 2)
-    delta = np.exp(np.log(surface_area / num_pts) / 3)
+    return points_on_Nsphere(num_pts, 3)
+
+
+def points_on_3hemisphere(num_pts):
+    """
+    Attempt to distribute points evenly on half of a unit 3-sphere in 4D.
+
+    The 3-sphere is the clasical hypersphere embedded in the 4D
+    Euclidian space.
+
+    :param num_pts: Number of points
+    :return: Quaternion list of shape [number of quaternion, 4]
+    """
+    return points_on_Nsphere(num_pts, 3, half=True)
+
+
+def points_on_Nsphere(num_pts, N, half=False):
+    """
+    Attempt to distribute points evenly on a unit N-sphere.
+
+    This N-sphere corresponds to the set of points in an N+1 dimensional
+    Euclidean space that are at a unit distance of the origin.
+
+    :param num_pts: Number of points
+    :param half: Bool. If True, distribute on half the N-sphere.
+    :return: List of (N+1)-D points [num_pts, N+1]
+    """
+    dim_num = N+1
+
+    surface_area = _surface_Nsphere(N)
+    if half:
+        surface_area /= 2
+    delta = np.exp(np.log(surface_area / num_pts) / N)
     iteration = 0
     ind = 0
     max_iter = 1000
+
+    points = np.zeros((2 * num_pts, dim_num))
+    best_pts = None
+    best_num_points = 2 * num_pts
+
     while ind != num_pts and iteration < max_iter:
-        ind = 0
-        delta_w1 = delta
-        w1 = 0.5 * delta_w1
-        while w1 < np.pi:
-            q0 = np.cos(w1)
-            delta_w2 = delta_w1 / np.sin(w1)
-            w2 = 0.5 * delta_w2
-            while w2 < np.pi:
-                q1 = np.sin(w1) * np.cos(w2)
-                delta_w3 = delta_w2 / np.sin(w2)
-                w3 = 0.5 * delta_w3
-                while w3 < 2 * np.pi:
-                    q2 = np.sin(w1) * np.sin(w2) * np.cos(w3)
-                    q3 = np.sin(w1) * np.sin(w2) * np.sin(w3)
-                    points[ind, :] = np.array([q0, q1, q2, q3])
-                    ind += 1
-                    w3 += delta_w3
-                w2 += delta_w2
-            w1 += delta_w1
-        delta *= np.exp(np.log(float(ind) / num_pts) / 3)
+        ind = _point_on_Nsphere_loop(
+            points, delta, 0, dim_num, 0, half=half)
+        delta *= np.exp(np.log(float(ind) / num_pts) / N)
         iteration += 1
-    return points[0:num_pts, :]
+
+        if num_pts <= ind < best_num_points:
+            best_pts = points[:ind].copy()
+            best_num_points = ind
+
+    return best_pts[:num_pts]
+
+
+def _point_on_Nsphere_loop(points, delta, currDim, NDim, ind,
+                           base=1, last=1, half=False):
+    """Internal and recursive logic of points_on_Nsphere."""
+    delta_w = delta / last
+    w = 0.5 * delta_w
+
+    if currDim+2 == NDim:
+        w_limit = np.pi if half else 2*np.pi
+        while w < w_limit - delta_w/2:
+            points[ind, currDim] = base * np.cos(w)
+            points[ind, currDim+1] = base * np.sin(w)
+            ind += 1
+            w += delta_w
+    else:
+        while w < np.pi - delta_w/2:
+            old_ind = ind
+            ind = _point_on_Nsphere_loop(points, delta_w, currDim+1, NDim,
+                                         ind, base*np.sin(w), np.sin(w), half)
+            points[old_ind:ind, currDim] = base * np.cos(w)
+            w += delta_w
+    return ind
+
+
+def _volume_Nball(n):
+    """Volume of a unitary N-Ball."""
+    if n == 0:
+        return 1
+    return _surface_Nsphere(n-1) / n
+
+
+def _surface_Nsphere(n):
+    """Surface of a unitary N-Sphere."""
+    if n == 0:
+        return 2
+    return 2 * np.pi * _volume_Nball(n-1)
 
 
 def get_random_rotation(rotation_axis=None):
@@ -108,11 +169,13 @@ def get_random_quat(num_pts):
     return np.transpose(quat)
 
 
-def get_uniform_quat(num_pts):
+def get_uniform_quat(num_pts, avoid_symmetric=False):
     """
     Get num_pts of unit quaternions evenly distributed on the 3-sphere.
 
     :param num_pts: The number of quaternions to return
+    :param avoid_symmetric:
+        If specified, count opposite quaternions as identical.
     :return: Quaternion list of shape [number of quaternion, 4]
     """
-    return points_on_3sphere(num_pts)
+    return points_on_Nsphere(num_pts, 3, half=avoid_symmetric)
