@@ -7,8 +7,7 @@ from .base import Experiment
 class SPIExperiment(Experiment):
     def __init__(self, det, beam, particle, orientations=None):
         super(SPIExperiment, self).__init__(det, beam, [particle])
-        self._orientations = orientations
-        self._i_orientations = 0
+        self.set_orientations(orientations)
 
     def generate_new_sample_state(self):
         """
@@ -38,3 +37,7 @@ class SPIExperiment(Experiment):
         orientation = self._orientations[self._i_orientations, None]
         self._i_orientations += 1
         return orientation
+
+    def set_orientations(self, orientations):
+        self._orientations = orientations
+        self._i_orientations = 0
