@@ -21,6 +21,9 @@ class Experiment(object):
         import pysingfel.gpu as pg
         self.volumes = []
         for particle in particles:
+            if particle is None:
+                self.volumes.append(np.zeros(mesh.shape[:-1], np.complex128))
+                continue
             self.volumes.append(
                 pg.calculate_diffraction_pattern_gpu(mesh, particle, return_type='complex_field'))
 
@@ -28,8 +31,26 @@ class Experiment(object):
         img_stack = self.generate_image_stack()
         return self.det.assemble_image_stack(img_stack)
 
-    def generate_image_stack(self, return_photons=True,
-                             return_intensities=False):
+    def generate_image_stack(self, return_photons=None,
+                             return_intensities=False,
+                             always_tuple=False):
+        """
+        Generate and return a snapshot of the experiment.
+
+        By default, return a photon snapshot.
+        That behavior can be changed by setting:
+          - return_photons
+          - return_intensities
+        to True or False.
+
+        If more than one is requested, the function returns a tuple of
+        arrays instead of the array itself.
+        To return a tuple even if only one array is requested, set
+        always_tuple to True.
+        """
+        if return_photons is None and return_intensities is False:
+            return_photons = True
+
         beam_spectrum = self.beam.generate_new_state()
         sample_state = self.generate_new_sample_state()
         intensities_stack = 0.
@@ -56,7 +77,10 @@ class Experiment(object):
             ret.append(photons_stack)
         if return_intensities:
             ret.append(intensities_stack)
-        return ret
+
+        if len(ret) == 1:
+            return ret[0]
+        return tuple(ret)
 
     def _generate_group_complex_pattern(self, recidet, i, particle_group):
         positions, orientations = particle_group
