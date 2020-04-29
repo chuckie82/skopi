@@ -12,6 +12,7 @@ module load cuda/10.1.168
 
 export PYVER=3.7
 export CUDA_HOME=\$OLCF_CUDA_ROOT
+export CUPY_DIR="$PWD/cupy"
 
 # variables needed for conda
 export CONDA_PREFIX=$PWD/conda
@@ -34,6 +35,7 @@ EOF
 # Clean up any previous installs.
 rm -rf conda
 rm -rf lcls2
+rm -rf cupy
 
 source env.sh
 
@@ -60,6 +62,9 @@ PACKAGE_LIST=(
     mypy
     h5py
 
+    # cupy requirements:
+    fastrlock
+
     # pysingfel requirements:
     numba
     scipy
@@ -79,6 +84,12 @@ CC=$OMPI_CC MPICC=mpicc pip install -v --no-binary mpi4py mpi4py
 git clone https://github.com/slac-lcls/lcls2.git $LCLS2_DIR
 pushd $LCLS2_DIR
 CC=/sw/summit/gcc/7.4.0/bin/gcc CXX=/sw/summit/gcc/7.4.0/bin/g++ ./build_all.sh -d
+popd
+
+# Install cupy
+git clone https://github.com/cupy/cupy.git $CUPY_DIR
+pushd $CUPY_DIR
+pip install --no-cache-dir .
 popd
 
 # Install pysingfel
