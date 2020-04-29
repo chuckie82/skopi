@@ -21,6 +21,9 @@ class Experiment(object):
         import pysingfel.gpu as pg
         self.volumes = []
         for particle in particles:
+            if particle is None:
+                self.volumes.append(np.zeros(mesh.shape[:-1], np.complex128))
+                continue
             self.volumes.append(
                 pg.calculate_diffraction_pattern_gpu(mesh, particle, return_type='complex_field'))
 
@@ -56,7 +59,10 @@ class Experiment(object):
             ret.append(photons_stack)
         if return_intensities:
             ret.append(intensities_stack)
-        return ret
+
+        if len(ret) == 1:
+            return ret[0]
+        return tuple(ret)
 
     def _generate_group_complex_pattern(self, recidet, i, particle_group):
         positions, orientations = particle_group
