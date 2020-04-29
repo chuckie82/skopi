@@ -5,8 +5,10 @@ from .base import Experiment
 
 
 class SPIExperiment(Experiment):
-    def __init__(self, det, beam, particle):
+    def __init__(self, det, beam, particle, orientations=None):
         super(SPIExperiment, self).__init__(det, beam, [particle])
+        self._orientations = orientations
+        self._i_orientations = 0
 
     def generate_new_sample_state(self):
         """
@@ -18,9 +20,21 @@ class SPIExperiment(Experiment):
 
         In the SPI case, it is only one group of one particle.
         """
-        orientations = psg.get_random_quat(1)
+        orientations = self.get_next_orientation()
         positions = np.array([[0., 0., 0.]])
         particle_groups = [  # For each particle kind
             (positions, orientations)
         ]
         return particle_groups
+
+    def get_next_orientation(self):
+        """
+        Return the next orientation.
+        """
+        if self._orientations is None:
+            return psg.get_random_quat(1)
+        if self._i_orientations >= len(self._orientations):
+            raise StopIteration("No more orientation available.")
+        orientation = self._orientations[self._i_orientations, None]
+        self._i_orientations += 1
+        return orientation
