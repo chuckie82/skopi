@@ -154,7 +154,7 @@ class PnccdDetector(DetectorBase):
 
     @property
     def pedestals(self):
-        if six.PY3 and not self._pedestals:
+        if six.PY3 and self._pedestals is None:
             self._pedestals = calib_constants(
                 self.det, exp=self.exp, ctype="pedestals",
                 run=self.run_num)[0]
@@ -162,7 +162,7 @@ class PnccdDetector(DetectorBase):
 
     @property
     def pixel_rms(self):
-        if six.PY3 and not self._pixel_rms:
+        if six.PY3 and self._pixel_rms is None:
             self._pixel_rms = calib_constants(
                 self.det, exp=self.exp, ctype="pixel_rms",
                 run=self.run_num)[0]
@@ -170,7 +170,7 @@ class PnccdDetector(DetectorBase):
 
     @property
     def pixel_mask(self):
-        if six.PY3 and not self._pixel_mask:
+        if six.PY3 and self._pixel_mask is None:
             self._pixel_mask = calib_constants(
                 self.det, exp=self.exp, ctype="pixel_mask",
                 run=self.run_num)[0]
@@ -178,7 +178,7 @@ class PnccdDetector(DetectorBase):
 
     @property
     def pixel_bkgd(self):
-        if six.PY3 and not self._pixel_bkgd:
+        if six.PY3 and self._pixel_bkgd is None:
             self._pixel_bkgd = calib_constants(
                 self.det, exp=self.exp, ctype="pixel_bkgd",
                 run=self.run_num)[0]
@@ -186,7 +186,7 @@ class PnccdDetector(DetectorBase):
 
     @property
     def pixel_status(self):
-        if six.PY3 and not self._pixel_status:
+        if six.PY3 and self._pixel_status is None:
             self._pixel_status = calib_constants(
                 self.det, exp=self.exp, ctype="pixel_status",
                 run=self.run_num)[0]
@@ -194,7 +194,7 @@ class PnccdDetector(DetectorBase):
 
     @property
     def pixel_gain(self):
-        if six.PY3 and not self._pixel_gain:
+        if six.PY3 and self._pixel_gain is None:
             self._pixel_gain = calib_constants(
                 self.det, exp=self.exp, ctype="pixel_gain",
                 run=self.run_num)[0]

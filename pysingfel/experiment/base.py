@@ -28,10 +28,12 @@ class Experiment(object):
         img_stack = self.generate_image_stack()
         return self.det.assemble_image_stack(img_stack)
 
-    def generate_image_stack(self):
+    def generate_image_stack(self, return_photons=True,
+                             return_intensities=False):
         beam_spectrum = self.beam.generate_new_state()
         sample_state = self.generate_new_sample_state()
-        img_stack = 0.
+        intensities_stack = 0.
+        photons_stack = 0.
 
         for spike in beam_spectrum:
             recidet = ReciprocalDetector(self.det, spike)
@@ -42,10 +44,19 @@ class Experiment(object):
                     recidet, i, particle_group)
 
             group_pattern = np.abs(group_complex_pattern)**2
-            raw_img = recidet.add_correction_and_quantization(group_pattern)
-            img_stack += raw_img
 
-        return img_stack
+            group_intensities = recidet.add_correction(group_pattern)
+            intensities_stack += group_intensities
+
+            group_photons = recidet.add_quantization(group_intensities)
+            photons_stack += group_photons
+
+        ret = []
+        if return_photons:
+            ret.append(photons_stack)
+        if return_intensities:
+            ret.append(intensities_stack)
+        return ret
 
     def _generate_group_complex_pattern(self, recidet, i, particle_group):
         positions, orientations = particle_group
