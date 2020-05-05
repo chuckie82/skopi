@@ -14,7 +14,7 @@ from pysingfel.util import asnumpy, xp
 ROOT_DIR=os.environ["PYSINGFEL_DIR"]
 sys.path.append("/ccs/home/iris/adse13-198/pysingfel/setup/lcls2/psana")
 
-# Example: mpirun -n 2 python spi_mpi_test.py --pdb=../input/pdb/3iyf.pdb --geom=../input/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data --beam=../input/beam/amo86615.beam --numPatterns=60 --outDir=../output
+# Example: mpirun -n 2 python SPI_MPI_psana.py --pdb=../input/pdb/3iyf.pdb --geom=../input/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data --beam=../input/beam/amo86615.beam --numPatterns=60 --outDir=../output
 
 # set up MPI environment
 comm = MPI.COMM_WORLD # communication module
