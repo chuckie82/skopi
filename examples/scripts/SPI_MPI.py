@@ -11,9 +11,12 @@ import pysingfel as ps
 import pysingfel.gpu as pg
 from pysingfel.util import asnumpy, xp
 
-ROOT_DIR = "../.."
-if ROOT_DIR not in sys.path:
-    sys.path.append(ROOT_DIR)
+ROOT_DIR=os.environ["PYSINGFEL_DIR"]
+
+# set up MPI environment
+comm = MPI.COMM_WORLD # communication module
+size = comm.Get_size() # number of processors available
+rank = comm.Get_rank() # the rank of the process (the rank of a process always ranges from 0 to size-1)
 
 def main():
     # parse user input
@@ -24,11 +27,6 @@ def main():
     numPatterns = int(params['numPatterns'])
     outDir = params['outDir']
     saveName = params['saveNameHDF5']
-
-    # set up MPI environment
-    comm = MPI.COMM_WORLD # communication module
-    size = comm.Get_size() # number of processors available
-    rank = comm.Get_rank() # the rank of the process (the rank of a process always ranges from 0 to size-1)
 
     data = None
 
@@ -64,10 +62,10 @@ def main():
         n = 0
         while n < numPatterns:
             status1 = MPI.Status()
-            result = comm.recv(source=MPI.ANY_SOURCE,status=status1)
+            (ind, img) = comm.recv(source=MPI.ANY_SOURCE,status=status1)
             i = status1.Get_source()
-            print ("Rank 0: Received image %d from rank %d" % (result[0],i)) 
-            dset[result[0],:,:,:] = result[1]
+            print ("Rank 0: Received image %d from rank %d" % (ind,i)) 
+            dset[ind,:,:,:] = img
             n += 1
     else:
         det = dct['detector']
