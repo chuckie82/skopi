@@ -58,7 +58,7 @@ This will:
 
 To recover the environment, run `source setup/env.sh`.
 
-## Nody proxy instruction
+## Set Up Nody Proxy
 
 1. Install
 
