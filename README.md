@@ -102,5 +102,5 @@ httpProxy.createProxyServer({
 
 ```
 export LCLS_CALIB_HTTP=http://YOUR_HOST_NAME:LISTEN_PORT_NUMBER/calib_ws
-where YOUR_HOST_NAME is your current node (type printenv HOSTNAME to see the name) and LISTEN_PORT_NUMBER is the number that you chose in step 2.
 ```
+where YOUR_HOST_NAME is your current node (type printenv HOSTNAME to see the name) and LISTEN_PORT_NUMBER is the number that you chose in step 2.
