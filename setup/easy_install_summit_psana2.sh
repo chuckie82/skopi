@@ -21,6 +21,7 @@ export CONDA_PREFIX=$PWD/conda
 export LCLS2_DIR="$PWD/lcls2"
 export PATH="\$LCLS2_DIR/install/bin:\$PATH"
 export PYTHONPATH="\$LCLS2_DIR/install/lib/python\$PYVER/site-packages:\$PYTHONPATH"
+export PS_PARALLEL=none
 
 # variables needed to get the conda env
 if [[ -d \$CONDA_PREFIX ]]; then
