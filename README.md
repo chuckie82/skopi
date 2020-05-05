@@ -77,7 +77,7 @@ node --version
 npm install http-proxy -save
 ```
 
-2, Change proxy listen port -- use your own port number to avoid conflicting with other users.
+2. Change proxy listen port -- use your own port number to avoid conflicting with other users.
 
 In proxy.js, change 6749 to any other number.
 ```
