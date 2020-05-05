@@ -57,3 +57,50 @@ This will:
   - installs pysingfel.
 
 To recover the environment, run `source setup/env.sh`.
+
+## Nody proxy instruction
+
+1. Install
+
+```
+mkdir test_proxy
+cd test_proxy
+wget https://nodejs.org/dist/v12.16.3/node-v12.16.3-linux-ppc64le.tar.gz
+tar xvfz node-v12.16.3-linux-ppc64le.tar.gz
+ln -s node-v12.16.3-linux-ppc64le latest
+wget https://raw.githubusercontent.com/ExaFEL/installation/master/proxy.js
+wget https://raw.githubusercontent.com/ExaFEL/installation/master/run_proxy.sh
+chmod +x run_proxy.sh
+export PATH=$PWD/latest/bin:$PATH
+npm --version
+node --version
+npm install http-proxy -save
+```
+
+2, Change proxy listen port -- use your own port number to avoid conflicting with other users.
+
+In proxy.js, change 6749 to any other number.
+```
+var httpProxy = require('http-proxy');
+httpProxy.createProxyServer({
+  target: {
+    protocol: 'https:',
+    host: 'pswww.slac.stanford.edu',
+    port: 443
+  },
+  changeOrigin: true,
+}).listen(6749); 
+```
+
+3. Run the proxy script
+
+```
+./run_proxy.sh
+```
+
+4. Set environment variable for psana2
+
+```
+export LCLS_CALIB_HTTP=http://YOUR_HOST_NAME:LISTEN_PORT_NUMBER/calib_ws
+where YOUR_HOST_NAME is your current node (type printenv HOSTNAME to see the name) and LISTEN_PORT_NUMBER is the number that you chose in step 2.
+```
