@@ -6,7 +6,7 @@ import pysingfel as ps
 import pysingfel.geometry as pg
 import pysingfel.util as pu
 import pysingfel.crosstalk as pc
-from pysingfel.util import deprecation_message
+from pysingfel.util import deprecation_message, xp
 from pysingfel import particle
 from pysingfel.particlePlacement import max_radius, distribute_particles
 from pysingfel.geometry import quaternion2rot3d, get_random_rotation, get_random_translations
@@ -68,7 +68,7 @@ class ReciprocalDetector(object):
             orientation=self.detector.orientation)
 
         # Put all the corrections together
-        self.linear_correction = intensity * self.Thomson_factor * np.multiply(
+        self.linear_correction = intensity * self.Thomson_factor * xp.multiply(
             self.polarization_correction,
             self.solid_angle_per_pixel)
 
@@ -135,7 +135,7 @@ class ReciprocalDetector(object):
             particle,
             "intensity")
 
-        return np.multiply(diffraction_pattern, self.linear_correction)
+        return xp.multiply(diffraction_pattern, self.linear_correction)
 
     def add_phase_shift(self, pattern, displ):
         """
@@ -145,7 +145,9 @@ class ReciprocalDetector(object):
         :param displ: displ(acement) (position) of the particle (m).
         :return: modified complex field pattern.
         """
-        return pattern * np.exp(1j * np.dot(self.pixel_position_reciprocal, displ))
+        pattern = xp.asarray(pattern)
+        displ = xp.asarray(displ)
+        return pattern * xp.exp(1j * xp.dot(self.pixel_position_reciprocal, displ))
 
     def add_solid_angle_correction(self, pattern):
         """
@@ -153,7 +155,7 @@ class ReciprocalDetector(object):
         :param pattern: Pattern stack
         :return:
         """
-        return np.multiply(pattern, self.solid_angle_per_pixel)
+        return xp.multiply(pattern, self.solid_angle_per_pixel)
 
     def add_polarization_correction(self, pattern):
         """
@@ -161,7 +163,7 @@ class ReciprocalDetector(object):
         :param pattern: image stack
         :return:
         """
-        return np.multiply(pattern, self.polarization_correction)
+        return xp.multiply(pattern, self.polarization_correction)
 
     def add_correction(self, pattern):
         """
@@ -169,7 +171,7 @@ class ReciprocalDetector(object):
         :param pattern: The image stack
         :return:
         """
-        return np.multiply(pattern, self.linear_correction)
+        return xp.multiply(pattern, self.linear_correction)
 
     def add_quantization(self,pattern):
         """
@@ -177,7 +179,7 @@ class ReciprocalDetector(object):
         :param pattern: The image stack
         :return:
         """
-        return np.random.poisson(pattern)
+        return xp.random.poisson(pattern)
 
     def add_correction_and_quantization(self, pattern):
         """
@@ -185,7 +187,7 @@ class ReciprocalDetector(object):
         :param pattern: The image stack.
         :return:
         """
-        return np.random.poisson(np.multiply(pattern, self.linear_correction))
+        return xp.random.poisson(xp.multiply(pattern, self.linear_correction))
 
     def add_correction_batch(self,pattern_batch):
         """
@@ -193,7 +195,7 @@ class ReciprocalDetector(object):
         :param pattern_batch [image stack index,image stack shape]
         :return:
         """
-        return np.multiply(pattern_batch, self.linear_correction[np.newaxis])
+        return xp.multiply(pattern_batch, self.linear_correction[xp.newaxis])
 
     def add_quantization_batch(self,pattern_batch):
         """
@@ -201,7 +203,7 @@ class ReciprocalDetector(object):
         :param pattern_batch [image stack index, image stack shape]
         :return:
         """
-        return np.random.poisson(pattern_batch)
+        return xp.random.poisson(pattern_batch)
 
     def add_correction_and_quantization_batch(self, pattern_batch):
         """
@@ -209,7 +211,7 @@ class ReciprocalDetector(object):
         :param pattern_batch: [image stack index, image stack shape]
         :return:
         """
-        return np.random.poisson(np.multiply(pattern_batch, self.linear_correction[np.newaxis]))
+        return xp.random.poisson(xp.multiply(pattern_batch, self.linear_correction[xp.newaxis]))
 
     def remove_polarization(self, img, res=None):
         """
@@ -244,18 +246,18 @@ class ReciprocalDetector(object):
         state, coords = distribute_particles(particles, beam_focus_radius, jet_radius)
         for i in range(len(state)):
             this_data = self.get_pattern_without_corrections(particle=state[i], return_type="complex_field")
-            this_data *= np.exp(1j*np.dot(self.pixel_position_reciprocal, coords[i]))
+            this_data *= xp.exp(1j*xp.dot(self.pixel_position_reciprocal, coords[i]))
             if raw_data is None:
                 raw_data = this_data
             else:
                 raw_data += this_data
-        return self.add_correction_and_quantization(np.square(np.abs(raw_data)))
+        return self.add_correction_and_quantization(xp.square(xp.abs(raw_data)))
 
     def get_fxs_photons_slices(self, particles, beam_focus_radius, jet_radius, mesh_length, device=None):
         mesh, voxel_length= self.get_reciprocal_mesh(voxel_number_1d = mesh_length)
         state, coords = distribute_particles(particles, beam_focus_radius, jet_radius)
         count = 0
-        field_acc = np.zeros(self.pixel_position_reciprocal.shape[:3], dtype=np.complex128)
+        field_acc = xp.zeros(self.pixel_position_reciprocal.shape[:3], dtype=xp.complex128)
         for particle in particles:
             if particles[particle] > 0:
                 volume = pgd.calculate_diffraction_pattern_gpu(mesh, particle, return_type="complex_field")
@@ -264,7 +266,7 @@ class ReciprocalDetector(object):
                 for i in range(particles[particle]):
                     field_acc += self.add_phase_shift(slices[i], coords[count])
                     count += 1
-        return self.add_correction_and_quantization(np.square(np.abs(field_acc)))
+        return self.add_correction_and_quantization(xp.square(xp.abs(field_acc)))
 
     def get_fxs_photons_unittest(self, particles, beam_focus_radius, jet_radius, device=None):
         raw_data = None
@@ -275,7 +277,7 @@ class ReciprocalDetector(object):
                 raw_data = this_data
             else:
                 raw_data += this_data
-        return self.add_correction_and_quantization(np.square(np.abs(raw_data)))
+        return self.add_correction_and_quantization(xp.square(xp.abs(raw_data)))
 
     def get_adu(self, particle, path, device=None):
         """
@@ -309,8 +311,8 @@ class ReciprocalDetector(object):
         """
         # Notice that this voxel length has nothing to do with the voxel length
         # utilized in dragonfly.
-        voxel_length = np.sqrt(np.sum(np.square(wave_vector)))
-        voxel_length /= self.distance * np.min(self.pixel_width, self.pixel_height)
+        voxel_length = xp.sqrt(xp.sum(xp.square(wave_vector)))
+        voxel_length /= self.distance * xp.min(self.pixel_width, self.pixel_height)
 
         return voxel_length
 
@@ -326,9 +328,9 @@ class ReciprocalDetector(object):
         """
         """ Return the prefered the reciprocal voxel grid number along 1 dimension. """
         voxel_length = self.preferred_voxel_length(wave_vector)
-        reciprocal_space_range = np.max(self.pixel_distance_reciprocal)
+        reciprocal_space_range = xp.max(self.pixel_distance_reciprocal)
         # The voxel number along 1 dimension is 2*voxel_half_num_1d+1
-        voxel_half_num_1d = int(np.floor_divide(reciprocal_space_range, voxel_length) + 1)
+        voxel_half_num_1d = int(xp.floor_divide(reciprocal_space_range, voxel_length) + 1)
 
         voxel_num_1d = int(2 * voxel_half_num_1d + 1)
         return voxel_num_1d
@@ -341,6 +343,6 @@ class ReciprocalDetector(object):
         :param voxel_number_1d: The voxel number along 1 dimension.
         :return: The reciprocal mesh, voxel length.
         """
-        dist_max = np.max(self.pixel_distance_reciprocal)
+        dist_max = xp.max(self.pixel_distance_reciprocal)
         return pg.get_reciprocal_mesh(voxel_number_1d, dist_max)
 

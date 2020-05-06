@@ -17,6 +17,7 @@ except:
 import pysingfel.geometry as pg
 import pysingfel.util as pu
 import pysingfel.crosstalk as pc
+from pysingfel.util import xp, asnumpy
 
 from .base import DetectorBase
 
@@ -78,14 +79,15 @@ class PnccdDetector(DetectorBase):
         self.run_num = run_num
 
         # Set coordinate in real space
-        temp = self.geometry.get_pixel_coords()
-        temp_index = self.geometry.get_pixel_coord_indexes()
+        temp = [xp.asarray(t) for t in self.geometry.get_pixel_coords()]
+        temp_index = [xp.asarray(t)
+                      for t in self.geometry.get_pixel_coord_indexes()]
 
         self.panel_num = temp[0].shape[1] * temp[0].shape[2]
         self.distance = temp[2][0, 0, 0, 0, 0] * 1e-6  # Convert to m
 
-        self.pixel_position = np.zeros((self.panel_num, temp[0].shape[3], temp[0].shape[4], 3))
-        self.pixel_index_map = np.zeros((self.panel_num, temp[0].shape[3], temp[0].shape[4], 2))
+        self.pixel_position = xp.zeros((self.panel_num, temp[0].shape[3], temp[0].shape[4], 3))
+        self.pixel_index_map = xp.zeros((self.panel_num, temp[0].shape[3], temp[0].shape[4], 2))
 
         for l in range(temp[0].shape[1]):
             for m in range(temp[0].shape[2]):
@@ -94,24 +96,26 @@ class PnccdDetector(DetectorBase):
                 for n in range(2):
                     self.pixel_index_map[m + l * temp[0].shape[2], :, :, n] = temp_index[n][0, l, m]
 
-        self.pixel_index_map = self.pixel_index_map.astype(np.int64)
+        self.pixel_index_map = self.pixel_index_map.astype(xp.int64)
 
         # Get the range of the pixel index
-        self.detector_pixel_num_x = np.max(self.pixel_index_map[:, :, :, 0]) + 1
-        self.detector_pixel_num_y = np.max(self.pixel_index_map[:, :, :, 1]) + 1
+        self.detector_pixel_num_x = asnumpy(
+            xp.max(self.pixel_index_map[:, :, :, 0]) + 1)
+        self.detector_pixel_num_y = asnumpy(
+            xp.max(self.pixel_index_map[:, :, :, 1]) + 1)
 
         self.panel_pixel_num_x = np.array([self.pixel_index_map.shape[1], ] * self.panel_num)
         self.panel_pixel_num_y = np.array([self.pixel_index_map.shape[2], ] * self.panel_num)
         self.pixel_num_total = np.sum(np.multiply(self.panel_pixel_num_x, self.panel_pixel_num_y))
 
         tmp = float(self.geometry.get_pixel_scale_size() * 1e-6)  # Convert to m
-        self.pixel_width = np.ones(
+        self.pixel_width = xp.ones(
             (self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0])) * tmp
-        self.pixel_height = np.ones(
+        self.pixel_height = xp.ones(
             (self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0])) * tmp
 
         # Calculate the pixel area
-        self.pixel_area = np.multiply(self.pixel_height, self.pixel_width)
+        self.pixel_area = xp.multiply(self.pixel_height, self.pixel_width)
 
         ###########################################################################################
         # Initialize the pixel effects
@@ -206,7 +210,7 @@ class PnccdDetector(DetectorBase):
         :return: The [num_x, num_y] numpy array.
         """
         # construct the image holder:
-        image = np.zeros((self.detector_pixel_num_x, self.detector_pixel_num_y))
+        image = xp.zeros((self.detector_pixel_num_x, self.detector_pixel_num_y))
         for l in range(self.panel_num):
             image[self.pixel_index_map[l, :, :, 0],
                   self.pixel_index_map[l, :, :, 1]] = image_stack[l, :, :]

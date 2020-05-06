@@ -4,6 +4,7 @@ from matplotlib.patches import Circle
 from matplotlib.colors import LogNorm
 
 from pysingfel import ReciprocalDetector
+from pysingfel.util import xp, asnumpy
 
 
 class Visualizer(object):
@@ -13,15 +14,18 @@ class Visualizer(object):
         # ! Wavenumber definition != beam's.
         self.wavenumber = np.linalg.norm(self.experiment.beam.get_wavevector())
         self.distance = self.experiment.det.distance
-        self.pix_width = np.median(self.experiment.det.pixel_width)
+
+        pixel_width = asnumpy(self.experiment.det.pixel_width)
+        # Cupy doesn't have median yet.
+        self.pix_width = np.median(pixel_width)
 
         recidet = ReciprocalDetector(self.experiment.det,
                                      self.experiment.beam)
-        self.q_max = np.min((  # Max inscribed radius
-            np.max(recidet.pixel_position_reciprocal[..., 1]),
-            -np.min(recidet.pixel_position_reciprocal[..., 1]),
-            np.max(recidet.pixel_position_reciprocal[..., 0]),
-            -np.min(recidet.pixel_position_reciprocal[..., 0])))
+        self.q_max = asnumpy(np.min((  # Max inscribed radius
+            xp.max(recidet.pixel_position_reciprocal[..., 1]),
+            -xp.min(recidet.pixel_position_reciprocal[..., 1]),
+            xp.max(recidet.pixel_position_reciprocal[..., 0]),
+            -xp.min(recidet.pixel_position_reciprocal[..., 0]))))
 
         self._auto_rings = False
         if diffraction_rings is not None:
@@ -38,6 +42,7 @@ class Visualizer(object):
             self._norm = None
 
     def imshow(self, img):
+        img = asnumpy(img)
         plt.imshow(img, norm=self._norm)
         plt.colorbar()
         plt.xlabel('Y')

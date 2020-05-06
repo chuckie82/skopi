@@ -1,7 +1,8 @@
+import numpy as np
 from numba import jit
 from scipy.interpolate import CubicSpline
 from pysingfel.geometry import reshape_pixels_position_arrays_to_1d
-import numpy as np
+from pysingfel.util import xp, asnumpy
 
 
 def calculate_thomson(ang):
@@ -47,6 +48,8 @@ def calculate_atomic_factor(particle, q_space, pixel_num):
     :param pixel_num: The number of pixels.
     :return:
     """
+    q_space = asnumpy(q_space)  # CubicSpline is not compatible with Cupy
+
     f_hkl = np.zeros((particle.num_atom_types, pixel_num))
     q_space_1d = np.reshape(q_space, [pixel_num, ])
 
@@ -58,7 +61,8 @@ def calculate_atomic_factor(particle, q_space, pixel_num):
             cs = CubicSpline(particle.q_sample, particle.ff_table[atm, :])  # Use cubic spline
             f_hkl[atm, :] = cs(q_space_1d)  # interpolate
 
-    return np.reshape(f_hkl, [particle.num_atom_types, ] + list(q_space.shape))
+    f_hkl = np.reshape(f_hkl, (particle.num_atom_types,) + q_space.shape)
+    return xp.asarray(f_hkl)
 
 
 @jit
