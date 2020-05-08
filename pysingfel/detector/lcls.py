@@ -164,53 +164,39 @@ class LCLSDetector(DetectorBase):
         """
         raise NotImplementedError()
 
+    def _get_calib_constants(self, name):
+        _name = "_" + name
+        attribute = getattr(self, _name)
+        if six.PY3 and attribute is None:
+            attribute = calib_constants(
+                self.det, exp=self.exp, ctype=name,
+                run=self.run_num)[0]
+        setattr(self, _name, attribute)
+        return attribute
+
     @property
     def pedestals(self):
-        if six.PY3 and self._pedestals is None:
-            self._pedestals = calib_constants(
-                self.det, exp=self.exp, ctype="pedestals",
-                run=self.run_num)[0]
-        return self._pedestals
+        return self._get_calib_constants("pedestals")
 
     @property
     def pixel_rms(self):
-        if six.PY3 and self._pixel_rms is None:
-            self._pixel_rms = calib_constants(
-                self.det, exp=self.exp, ctype="pixel_rms",
-                run=self.run_num)[0]
-        return self._pixel_rms
+        return self._get_calib_constants("pixel_rms")
 
     @property
     def pixel_mask(self):
-        if six.PY3 and self._pixel_mask is None:
-            self._pixel_mask = calib_constants(
-                self.det, exp=self.exp, ctype="pixel_mask",
-                run=self.run_num)[0]
-        return self._pixel_mask
+        return self._get_calib_constants("pixel_mask")
 
     @property
     def pixel_bkgd(self):
-        if six.PY3 and self._pixel_bkgd is None:
-            self._pixel_bkgd = calib_constants(
-                self.det, exp=self.exp, ctype="pixel_bkgd",
-                run=self.run_num)[0]
-        return self._pixel_bkgd
+        return self._get_calib_constants("pixel_bkgd")
 
     @property
     def pixel_status(self):
-        if six.PY3 and self._pixel_status is None:
-            self._pixel_status = calib_constants(
-                self.det, exp=self.exp, ctype="pixel_status",
-                run=self.run_num)[0]
-        return self._pixel_status
+        return self._get_calib_constants("pixel_status")
 
     @property
     def pixel_gain(self):
-        if six.PY3 and self._pixel_gain is None:
-            self._pixel_gain = calib_constants(
-                self.det, exp=self.exp, ctype="pixel_gain",
-                run=self.run_num)[0]
-        return self._pixel_gain
+        return self._get_calib_constants("pixel_gain")
 
     def assemble_image_stack(self, image_stack):
         """
