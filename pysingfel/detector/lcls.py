@@ -1,6 +1,5 @@
 import numpy as np
 import os
-import re
 import six
 import sys
 
@@ -124,12 +123,7 @@ class LCLSDetector(DetectorBase):
         group = parsed_path[-4]
         source = parsed_path[-3]
         if six.PY2:
-            if group == "PNCCD::CalibV1":
-                from PSCalib.CalibParsBasePnccdV1 import CalibParsBasePnccdV1
-                cbase = CalibParsBasePnccdV1()
-            elif group == "CsPad::CalibV1":
-                from PSCalib.CalibParsBaseCSPadV1 import CalibParsBaseCSPadV1
-                cbase = CalibParsBaseCSPadV1()
+            cbase = self._get_cbase()
             calibdir = '/'.join(parsed_path[:-4])
             pbits = 255
             gcp = GenericCalibPars(cbase, calibdir, group, source, run_num, pbits)
@@ -141,21 +135,7 @@ class LCLSDetector(DetectorBase):
             self._pixel_status = gcp.pixel_status()
             self._pixel_gain = gcp.pixel_gain()
         else:
-            if group == "PNCCD::CalibV1":
-                # Example: "PNCCD::CalibV1/Camp.0:pnCCD.1"
-                match = re.match(r"Camp\.0:pnCCD\.(\d)", source)
-                number = str.zfill(match.groups()[0], 4)
-                self.det = "pnccd_" + number
-            elif group == "CsPad::CalibV1":
-                # Example: "CsPad::CalibV1/CxiDs2.0:Cspad.0"
-                match = re.match(r"CxiDs(\d)\.0:Cspad\.0", source)
-                number = str.zfill(match.groups()[0], 4)
-                self.det = "cspad_" + number
-            else:
-                raise ValueError(
-                    "Detector calibration {}/{} is not recognized."
-                    "".format(group, source))
-
+            self.det = self._get_det_id(source)
             self.exp = parsed_path[-5]
 
             self._pedestals = None
@@ -169,6 +149,20 @@ class LCLSDetector(DetectorBase):
         sys.stdout = old_stdout
         # f.close()
         # os.remove('./Detector_initialization.log')
+
+    def _get_cbase(self):
+        """Get detector calibration base object.
+
+        Psana 1 only.
+        """
+        raise NotImplementedError()
+
+    def _get_det_id(self, source):
+        """Get detector ID form source.
+
+        Psana 2 only.
+        """
+        raise NotImplementedError()
 
     @property
     def pedestals(self):
