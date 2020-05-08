@@ -1,12 +1,12 @@
 import numpy as np
 import os
+import re
 import six
 import sys
 
 try:
     if six.PY2:
         from PSCalib.GenericCalibPars import GenericCalibPars
-        from PSCalib.CalibParsBasePnccdV1 import CalibParsBasePnccdV1
         from PSCalib.GeometryAccess import GeometryAccess
     else:
         from psana.pscalib.geometry.GeometryAccess import GeometryAccess
@@ -22,7 +22,7 @@ from pysingfel.util import xp, asnumpy
 from .base import DetectorBase
 
 
-class PnccdDetector(DetectorBase):
+class LCLSDetector(DetectorBase):
     """
     Class for lcls detectors.
     """
@@ -36,7 +36,7 @@ class PnccdDetector(DetectorBase):
         :param run_num: The run_num containing the background, rms and gain and the other pixel
         pixel properties.
         """
-        super(PnccdDetector, self).__init__()
+        super(LCLSDetector, self).__init__()
 
         # Parse the path to extract the necessary information to use psana modules
         parsed_path = geom.split('/')
@@ -83,26 +83,25 @@ class PnccdDetector(DetectorBase):
         temp_index = [xp.asarray(t)
                       for t in self.geometry.get_pixel_coord_indexes()]
 
-        self.panel_num = temp[0].shape[1] * temp[0].shape[2]
-        self.distance = temp[2][0, 0, 0, 0, 0] * 1e-6  # Convert to m
+        self.panel_num = np.prod(temp[0].shape[:-2])
+        self.distance = temp[2].flatten()[0] * 1e-6  # Convert to m
 
-        self.pixel_position = xp.zeros((self.panel_num, temp[0].shape[3], temp[0].shape[4], 3))
-        self.pixel_index_map = xp.zeros((self.panel_num, temp[0].shape[3], temp[0].shape[4], 2))
+        det_shape = (self.panel_num, temp[0].shape[-2], temp[0].shape[-1])
+        self.pixel_position = xp.zeros(det_shape + (3,))
+        self.pixel_index_map = xp.zeros(det_shape + (2,))
 
-        for l in range(temp[0].shape[1]):
-            for m in range(temp[0].shape[2]):
-                for n in range(3):
-                    self.pixel_position[m + l * temp[0].shape[2], :, :, n] = temp[n][0, l, m]
-                for n in range(2):
-                    self.pixel_index_map[m + l * temp[0].shape[2], :, :, n] = temp_index[n][0, l, m]
+        for n in range(3):
+            self.pixel_position[..., n] = temp[n].reshape(det_shape)
+        for n in range(2):
+            self.pixel_index_map[..., n] = temp_index[n].reshape(det_shape)
 
         self.pixel_index_map = self.pixel_index_map.astype(xp.int64)
 
         # Get the range of the pixel index
         self.detector_pixel_num_x = asnumpy(
-            xp.max(self.pixel_index_map[:, :, :, 0]) + 1)
+            xp.max(self.pixel_index_map[..., 0]) + 1)
         self.detector_pixel_num_y = asnumpy(
-            xp.max(self.pixel_index_map[:, :, :, 1]) + 1)
+            xp.max(self.pixel_index_map[..., 1]) + 1)
 
         self.panel_pixel_num_x = np.array([self.pixel_index_map.shape[1], ] * self.panel_num)
         self.panel_pixel_num_y = np.array([self.pixel_index_map.shape[2], ] * self.panel_num)
@@ -122,11 +121,16 @@ class PnccdDetector(DetectorBase):
         ###########################################################################################
         # first we should parse the path
         parsed_path = geom.split('/')
+        group = parsed_path[-4]
         source = parsed_path[-3]
         if six.PY2:
-            cbase = CalibParsBasePnccdV1()
+            if group == "PNCCD::CalibV1":
+                from PSCalib.CalibParsBasePnccdV1 import CalibParsBasePnccdV1
+                cbase = CalibParsBasePnccdV1()
+            elif group == "CsPad::CalibV1":
+                from PSCalib.CalibParsBaseCSPadV1 import CalibParsBaseCSPadV1
+                cbase = CalibParsBaseCSPadV1()
             calibdir = '/'.join(parsed_path[:-4])
-            group = parsed_path[-4]
             pbits = 255
             gcp = GenericCalibPars(cbase, calibdir, group, source, run_num, pbits)
 
@@ -137,7 +141,21 @@ class PnccdDetector(DetectorBase):
             self._pixel_status = gcp.pixel_status()
             self._pixel_gain = gcp.pixel_gain()
         else:
-            self.det = "pnccd_000" + source[-1]
+            if group == "PNCCD::CalibV1":
+                # Example: "PNCCD::CalibV1/Camp.0:pnCCD.1"
+                match = re.match(r"Camp\.0:pnCCD\.(\d)", source)
+                number = str.zfill(match.groups()[0], 4)
+                self.det = "pnccd_" + number
+            elif group == "CsPad::CalibV1":
+                # Example: "CsPad::CalibV1/CxiDs2.0:Cspad.0"
+                match = re.match(r"CxiDs(\d)\.0:Cspad\.0", source)
+                number = str.zfill(match.groups()[0], 4)
+                self.det = "cspad_" + number
+            else:
+                raise ValueError(
+                    "Detector calibration {}/{} is not recognized."
+                    "".format(group, source))
+
             self.exp = parsed_path[-5]
 
             self._pedestals = None

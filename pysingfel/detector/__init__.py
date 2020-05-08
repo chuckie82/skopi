@@ -1,4 +1,4 @@
 from .base import DetectorBase
+from .lcls import LCLSDetector
 from .plain import PlainDetector
-from .pnccd import PnccdDetector
 from .user_defined import UserDefinedDetector
