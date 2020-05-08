@@ -246,7 +246,7 @@ class LCLSDetector(DetectorBase):
         stack_num = image_stack_batch.shape[0]
 
         # construct the image holder:
-        image = np.zeros((stack_num, self.detector_pixel_num_x, self.detector_pixel_num_y))
+        image = xp.zeros((stack_num, self.detector_pixel_num_x, self.detector_pixel_num_y))
         for l in range(self.panel_num):
             idx_map_1 = self.pixel_index_map[l, :, :, 0]
             idx_map_2 = self.pixel_index_map[l, :, :, 1]
