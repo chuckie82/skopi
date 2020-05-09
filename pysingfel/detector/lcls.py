@@ -122,28 +122,37 @@ class LCLSDetector(DetectorBase):
         parsed_path = geom.split('/')
         group = parsed_path[-4]
         source = parsed_path[-3]
+
+        self._pedestals = None
+        self._pixel_rms = None
+        self._pixel_mask = None
+        self._pixel_bkgd = None
+        self._pixel_status = None
+        self._pixel_gain = None
+
         if six.PY2:
-            cbase = self._get_cbase()
-            calibdir = '/'.join(parsed_path[:-4])
-            pbits = 255
-            gcp = GenericCalibPars(cbase, calibdir, group, source, run_num, pbits)
+            try:
+                cbase = self._get_cbase()
+                calibdir = '/'.join(parsed_path[:-4])
+                pbits = 255
+                gcp = GenericCalibPars(cbase, calibdir, group, source, run_num, pbits)
 
-            self._pedestals = gcp.pedestals()
-            self._pixel_rms = gcp.pixel_rms()
-            self._pixel_mask = gcp.pixel_mask()
-            self._pixel_bkgd = gcp.pixel_bkgd()
-            self._pixel_status = gcp.pixel_status()
-            self._pixel_gain = gcp.pixel_gain()
+                self._pedestals = gcp.pedestals()
+                self._pixel_rms = gcp.pixel_rms()
+                self._pixel_mask = gcp.pixel_mask()
+                self._pixel_bkgd = gcp.pixel_bkgd()
+                self._pixel_status = gcp.pixel_status()
+                self._pixel_gain = gcp.pixel_gain()
+            except NotImplementedError:
+                # No GenericCalibPars information.
+                pass
         else:
-            self.det = self._get_det_id(source)
+            try:
+                self.det = self._get_det_id(source)
+            except NotImplementedError:
+                # No GenericCalibPars information.
+                self.det = None
             self.exp = parsed_path[-5]
-
-            self._pedestals = None
-            self._pixel_rms = None
-            self._pixel_mask = None
-            self._pixel_bkgd = None
-            self._pixel_status = None
-            self._pixel_gain = None
 
         # Redirect the output stream
         sys.stdout = old_stdout
@@ -167,10 +176,15 @@ class LCLSDetector(DetectorBase):
     def _get_calib_constants(self, name):
         _name = "_" + name
         attribute = getattr(self, _name)
-        if six.PY3 and attribute is None:
+        if six.PY3 and attribute is None and self.det is not None:
+            # We haven't tried to get the calib_constant yet.
             attribute = calib_constants(
                 self.det, exp=self.exp, ctype=name,
                 run=self.run_num)[0]
+        if attribute is None:
+            # We still don't have it
+            raise RuntimeError("No {} available for this detector"
+                               "".format(name))
         setattr(self, _name, attribute)
         return attribute
 
