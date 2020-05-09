@@ -58,7 +58,7 @@ This will:
 
 To recover the environment, run `source setup/env.sh`.
 
-## Set Up Nody Proxy
+## Setting Up Node Proxy for Psana2 calibration constants
 
 1. Install
 
