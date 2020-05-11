@@ -85,14 +85,14 @@ class LCLSDetector(DetectorBase):
         self.panel_num = np.prod(temp[0].shape[:-2])
         self.distance = temp[2].flatten()[0] * 1e-6  # Convert to m
 
-        det_shape = (self.panel_num, temp[0].shape[-2], temp[0].shape[-1])
-        self.pixel_position = xp.zeros(det_shape + (3,))
-        self.pixel_index_map = xp.zeros(det_shape + (2,))
+        self._shape = (self.panel_num, temp[0].shape[-2], temp[0].shape[-1])
+        self.pixel_position = xp.zeros(self._shape + (3,))
+        self.pixel_index_map = xp.zeros(self._shape + (2,))
 
         for n in range(3):
-            self.pixel_position[..., n] = temp[n].reshape(det_shape)
+            self.pixel_position[..., n] = temp[n].reshape(self._shape)
         for n in range(2):
-            self.pixel_index_map[..., n] = temp_index[n].reshape(det_shape)
+            self.pixel_index_map[..., n] = temp_index[n].reshape(self._shape)
 
         self.pixel_index_map = self.pixel_index_map.astype(xp.int64)
 
@@ -187,6 +187,11 @@ class LCLSDetector(DetectorBase):
                                "".format(name))
         setattr(self, _name, attribute)
         return attribute
+
+    @property
+    def shape(self):
+        """Unassembled detector shape."""
+        return self._shape
 
     @property
     def pedestals(self):
