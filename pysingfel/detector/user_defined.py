@@ -5,6 +5,7 @@ import sys
 import pysingfel.geometry as pg
 import pysingfel.util as pu
 import pysingfel.crosstalk as pc
+from pysingfel.util import xp, asnumpy
 
 from .base import DetectorBase
 
@@ -51,36 +52,33 @@ class UserDefinedDetector(DetectorBase):
 
         # Define all properties the detector should have
         self.distance = float(geom['detector distance'])  # detector distance in (m)
-        self.pixel_width = geom['pixel width'].astype(
-            np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
-        self.pixel_height = geom['pixel height'].astype(
-            np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
-        self.center_x = geom['pixel center x'].astype(
-            np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
-        self.center_y = geom['pixel center y'].astype(
-            np.float64)  # [panel number, pixel num x, pixel num y]  in (m)
+
+        # Below: [panel number, pixel num x, pixel num y]  in (m)
+        # Change dtype and make numpy/cupy array
+        self.pixel_width = xp.asarray(geom['pixel width'], dtype=xp.float64)
+        self.pixel_height = xp.asarray(geom['pixel height'], dtype=xp.float64)
+        self.center_x = xp.asarray(geom['pixel center x'], dtype=xp.float64)
+        self.center_y = xp.asarray(geom['pixel center y'], dtype=xp.float64)
         self.orientation = np.array([0, 0, 1])
 
         # construct the the pixel position array
-        self.pixel_position = np.zeros((self.panel_num, self.panel_pixel_num_x,
+        self.pixel_position = xp.zeros((self.panel_num, self.panel_pixel_num_x,
                                         self.panel_pixel_num_y, 3))
         self.pixel_position[:, :, :, 2] = self.distance
         self.pixel_position[:, :, :, 0] = self.center_x
         self.pixel_position[:, :, :, 1] = self.center_y
 
         # Pixel map
-        self.pixel_index_map = geom['pixel map'].astype(
-            np.int64)  # [panel number, pixel num x, pixel num y]
-
+        # [panel number, pixel num x, pixel num y]
+        self.pixel_index_map = xp.asarray(geom['pixel map'], dtype=xp.int64)
         # Detector pixel number info
-        self.detector_pixel_num_x = np.max(self.pixel_index_map[:, :, :, 0])
-        self.detector_pixel_num_y = np.max(self.pixel_index_map[:, :, :, 1])
+        self.detector_pixel_num_x = xp.max(self.pixel_index_map[:, :, :, 0])
+        self.detector_pixel_num_y = xp.max(self.pixel_index_map[:, :, :, 1])
 
         # Panel pixel number info
-        self.panel_pixel_num_x = self.pixel_index_map.shape[
-            1]  # number of pixels in each panel in x direction
-        self.panel_pixel_num_y = self.pixel_index_map.shape[
-            2]  # number of pixels in each panel in y direction
+        # number of pixels in each panel in x/y direction
+        self.panel_pixel_num_x = self.pixel_index_map.shape[1]
+        self.panel_pixel_num_y = self.pixel_index_map.shape[2]
 
         # total number of pixels (px*py)
         self.pixel_num_total = self.panel_num * self.panel_pixel_num_x * self.panel_pixel_num_y
@@ -92,7 +90,7 @@ class UserDefinedDetector(DetectorBase):
         self.geometry = geom
 
         # Calculate the pixel area
-        self.pixel_area = np.multiply(self.pixel_height, self.pixel_width)
+        self.pixel_area = xp.multiply(self.pixel_height, self.pixel_width)
 
         # Get reciprocal space configurations and corrections.
         self.initialize_pixels_with_beam(beam=beam)
@@ -102,37 +100,37 @@ class UserDefinedDetector(DetectorBase):
         ##########################################################################################
         # Detector effects
         if 'pedestal' in geom:
-            self._pedestal = geom['pedestal'].astype(np.float64)
+            self._pedestal = xp.asarray(geom['pedestal'], dtype=xp.float64)
         else:
-            self._pedestal = np.zeros(
+            self._pedestal = xp.zeros(
                 (self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
 
         if 'pixel rms' in geom:
-            self._pixel_rms = geom['pixel rms'].astype(np.float64)
+            self._pixel_rms = xp.asarray(geom['pixel rms'], dtype=xp.float64)
         else:
-            self._pixel_rms = np.zeros(
+            self._pixel_rms = xp.zeros(
                 (self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
 
         if 'pixel bkgd' in geom:
-            self._pixel_bkgd = geom['pixel bkgd'].astype(np.float64)
+            self._pixel_bkgd = xp.asarray(geom['pixel bkgd'], dtype=xp.float64)
         else:
-            self._pixel_bkgd = np.zeros(
+            self._pixel_bkgd = xp.zeros(
                 (self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
 
         if 'pixel status' in geom:
-            self._pixel_status = geom['pixel status'].astype(np.float64)
+            self._pixel_status = xp.asarray(geom['pixel status'], dtype=xp.float64)
         else:
-            self._pixel_status = np.zeros(
+            self._pixel_status = xp.zeros(
                 (self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
 
         if 'pixel mask' in geom:
-            self._pixel_mask = geom['pixel mask'].astype(np.float64)
+            self._pixel_mask = xp.asarray(geom['pixel mask'], dtype=xp.float64)
         else:
-            self._pixel_mask = np.zeros(
+            self._pixel_mask = xp.zeros(
                 (self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
 
         if 'pixel gain' in geom:
-            self._pixel_gain = geom['pixel gain'].astype(np.float64)
+            self._pixel_gain = xp.asarray(geom['pixel gain'], dtype=xp.float64)
         else:
-            self._pixel_gain = np.ones(
+            self._pixel_gain = xp.ones(
                 (self.panel_num, self.panel_pixel_num_x, self.panel_pixel_num_y))
