@@ -72,8 +72,8 @@ class UserDefinedDetector(DetectorBase):
         # [panel number, pixel num x, pixel num y]
         self.pixel_index_map = xp.asarray(geom['pixel map'], dtype=xp.int64)
         # Detector pixel number info
-        self.detector_pixel_num_x = xp.max(self.pixel_index_map[:, :, :, 0])
-        self.detector_pixel_num_y = xp.max(self.pixel_index_map[:, :, :, 1])
+        self.detector_pixel_num_x = asnumpy(xp.max(self.pixel_index_map[:, :, :, 0]))
+        self.detector_pixel_num_y = asnumpy(xp.max(self.pixel_index_map[:, :, :, 1]))
 
         # Panel pixel number info
         # number of pixels in each panel in x/y direction
