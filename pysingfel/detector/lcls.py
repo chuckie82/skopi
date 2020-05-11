@@ -216,39 +216,3 @@ class LCLSDetector(DetectorBase):
     @property
     def pixel_gain(self):
         return self._get_calib_constants("pixel_gain")
-
-    def assemble_image_stack(self, image_stack):
-        """
-        Assemble the image stack into a 2D diffraction pattern.
-        For this specific object, since it only has one panel, the result is to remove the
-        first dimension.
-
-        :param image_stack: The [1, num_x, num_y] numpy array.
-        :return: The [num_x, num_y] numpy array.
-        """
-        # construct the image holder:
-        image = xp.zeros((self.detector_pixel_num_x, self.detector_pixel_num_y))
-        for l in range(self.panel_num):
-            image[self.pixel_index_map[l, :, :, 0],
-                  self.pixel_index_map[l, :, :, 1]] = image_stack[l, :, :]
-
-        return image
-
-    def assemble_image_stack_batch(self, image_stack_batch):
-        """
-        Assemble the image stack batch into a stack of 2D diffraction patterns.
-        For this specific object, since it has only one panel, the result is a simple reshape.
-
-        :param image_stack_batch: The [stack_num, 1, num_x, num_y] numpy array
-        :return: The [stack_num, num_x, num_y] numpy array
-        """
-        stack_num = image_stack_batch.shape[0]
-
-        # construct the image holder:
-        image = xp.zeros((stack_num, self.detector_pixel_num_x, self.detector_pixel_num_y))
-        for l in range(self.panel_num):
-            idx_map_1 = self.pixel_index_map[l, :, :, 0]
-            idx_map_2 = self.pixel_index_map[l, :, :, 1]
-            image[:, idx_map_1, idx_map_2] = image_stack_batch[:, l]
-
-        return image
