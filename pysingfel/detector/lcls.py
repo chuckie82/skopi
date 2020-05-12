@@ -189,11 +189,6 @@ class LCLSDetector(DetectorBase):
         return attribute
 
     @property
-    def shape(self):
-        """Unassembled detector shape."""
-        return self._shape
-
-    @property
     def pedestals(self):
         return self._get_calib_constants("pedestals")
 

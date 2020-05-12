@@ -49,6 +49,8 @@ class UserDefinedDetector(DetectorBase):
         self.panel_num = int(geom['panel number'])
         self.panel_pixel_num_x = int(geom['panel pixel num x'])
         self.panel_pixel_num_y = int(geom['panel pixel num y'])
+        self._shape = (self.panel_num, self.panel_pixel_num_x,
+                       self.panel_pixel_num_y)
 
         # Define all properties the detector should have
         self.distance = float(geom['detector distance'])  # detector distance in (m)

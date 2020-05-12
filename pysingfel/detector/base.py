@@ -78,6 +78,11 @@ class DetectorBase(object):
         self.geometry = None
 
     @property
+    def shape(self):
+        """Unassembled detector shape."""
+        return self._shape
+
+    @property
     def pedestals(self):
         return self._pedestals
 
