@@ -16,7 +16,7 @@ class UserDefinedDetector(DetectorBase):
     with a dictionary with proper entries to use this class.
     """
 
-    def __init__(self, geom, beam):
+    def __init__(self, geom, beam=None):
         """
         Initialize the detector
         :param geom:  The dictionary containing all the necessary information to initialize
