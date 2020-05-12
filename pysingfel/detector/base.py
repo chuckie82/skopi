@@ -45,7 +45,7 @@ class DetectorBase(object):
         self.pixel_distance_reciprocal = None  # (m^-1)
 
         # Pixel map
-        self.pixel_index_map = 0
+        self.pixel_index_map = None
         self.detector_pixel_num_x = 1
         self.detector_pixel_num_y = 1
 
@@ -451,6 +451,9 @@ class DetectorBase(object):
         :param image_stack: The [1, num_x, num_y] numpy array.
         :return: The [num_x, num_y] numpy array.
         """
+        if self.pixel_index_map is None:
+            raise RuntimeError(
+                "This detector does not have pixel mapping information.")
         # construct the image holder:
         image = xp.zeros((self.detector_pixel_num_x, self.detector_pixel_num_y))
         for l in range(self.panel_num):
@@ -467,6 +470,10 @@ class DetectorBase(object):
         :param image_stack_batch: The [stack_num, 1, num_x, num_y] numpy array
         :return: The [stack_num, num_x, num_y] numpy array
         """
+        if self.pixel_index_map is None:
+            raise RuntimeError(
+                "This detector does not have pixel mapping information.")
+
         stack_num = image_stack_batch.shape[0]
 
         # construct the image holder:

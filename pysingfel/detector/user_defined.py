@@ -70,7 +70,7 @@ class UserDefinedDetector(DetectorBase):
             if 'detector distance' not in geom:
                 KeyError("Missing required 'detector distance' key.")
             self.distance = float(geom['detector distance'])
-            self.center_z = self.distance * xp.ones(self._shape + (3,),
+            self.center_z = self.distance * xp.ones(self._shape,
                                                     dtype=xp.float64)
 
         # Below: [panel number, pixel num x, pixel num y]  in (m)
@@ -88,16 +88,17 @@ class UserDefinedDetector(DetectorBase):
         self.pixel_position[:, :, :, 2] = self.center_z
 
         # Pixel map
-        # [panel number, pixel num x, pixel num y]
-        self.pixel_index_map = xp.asarray(geom['pixel map'], dtype=xp.int64)
-        # Detector pixel number info
-        self.detector_pixel_num_x = asnumpy(xp.max(self.pixel_index_map[:, :, :, 0]))
-        self.detector_pixel_num_y = asnumpy(xp.max(self.pixel_index_map[:, :, :, 1]))
+        if 'pixel map' in geom:
+            # [panel number, pixel num x, pixel num y]
+            self.pixel_index_map = xp.asarray(geom['pixel map'], dtype=xp.int64)
+            # Detector pixel number info
+            self.detector_pixel_num_x = asnumpy(xp.max(self.pixel_index_map[:, :, :, 0]))
+            self.detector_pixel_num_y = asnumpy(xp.max(self.pixel_index_map[:, :, :, 1]))
 
-        # Panel pixel number info
-        # number of pixels in each panel in x/y direction
-        self.panel_pixel_num_x = self.pixel_index_map.shape[1]
-        self.panel_pixel_num_y = self.pixel_index_map.shape[2]
+            # Panel pixel number info
+            # number of pixels in each panel in x/y direction
+            self.panel_pixel_num_x = self.pixel_index_map.shape[1]
+            self.panel_pixel_num_y = self.pixel_index_map.shape[2]
 
         # total number of pixels (px*py)
         self.pixel_num_total = np.prod(self._shape)
