@@ -41,6 +41,9 @@ class UserDefinedDetector(DetectorBase):
              the detector.
             All the necessary entries are listed in the example notebook.
         """
+
+        # 'detector distance': detector distance in (m)
+
         ##########################################################################################
         # Extract necessary information
         ##########################################################################################
@@ -57,9 +60,18 @@ class UserDefinedDetector(DetectorBase):
 
         # Define all properties the detector should have
         self.distance = None
-        if True:
-            self.center_x = xp.asarray(geom['pixel center x'], dtype=xp.float64)
-        self.distance = float(geom['detector distance'])  # detector distance in (m)
+        if 'pixel center z' in geom:
+            if 'detector distance' in geom:
+                raise ValueError("Please provide one of "
+                                 "'pixel center z' or 'detector distance'.")
+            self.center_z = xp.asarray(geom['pixel center z'], dtype=xp.float64)
+            self.distance = asnumpy(self.center_z.mean())
+        else:
+            if 'detector distance' not in geom:
+                KeyError("Missing required 'detector distance' key.")
+            self.distance = float(geom['detector distance'])
+            self.center_z = self.distance * xp.ones(self._shape + (3,),
+                                                    dtype=xp.float64)
 
         # Below: [panel number, pixel num x, pixel num y]  in (m)
         # Change dtype and make numpy/cupy array
@@ -71,9 +83,9 @@ class UserDefinedDetector(DetectorBase):
 
         # construct the the pixel position array
         self.pixel_position = xp.zeros(self._shape + (3,))
-        self.pixel_position[:, :, :, 2] = self.distance
         self.pixel_position[:, :, :, 0] = self.center_x
         self.pixel_position[:, :, :, 1] = self.center_y
+        self.pixel_position[:, :, :, 2] = self.center_z
 
         # Pixel map
         # [panel number, pixel num x, pixel num y]
