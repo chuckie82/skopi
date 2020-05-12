@@ -64,8 +64,7 @@ class UserDefinedDetector(DetectorBase):
         self.orientation = np.array([0, 0, 1])
 
         # construct the the pixel position array
-        self.pixel_position = xp.zeros((self.panel_num, self.panel_pixel_num_x,
-                                        self.panel_pixel_num_y, 3))
+        self.pixel_position = xp.zeros(self._shape + (3,))
         self.pixel_position[:, :, :, 2] = self.distance
         self.pixel_position[:, :, :, 0] = self.center_x
         self.pixel_position[:, :, :, 1] = self.center_y
@@ -83,7 +82,7 @@ class UserDefinedDetector(DetectorBase):
         self.panel_pixel_num_y = self.pixel_index_map.shape[2]
 
         # total number of pixels (px*py)
-        self.pixel_num_total = self.panel_num * self.panel_pixel_num_x * self.panel_pixel_num_y
+        self.pixel_num_total = np.prod(self._shape)
 
         ###########################################################################################
         # Do necessary calculation to finishes the initialization
