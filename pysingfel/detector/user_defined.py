@@ -46,6 +46,9 @@ class UserDefinedDetector(DetectorBase):
         ##########################################################################################
 
         # Define the hierarchy system. For simplicity, we only use two-layer structure.
+        for key in {'panel number', 'panel pixel num x', 'panel pixel num y'}:
+            if key not in geom:
+                raise KeyError("Missing required '{}' key.".format(key))
         self.panel_num = int(geom['panel number'])
         self.panel_pixel_num_x = int(geom['panel pixel num x'])
         self.panel_pixel_num_y = int(geom['panel pixel num y'])
@@ -53,6 +56,9 @@ class UserDefinedDetector(DetectorBase):
                        self.panel_pixel_num_y)
 
         # Define all properties the detector should have
+        self.distance = None
+        if True:
+            self.center_x = xp.asarray(geom['pixel center x'], dtype=xp.float64)
         self.distance = float(geom['detector distance'])  # detector distance in (m)
 
         # Below: [panel number, pixel num x, pixel num y]  in (m)

@@ -83,7 +83,7 @@ class LCLSDetector(DetectorBase):
                       for t in self.geometry.get_pixel_coord_indexes()]
 
         self.panel_num = np.prod(temp[0].shape[:-2])
-        self.distance = temp[2].flatten()[0] * 1e-6  # Convert to m
+        self.distance = asnumpy(temp[2].mean()) * 1e-6  # Convert to m
 
         self._shape = (self.panel_num, temp[0].shape[-2], temp[0].shape[-1])
         self.pixel_position = xp.zeros(self._shape + (3,))
