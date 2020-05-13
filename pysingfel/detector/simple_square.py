@@ -37,8 +37,8 @@ class SimpleSquareDetector(DetectorBase):
         self._shape = (1, N_pixel, N_pixel)
 
         # Define all properties the detector should have
-        self.distance = det_distance
-        self.center_z = self.distance * xp.ones(self._shape, dtype=xp.float64)
+        self._distance = det_distance
+        self.center_z = self._distance * xp.ones(self._shape, dtype=xp.float64)
 
         p_center_x = xp.stack((X,))
         p_center_y = xp.stack((Y,))

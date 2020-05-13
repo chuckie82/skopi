@@ -59,18 +59,18 @@ class UserDefinedDetector(DetectorBase):
                        self.panel_pixel_num_y)
 
         # Define all properties the detector should have
-        self.distance = None
+        self._distance = None
         if 'pixel center z' in geom:
             if 'detector distance' in geom:
                 raise ValueError("Please provide one of "
                                  "'pixel center z' or 'detector distance'.")
             self.center_z = xp.asarray(geom['pixel center z'], dtype=xp.float64)
-            self.distance = asnumpy(self.center_z.mean())
+            self._distance = float(self.center_z.mean())
         else:
             if 'detector distance' not in geom:
                 KeyError("Missing required 'detector distance' key.")
-            self.distance = float(geom['detector distance'])
-            self.center_z = self.distance * xp.ones(self._shape,
+            self._distance = float(geom['detector distance'])
+            self.center_z = self._distance * xp.ones(self._shape,
                                                     dtype=xp.float64)
 
         # Below: [panel number, pixel num x, pixel num y]  in (m)

@@ -28,7 +28,7 @@ class DetectorBase(object):
         self.panel_num = 1
 
         # Define all properties the detector should have
-        self.distance = 1  # (m) detector distance
+        self._distance = 1  # (m) detector distance
         self.pixel_width = 0  # (m)
         self.pixel_height = 0  # (m)
         self.pixel_area = 0  # (m^2)
@@ -78,6 +78,21 @@ class DetectorBase(object):
         self.geometry = None
 
     @property
+    def distance(self):
+        return self._distance
+
+    @distance.setter
+    def distance(self, value):
+        if not xp.allclose(self.orientation, xp.array([0, 0, 1])):
+            raise NotImplementedError(
+                "Detector distance setter only implemented for "
+                "detector orientations along the z axis.")
+        self.pixel_position[..., 2] *= value/self._distance
+        self._distance = value
+        if self._has_beam:
+            self.initialize_pixels_with_beam(beam=self._beam)
+
+    @property
     def shape(self):
         """Unassembled detector shape."""
         return self._shape
@@ -116,6 +131,7 @@ class DetectorBase(object):
             return
 
         self._has_beam = True
+        self._beam = beam
 
         wavevector = beam.get_wavevector()
         polar = beam.Polarization
