@@ -77,13 +77,13 @@ class LCLSDetector(DetectorBase):
         self.geometry = GeometryAccess(geom, 0)
         self.run_num = run_num
 
-        # Set coordinate in real space
-        temp = [xp.asarray(t) for t in self.geometry.get_pixel_coords()]
+        # Set coordinate in real space (convert to m)
+        temp = [xp.asarray(t) * 1e-6 for t in self.geometry.get_pixel_coords()]
         temp_index = [xp.asarray(t)
                       for t in self.geometry.get_pixel_coord_indexes()]
 
         self.panel_num = np.prod(temp[0].shape[:-2])
-        self.distance = asnumpy(temp[2].mean()) * 1e-6  # Convert to m
+        self.distance = asnumpy(temp[2].mean())
 
         self._shape = (self.panel_num, temp[0].shape[-2], temp[0].shape[-1])
         self.pixel_position = xp.zeros(self._shape + (3,))
