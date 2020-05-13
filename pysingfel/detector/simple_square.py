@@ -12,15 +12,15 @@ from .base import DetectorBase
 
 class SimpleSquareDetector(DetectorBase):
     """
-    Class for simple square detector.
+    Class for a simple square detector.
     """
 
     def __init__(self, N_pixel, det_size, det_distance, beam=None):
         """
         Initialize the detector
-        :param geom:  The dictionary containing all the necessary information to initialize
-                        the detector.
-        :param beam: The beam object
+        :param N_pixel: Number of pixels per dimension.
+        :param det_size: Length of detector sides (m).
+        :param det_distance: Sample-Detector distance (m).
         """
         super(SimpleSquareDetector, self).__init__()
 

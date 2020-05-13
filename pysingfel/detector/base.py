@@ -79,6 +79,7 @@ class DetectorBase(object):
 
     @property
     def distance(self):
+        """Sample-detector distance."""
         return self._distance
 
     @distance.setter
@@ -89,7 +90,7 @@ class DetectorBase(object):
                 "detector orientations along the z axis.")
         self.pixel_position[..., 2] *= value/self._distance
         self._distance = value
-        if self._has_beam:
+        if self._has_beam:  # Update pixel_position_reciprocal & co
             self.initialize_pixels_with_beam(beam=self._beam)
 
     @property
