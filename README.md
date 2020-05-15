@@ -42,6 +42,20 @@ mpi4py         >=2.0
 Optional:  
 psana-conda    >1.3  (Required for LCLS simulations only)
 
+
+## Setting Up LCLS2 Conda Environment
+
+1. Install LCLS2 on psana
+Refer to README.md on the webpage https://github.com/slac-lcls/lcls2
+
+
+2. Install CuPy on psana
+```
+git clone https://github.com/cupy/cupy.git
+pip install --no-cache-dir .
+```
+
+
 ## Quick-install on Summit
 
 To quickly install a standalone version of pysingfel with psana2 on Summit, run
