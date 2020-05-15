@@ -49,9 +49,9 @@ class SimpleSquareDetector(DetectorBase):
 
         # construct the the pixel position array
         self.pixel_position = xp.zeros(self._shape + (3,))
-        self.pixel_position[:, :, :, 0] = self.center_x
-        self.pixel_position[:, :, :, 1] = self.center_y
-        self.pixel_position[:, :, :, 2] = self.center_z
+        self.pixel_position[..., 0] = self.center_x
+        self.pixel_position[..., 1] = self.center_y
+        self.pixel_position[..., 2] = self.center_z
 
         # Pixel map
         p_map_x = xp.stack((Xar,))
@@ -59,8 +59,10 @@ class SimpleSquareDetector(DetectorBase):
         # [panel number, pixel num x, pixel num y]
         self.pixel_index_map = xp.stack((p_map_x, p_map_y), axis=-1)
         # Detector pixel number info
-        self.detector_pixel_num_x = asnumpy(xp.max(self.pixel_index_map[:, :, :, 0]))
-        self.detector_pixel_num_y = asnumpy(xp.max(self.pixel_index_map[:, :, :, 1]))
+        self.detector_pixel_num_x = asnumpy(
+            xp.max(self.pixel_index_map[..., 0]) + 1)
+        self.detector_pixel_num_y = asnumpy(
+            xp.max(self.pixel_index_map[..., 1]) + 1)
 
         # Panel pixel number info
         # number of pixels in each panel in x/y direction
