@@ -28,7 +28,7 @@ class DetectorBase(object):
         self.panel_num = 1
 
         # Define all properties the detector should have
-        self.distance = 1  # (m) detector distance
+        self._distance = 1  # (m) detector distance
         self.pixel_width = 0  # (m)
         self.pixel_height = 0  # (m)
         self.pixel_area = 0  # (m^2)
@@ -45,7 +45,7 @@ class DetectorBase(object):
         self.pixel_distance_reciprocal = None  # (m^-1)
 
         # Pixel map
-        self.pixel_index_map = 0
+        self.pixel_index_map = None
         self.detector_pixel_num_x = 1
         self.detector_pixel_num_y = 1
 
@@ -76,6 +76,27 @@ class DetectorBase(object):
 
         # self.geometry currently only work for the pre-defined detectors
         self.geometry = None
+
+    @property
+    def distance(self):
+        """Sample-detector distance."""
+        return self._distance
+
+    @distance.setter
+    def distance(self, value):
+        if not xp.allclose(self.orientation, xp.array([0, 0, 1])):
+            raise NotImplementedError(
+                "Detector distance setter only implemented for "
+                "detector orientations along the z axis.")
+        self.pixel_position[..., 2] *= value/self._distance
+        self._distance = value
+        if self._has_beam:  # Update pixel_position_reciprocal & co
+            self.initialize_pixels_with_beam(beam=self._beam)
+
+    @property
+    def shape(self):
+        """Unassembled detector shape."""
+        return self._shape
 
     @property
     def pedestals(self):
@@ -111,6 +132,7 @@ class DetectorBase(object):
             return
 
         self._has_beam = True
+        self._beam = beam
 
         wavevector = beam.get_wavevector()
         polar = beam.Polarization
@@ -437,3 +459,45 @@ class DetectorBase(object):
         dist_max = xp.max(self.pixel_distance_reciprocal)
         return pg.get_reciprocal_mesh(voxel_number_1d, dist_max)
 
+    def assemble_image_stack(self, image_stack):
+        """
+        Assemble the image stack into a 2D diffraction pattern.
+        For this specific object, since it only has one panel, the result is to remove the
+        first dimension.
+
+        :param image_stack: The [1, num_x, num_y] numpy array.
+        :return: The [num_x, num_y] numpy array.
+        """
+        if self.pixel_index_map is None:
+            raise RuntimeError(
+                "This detector does not have pixel mapping information.")
+        # construct the image holder:
+        image = xp.zeros((self.detector_pixel_num_x, self.detector_pixel_num_y))
+        for l in range(self.panel_num):
+            image[self.pixel_index_map[l, :, :, 0],
+                  self.pixel_index_map[l, :, :, 1]] = image_stack[l, :, :]
+
+        return image
+
+    def assemble_image_stack_batch(self, image_stack_batch):
+        """
+        Assemble the image stack batch into a stack of 2D diffraction patterns.
+        For this specific object, since it has only one panel, the result is a simple reshape.
+
+        :param image_stack_batch: The [stack_num, 1, num_x, num_y] numpy array
+        :return: The [stack_num, num_x, num_y] numpy array
+        """
+        if self.pixel_index_map is None:
+            raise RuntimeError(
+                "This detector does not have pixel mapping information.")
+
+        stack_num = image_stack_batch.shape[0]
+
+        # construct the image holder:
+        image = xp.zeros((stack_num, self.detector_pixel_num_x, self.detector_pixel_num_y))
+        for l in range(self.panel_num):
+            idx_map_1 = self.pixel_index_map[l, :, :, 0]
+            idx_map_2 = self.pixel_index_map[l, :, :, 1]
+            image[:, idx_map_1, idx_map_2] = image_stack_batch[:, l]
+
+        return image
