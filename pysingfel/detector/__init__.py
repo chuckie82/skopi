@@ -7,3 +7,4 @@ from .lcls import LCLSDetector
 from .pnccd import PnccdDetector
 from .cspad import CsPadDetector
 from .epix10k import Epix10kDetector
+from .jungfrau import JungfrauDetector
