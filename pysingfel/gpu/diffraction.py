@@ -96,7 +96,7 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
     # Add the hydration layer
     water_position = np.ascontiguousarray(particle.mesh[particle.solvent_mask,:])
     water_num = np.sum(particle.solvent_mask)
-    water_prefactor = 0.334 * 10**30 * particle.mesh_voxel_size**3
+    water_prefactor = particle.solvent_mean_electron_density * particle.mesh_voxel_size**3
 
     cuda_water_position = cuda.to_device(water_position)
 

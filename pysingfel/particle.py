@@ -30,6 +30,7 @@ class Particle(object):
         self.ff_table = None  # form factor table -> atom_type x qSample
         
         # Masks and solvent
+        self.solvent_mean_electron_density = 0.334 * 10**30 # in e/m**3
         self.hydration_layer_thickness = 4.0 / 10**10    # in meter
         self.mesh_voxel_size           = 2.0 / 10**10    # in meter
         self.mesh = None         # real space mesh for mask definitions
