@@ -1,5 +1,7 @@
 import h5py
 import numpy as np
+import itertools as itertools
+from scipy import ndimage
 from pysingfel.util import symmpdb
 from pysingfel.geometry import quaternion2rot3d, get_random_rotation, get_random_translations
 from pysingfel.ff_waaskirf_database import *
@@ -27,6 +29,12 @@ class Particle(object):
         self.num_atom_types = None  # number of atom types
         self.ff_table = None  # form factor table -> atom_type x qSample
         
+        # Masks and solvent
+        self.hydration_layer_thickness = 4.0 / 10**10    # in meter
+        self.mesh_voxel_size           = 2.0 / 10**10    # in meter
+        self.mesh = None         # real space mesh for mask definitions
+        self.solvent_mask = None 
+        self.solute_mask = None 
 
         # Scattering
         self.q_sample = None  # q vector sin(theta)/lambda
@@ -130,6 +138,12 @@ class Particle(object):
     
     def get_q_sample(self):
         return self.q_sample
+    
+    def set_hydration_layer_thickness(self, hydration_layer_thickness):
+        self.hydration_layer_thickness = hydration_layer_thickness
+
+    def set_mesh_voxel_size(self, mesh_voxel_size):
+        self.mesh_voxel_size = mesh_voxel_size 
         
     def read_h5file(self, fname, datasetname):
         """
@@ -392,4 +406,118 @@ class Particle(object):
                 if flag:
                     print('Atom number = ' + str(zz) + ' with charge ' + str(qq))
                     raise ValueError('Unrecognized atom type!')
+    
+    #### MASKS AND MESHES ####
+    
+    def get_masks(self):
+        """create_masks
+        """
+        self.mesh         = self.build_particle_mesh()
+        self.solute_mask  = self.create_solute_mask(dry=True)
+        self.solvent_mask = self.solute_mask * ~self.create_solute_mask(dry=False)
 
+    def build_particle_mesh(self):
+        """build_particle_mesh:
+        Cubic mesh of length set by maximal solute dimension + hydration layers.
+        Even number of voxels per side (hence odd number of vertices).
+                .---.---.---.---.
+                |   |   |   |   |  o vertex that can be used to index vortex
+                | x | x | x | x |  . vertex that can not be used as a vortex index
+                |/  |/  |/  |/  |  x voxel center indexed by previous (/) vertex
+                o---o---o---o---.
+                |   |   |   |   |  NOTE: we save the positions of x not o
+                | x | x | x | x |
+                |/  |/  |/  |/  |
+        center> o---o---o---o---.
+                |   |   |   |   |
+                | x | x | x | x |
+                |/  |/  |/  |/  |
+                o---o---o---o---.
+                |   |   |   |   |
+                | x | x | x | x |
+                |/  |/  |/  |/  |
+                o---o---o---o---.
+                        ^
+                        |
+                     center
+        """
+
+        particle_dimension = np.zeros(3)
+        for i in range(3):
+            particle_dimension[i] = (np.max(self.atom_pos[:,i]) -
+                                     np.min(self.atom_pos[:,i]))
+        
+        mesh_length = (np.max(particle_dimension) +
+                       4*self.hydration_layer_thickness)
+        mesh_vertex_number_1d = np.ceil(mesh_length / self.mesh_voxel_size)
+        mesh_length = (mesh_vertex_number_1d - 1) * self.mesh_voxel_size
+        if not mesh_vertex_number_1d % 2:
+            mesh_length           += self.mesh_voxel_size
+            mesh_vertex_number_1d += 1
+
+        linspace = np.linspace(-mesh_length/2.0, 
+                                mesh_length/2.0, 
+                                mesh_vertex_number_1d)
+        mesh_stack = np.asarray(np.meshgrid(linspace, linspace, linspace, indexing='ij'))
+        mesh_stack = np.moveaxis(mesh_stack, 0, -1)
+
+        center = self.get_particle_center()
+        for i in range(3):
+            mesh_stack[...,i] += center[i]
+            mesh_stack[...,i] += self.mesh_voxel_size / 2.
+
+        return mesh_stack
+
+    def get_particle_center(self):
+        """get_particle_center
+        """
+        center = np.zeros(3)
+        for i in np.arange(3):
+            center[i] = 0.5*(np.max(self.atom_pos[:,i]) +
+                             np.min(self.atom_pos[:,i]))
+        return center
+
+    def create_solute_mask(self, dry=True):
+        """create_solute_mask
+        """
+        mask      = self.initialize_solute_mask()
+        mask      = self.dilate_solute_mask(mask, dry=dry)
+        return mask
+
+    def initialize_solute_mask(self):
+        """initialize_solute_mask
+        """
+        mask = np.ones(self.mesh.shape[:3], dtype='bool')
+
+        atom_type_num    = len(self.split_idx) - 1
+        split_index      = np.array(self.split_idx)
+        atom_voxel_index = np.zeros(3, dtype='int')
+        for atom_type in range(atom_type_num):
+            for atom_iter in range(split_index[atom_type], split_index[atom_type + 1]):
+                for i in range(3):
+                    atom_voxel_index[i] = np.floor(
+                                            (self.atom_pos[atom_iter,i] - self.mesh[0,0,0,i]) / self.mesh_voxel_size
+                                          )
+                mask[atom_voxel_index[0],
+                     atom_voxel_index[1],
+                     atom_voxel_index[2]] = False
+        return mask
+
+    def dilate_solute_mask(self, mask, dry=True):
+        """dilate_solute_mask
+        """
+        sphere_radius = 3.5 / 10**10 # in meter
+        if not dry:
+            sphere_radius += self.hydration_layer_thickness
+        sphere = self.build_mask_sphere(sphere_radius)
+        mask = ~ndimage.binary_closing(~mask, structure=sphere)
+        mask = ~ndimage.binary_dilation(~mask, structure=sphere)
+        return mask
+
+    def build_mask_sphere(self, sphere_radius):
+        """build_mask_sphere
+        """
+        sphere_vertex_number_1d = np.ceil(2.0 * sphere_radius / self.mesh_voxel_size).astype('int')
+        sphere_element = ndimage.generate_binary_structure(3,1)
+        sphere = ndimage.iterate_structure(sphere_element, np.ceil(sphere_vertex_number_1d / 3).astype('int'))
+        return sphere
