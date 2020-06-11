@@ -33,6 +33,21 @@ def calculate_pattern_gpu_back_engine(form_factor, pixel_position, atom_position
                 pattern_cos[row] += local_form_factor * math.cos(holder)
                 pattern_sin[row] += local_form_factor * math.sin(holder)
 
+@cuda.jit('void(float64[:,:], float64[:,:], float64[:], float64[:], float64, int64, int64)')
+def calculate_solvent_pattern_gpu_back_engine(pixel_position, water_position, pattern_cos,
+                                              pattern_sin, water_prefactor, water_num, pixel_num):
+    """
+    """
+    row = cuda.grid(1)
+    for water_iter in range(water_num):
+        if row < pixel_num:
+            holder = 0
+            for l in range(3):
+                holder += pixel_position[row, l] * water_position[water_iter, l]
+            pattern_cos[row] += water_prefactor * math.cos(holder)
+            pattern_sin[row] += water_prefactor * math.sin(holder)
+
+
 
 def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='intensity'):
     """
@@ -76,6 +91,18 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
     calculate_pattern_gpu_back_engine[(pixel_number + 511) // 512, 512](
         cuda_form_factor, cuda_reciprocal_position, cuda_atom_position,
         pattern_cos, pattern_sin, atom_type_num, cuda_split_index,
+        pixel_number)
+
+    # Add the hydration layer
+    water_position = np.ascontiguousarray(particle.mesh[particle.solvent_mask,:])
+    water_num = np.sum(particle.solvent_mask)
+    water_prefactor = particle.solvent_mean_electron_density * particle.mesh_voxel_size**3
+
+    cuda_water_position = cuda.to_device(water_position)
+
+    calculate_solvent_pattern_gpu_back_engine[(pixel_number + 511) // 512, 512](
+        cuda_reciprocal_position, cuda_water_position,
+        pattern_cos, pattern_sin, water_prefactor, water_num,
         pixel_number)
 
     if return_type == "intensity":
