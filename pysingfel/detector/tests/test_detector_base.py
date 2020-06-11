@@ -5,6 +5,7 @@ import pytest
 import pysingfel as ps
 import pysingfel.gpu as pg
 import pysingfel.constants as cst
+from pysingfel.util import xp
 
 import six
 if six.PY2:
@@ -61,3 +62,19 @@ class TestDetectorBase(object):
     def test_pedestal_nonzero(self):
         """Test existence of pedestals."""
         assert np.sum(abs(self.det.pedestals[:])) > np.finfo(float).eps
+
+
+def test_distance_change():
+    """Test distance property change."""
+    det = ps.SimpleSquareDetector(
+        N_pixel=1024, det_size=0.1, det_distance=0.2)
+    distance_1 = det.distance
+    pixel_position_1 = det.pixel_position.copy()
+    det.distance *= 2
+    assert np.isclose(det.distance, distance_1*2)
+    assert xp.allclose(det.pixel_position[..., 0],
+                       pixel_position_1[..., 0])  # X unchanged
+    assert xp.allclose(det.pixel_position[..., 1],
+                       pixel_position_1[..., 1])  # Y unchanged
+    assert xp.allclose(det.pixel_position[..., 2],
+                       pixel_position_1[..., 2]*2)  # Z doubled

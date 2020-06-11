@@ -141,7 +141,7 @@ def get_reciprocal_position_and_correction(pixel_position, pixel_area,
 
     # Because the pixel area in this function is measured in m^2,
     # therefore,the distance has to be in m
-    solid_angle_array = solid_angle(pixel_center=pixel_position * 1e-6,
+    solid_angle_array = solid_angle(pixel_center=pixel_position,
                                     pixel_area=pixel_area,
                                     orientation=orientation)
 
