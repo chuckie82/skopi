@@ -2,6 +2,8 @@ import h5py
 import numpy as np
 import itertools as itertools
 from scipy import ndimage
+from prody import ANM as prody_ANM
+from prody import confProDy
 from pysingfel.util import symmpdb
 from pysingfel.geometry import quaternion2rot3d, get_random_rotation, get_random_translations
 from pysingfel.ff_waaskirf_database import *
@@ -36,6 +38,12 @@ class Particle(object):
         self.mesh = None         # real space mesh for mask definitions
         self.solvent_mask = None 
         self.solute_mask = None 
+
+        # Normal Mode Analysis
+        self.normal_mode_vectors = None
+        self.normal_mode_variances = None
+        self.num_normal_modes = 10
+        self.elastic_network_cutoff = 6.  # in Angstroem
 
         # Scattering
         self.q_sample = None  # q vector sin(theta)/lambda
@@ -144,7 +152,13 @@ class Particle(object):
         self.hydration_layer_thickness = hydration_layer_thickness
 
     def set_mesh_voxel_size(self, mesh_voxel_size):
-        self.mesh_voxel_size = mesh_voxel_size 
+        self.mesh_voxel_size = mesh_voxel_size
+
+    def set_num_normal_modes(self, num_normal_modes):
+        self.num_normal_modes = num_normal_modes
+
+    def set_elastic_network_cutoff(self, elastic_network_cutoff):
+        self.elastic_network_cutoff = elastic_network_cutoff  # in Angstroem
         
     def read_h5file(self, fname, datasetname):
         """
@@ -522,3 +536,51 @@ class Particle(object):
         sphere_element = ndimage.generate_binary_structure(3,1)
         sphere = ndimage.iterate_structure(sphere_element, np.ceil(sphere_vertex_number_1d / 3).astype('int'))
         return sphere
+
+    #### DYNAMICS ####
+
+    def get_normal_modes(self):
+        """get_normal_modes
+        """
+        
+        confProDy(verbosity='critical')
+
+        anm = prody_ANM()
+        anm.buildHessian(self.atom_pos * 10**10, cutoff=self.elastic_network_cutoff)
+        anm.calcModes(n_modes=self.num_normal_modes)
+
+        self.normal_mode_vectors = anm.getEigvecs().reshape(self.atom_pos.shape[0],
+                                                            self.atom_pos.shape[1],
+                                                            self.num_normal_modes)
+        self.normal_mode_variances = 1./anm.getEigvals()
+
+    def update_conformation(self, rmsd=3.):
+        """update_conformation
+        """
+
+        latent_coordinates = rmsd * self.get_random_latent_coordinates()
+
+        deformation_vector = np.zeros(self.atom_pos.shape)
+        for i in range(self.num_normal_modes):
+            deformation_vector += (latent_coordinates[i] * 
+                                   np.sqrt(self.normal_mode_variances[i]) *
+                                   self.normal_mode_vectors[...,i])
+        deformation_vector /= 10**10 # back to meter
+
+        return self.atom_pos + deformation_vector
+
+    def get_random_latent_coordinates(self):
+        """get_random_latent_coordinates
+        Outputs a set of latent_coordinates that together would lead to a deformation
+        from the initial structure with a RMSD of 1 Angstroem
+        """
+        
+        latent_coordinates = np.random.randn(self.num_normal_modes)
+        
+        scale_factor = 0.
+        for i in range(self.num_normal_modes):
+            scale_factor += latent_coordinates[i]**2 * self.normal_mode_variances[i]
+        scale_factor = np.sqrt(self.atom_pos.shape[0]) / np.sqrt(scale_factor)
+        
+        return scale_factor * latent_coordinates
+
