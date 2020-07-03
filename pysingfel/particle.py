@@ -2,8 +2,6 @@ import h5py
 import numpy as np
 import itertools as itertools
 from scipy import ndimage
-#from prody import ANM as prody_ANM
-#from prody import confProDy
 from pysingfel.util import symmpdb
 from pysingfel.geometry import quaternion2rot3d, get_random_rotation, get_random_translations
 from pysingfel.ff_waaskirf_database import *
