@@ -2,8 +2,8 @@ import h5py
 import numpy as np
 import itertools as itertools
 from scipy import ndimage
-from prody import ANM as prody_ANM
-from prody import confProDy
+#from prody import ANM as prody_ANM
+#from prody import confProDy
 from pysingfel.util import symmpdb
 from pysingfel.geometry import quaternion2rot3d, get_random_rotation, get_random_translations
 from pysingfel.ff_waaskirf_database import *
@@ -542,7 +542,10 @@ class Particle(object):
     def get_normal_modes(self):
         """get_normal_modes
         """
-        
+        print('>>> Computing normal modes with ProDy')
+        from prody import ANM as prody_ANM
+        from prody import confProDy
+
         confProDy(verbosity='critical')
 
         anm = prody_ANM()
