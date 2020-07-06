@@ -2,7 +2,7 @@ import numpy as np
 import time
 from numba import jit
 
-from pysingfel.util import deprecated
+from pysingfel.util import deprecated, xp
 
 from .convert import *
 from .generate import *
@@ -33,21 +33,22 @@ def get_reciprocal_space_pixel_position(pixel_center, wave_vector):
     :param wave_vector: The wavevector.
     :return: The array containing the pixel coordinates.
     """
+    wave_vector = xp.asarray(wave_vector)
     # reshape the array into a 1d position array
     pixel_center_1d = reshape_pixels_position_arrays_to_1d(pixel_center)
 
     # Calculate the reciprocal position of each pixel
-    wave_vector_norm = np.sqrt(np.sum(np.square(wave_vector)))
+    wave_vector_norm = xp.sqrt(xp.sum(xp.square(wave_vector)))
     wave_vector_direction = wave_vector / wave_vector_norm
 
-    pixel_center_norm = np.sqrt(np.sum(np.square(pixel_center_1d), axis=1))
+    pixel_center_norm = xp.sqrt(xp.sum(xp.square(pixel_center_1d), axis=1))
     pixel_center_direction = pixel_center_1d / pixel_center_norm[:, np.newaxis]
 
     pixel_position_reciprocal_1d = wave_vector_norm * (
             pixel_center_direction - wave_vector_direction)
 
     # restore the pixels shape
-    pixel_position_reciprocal = np.reshape(pixel_position_reciprocal_1d, pixel_center.shape)
+    pixel_position_reciprocal = xp.reshape(pixel_position_reciprocal_1d, pixel_center.shape)
 
     return pixel_position_reciprocal
 
@@ -89,28 +90,29 @@ def solid_angle(pixel_center, pixel_area, orientation):
     :param pixel_area: The pixel area for each pixel. In pixel stack format.
     :return: Solid angle of each pixel.
     """
+    orientation = xp.asarray(orientation)
 
     # Use 1D format
     pixel_center_1d = reshape_pixels_position_arrays_to_1d(pixel_center)
-    pixel_center_norm_1d = np.sqrt(np.sum(np.square(pixel_center_1d), axis=-1))
-    pixel_area_1d = np.reshape(pixel_area, np.prod(pixel_area.shape))
+    pixel_center_norm_1d = xp.sqrt(xp.sum(xp.square(pixel_center_1d), axis=-1))
+    pixel_area_1d = xp.reshape(pixel_area, np.prod(pixel_area.shape))
 
     # Calculate the direction of each pixel.
-    pixel_center_direction_1d = pixel_center_1d / pixel_center_norm_1d[:, np.newaxis]
+    pixel_center_direction_1d = pixel_center_1d / pixel_center_norm_1d[:, xp.newaxis]
 
     # Normalize the orientation vector
-    orientation_norm = np.sqrt(np.sum(np.square(orientation)))
+    orientation_norm = xp.sqrt(xp.sum(xp.square(orientation)))
     orientation_normalized = orientation / orientation_norm
 
     # The correction induced by projection which is a factor of cosine.
-    cosine_1d = np.abs(np.dot(pixel_center_direction_1d, orientation_normalized))
+    cosine_1d = xp.abs(xp.dot(pixel_center_direction_1d, orientation_normalized))
 
     # Calculate the solid angle ignoring the projection
-    solid_angle_1d = np.divide(pixel_area_1d, np.square(pixel_center_norm_1d))
-    solid_angle_1d = np.multiply(cosine_1d, solid_angle_1d)
+    solid_angle_1d = xp.divide(pixel_area_1d, xp.square(pixel_center_norm_1d))
+    solid_angle_1d = xp.multiply(cosine_1d, solid_angle_1d)
 
     # Restore the pixel stack format
-    solid_angle_stack = np.reshape(solid_angle_1d, pixel_area.shape)
+    solid_angle_stack = xp.reshape(solid_angle_1d, pixel_area.shape)
 
     return solid_angle_stack
 
@@ -131,7 +133,7 @@ def get_reciprocal_position_and_correction(pixel_position, pixel_area,
     # Calculate the position and distance in reciprocal space
     pixel_position_reciprocal = get_reciprocal_space_pixel_position(pixel_center=pixel_position,
                                                                     wave_vector=wave_vector)
-    pixel_position_reciprocal_norm = np.sqrt(np.sum(np.square(pixel_position_reciprocal), axis=-1))
+    pixel_position_reciprocal_norm = xp.sqrt(xp.sum(xp.square(pixel_position_reciprocal), axis=-1))
 
     # Calculate the corrections.
     polarization_correction = get_polarization_correction(pixel_center=pixel_position,
@@ -139,7 +141,7 @@ def get_reciprocal_position_and_correction(pixel_position, pixel_area,
 
     # Because the pixel area in this function is measured in m^2,
     # therefore,the distance has to be in m
-    solid_angle_array = solid_angle(pixel_center=pixel_position * 1e-6,
+    solid_angle_array = solid_angle(pixel_center=pixel_position,
                                     pixel_area=pixel_area,
                                     orientation=orientation)
 
@@ -159,10 +161,10 @@ def get_reciprocal_mesh(voxel_number_1d, max_value):
     :param max_value: Max (absolute) value on each axis.
     :return: The mesh grid, the voxel lenght.
     """
-    linspace = np.linspace(-max_value, max_value, voxel_number_1d)
-    reciprocal_mesh_stack = np.meshgrid(linspace, linspace, linspace,
-                                        indexing='ij')
-    reciprocal_mesh = np.moveaxis(reciprocal_mesh_stack, 0, -1)
+    linspace = xp.linspace(-max_value, max_value, voxel_number_1d)
+    reciprocal_mesh_stack = xp.asarray(
+        xp.meshgrid(linspace, linspace, linspace, indexing='ij'))
+    reciprocal_mesh = xp.moveaxis(reciprocal_mesh_stack, 0, -1)
     voxel_length = 2 * max_value / (voxel_number_1d - 1)
     return reciprocal_mesh, voxel_length
 

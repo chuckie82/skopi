@@ -29,7 +29,7 @@ def angle_axis_to_rot3d(axis, theta):
             axis = np.array([0., 0., 1.])
         else:
             raise ValueError("Axis should be 'x', 'y', 'z' or a 3D vector.")
-    elif len(axis) is not 3:
+    elif len(axis) != 3:
         raise ValueError("Axis should be 'x', 'y', 'z' or a 3D vector.")
     axis = axis.astype(float)
     axis /= np.linalg.norm(axis)
@@ -71,7 +71,7 @@ def angle_axis_to_quaternion(axis, theta):
             axis = np.array([0., 0., 1.])
         else:
             raise ValueError("Axis should be 'x', 'y', 'z' or a 3D vector.")
-    elif len(axis) is not 3:
+    elif len(axis) != 3:
         raise ValueError("Axis should be 'x', 'y', 'z' or a 3D vector.")
     axis /= np.linalg.norm(axis)
     quat = np.zeros(4)

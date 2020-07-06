@@ -2,7 +2,7 @@ import numpy as np
 import time
 from numba import jit
 
-from pysingfel.util import deprecated
+from pysingfel.util import deprecated, xp
 
 
 ######################################################################
@@ -22,7 +22,8 @@ def rotate_pixels_in_reciprocal_space(rot_mat, pixels_position):
     :param pixels_position: [the other dimensions,  3 for x,y,z]
     :return: np.dot(pixels_position, rot_mat.T)
     """
-    return np.dot(pixels_position, rot_mat.T)
+    rot_mat = xp.asarray(rot_mat)
+    return xp.dot(pixels_position, rot_mat.T)
 
 
 ######################################################################
@@ -46,7 +47,8 @@ def get_weight_and_index(pixel_position, voxel_length, voxel_num_1d):
     pixel_num = np.prod(detector_shape)
 
     # Cast the position infor to the shape [pixel number, 3]
-    pixel_position_1d = np.reshape(pixel_position, (pixel_num, 3))
+    pixel_position = xp.asarray(pixel_position)
+    pixel_position_1d = xp.reshape(pixel_position, (pixel_num, 3))
 
     # convert_to_voxel_unit
     pixel_position_1d_voxel_unit = pixel_position_1d / voxel_length
@@ -56,11 +58,11 @@ def get_weight_and_index(pixel_position, voxel_length, voxel_num_1d):
     pixel_position_1d_voxel_unit += shift
 
     # Get one nearest neighbor
-    tmp_index = np.floor(pixel_position_1d_voxel_unit).astype(np.int64)
+    tmp_index = xp.floor(pixel_position_1d_voxel_unit).astype(np.int64)
 
     # Generate the holders
-    indexes = np.zeros((pixel_num, 8, 3), dtype=np.int64)
-    weight = np.ones((pixel_num, 8), dtype=np.float64)
+    indexes = xp.zeros((pixel_num, 8, 3), dtype=np.int64)
+    weight = xp.ones((pixel_num, 8), dtype=np.float64)
 
     # Calculate the floors and the ceilings
     dfloor = pixel_position_1d_voxel_unit - tmp_index
@@ -96,18 +98,18 @@ def get_weight_and_index(pixel_position, voxel_length, voxel_num_1d):
     indexes[:, 7, :] = tmp_index + 1
 
     # Assign the correct values to the weight
-    weight[:, 0] = np.prod(dceiling, axis=-1)
+    weight[:, 0] = xp.prod(dceiling, axis=-1)
     weight[:, 1] = dceiling[:, 0] * dceiling[:, 1] * dfloor[:, 2]
     weight[:, 2] = dceiling[:, 0] * dfloor[:, 1] * dceiling[:, 2]
     weight[:, 3] = dceiling[:, 0] * dfloor[:, 1] * dfloor[:, 2]
     weight[:, 4] = dfloor[:, 0] * dceiling[:, 1] * dceiling[:, 2]
     weight[:, 5] = dfloor[:, 0] * dceiling[:, 1] * dfloor[:, 2]
     weight[:, 6] = dfloor[:, 0] * dfloor[:, 1] * dceiling[:, 2]
-    weight[:, 7] = np.prod(dfloor, axis=-1)
+    weight[:, 7] = xp.prod(dfloor, axis=-1)
 
     # Change the shape of the index and weight variable
-    indexes = np.reshape(indexes, detector_shape + (8, 3))
-    weight = np.reshape(weight, detector_shape + (8,))
+    indexes = xp.reshape(indexes, detector_shape + (8, 3))
+    weight = xp.reshape(weight, detector_shape + (8,))
 
     return indexes, weight
 

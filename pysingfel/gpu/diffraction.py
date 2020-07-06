@@ -3,6 +3,8 @@ import pysingfel.diffraction as pd
 import math
 import numpy as np
 
+from pysingfel.util import xp
+
 
 @cuda.jit('void(float64[:,:], float64[:,:], float64[:,:], float64[:], float64[:], int64, int64[:], int64)')
 def calculate_pattern_gpu_back_engine(form_factor, pixel_position, atom_position, pattern_cos,
@@ -31,6 +33,21 @@ def calculate_pattern_gpu_back_engine(form_factor, pixel_position, atom_position
                 pattern_cos[row] += local_form_factor * math.cos(holder)
                 pattern_sin[row] += local_form_factor * math.sin(holder)
 
+@cuda.jit('void(float64[:,:], float64[:,:], float64[:], float64[:], float64, int64, int64)')
+def calculate_solvent_pattern_gpu_back_engine(pixel_position, water_position, pattern_cos,
+                                              pattern_sin, water_prefactor, water_num, pixel_num):
+    """
+    """
+    row = cuda.grid(1)
+    for water_iter in range(water_num):
+        if row < pixel_num:
+            holder = 0
+            for l in range(3):
+                holder += pixel_position[row, l] * water_position[water_iter, l]
+            pattern_cos[row] += water_prefactor * math.cos(holder)
+            pattern_sin[row] += water_prefactor * math.sin(holder)
+
+
 
 def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='intensity'):
     """
@@ -45,9 +62,9 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
     arbitrary reciprocal space """
     # convert the reciprocal space into a 1d series.
     shape = reciprocal_space.shape
-    pixel_number = np.prod(shape[:-1])
-    reciprocal_space_1d = np.reshape(reciprocal_space, [pixel_number, 3])
-    reciprocal_norm_1d = np.sqrt(np.sum(np.square(reciprocal_space_1d), axis=-1))
+    pixel_number = int(np.prod(shape[:-1]))
+    reciprocal_space_1d = xp.reshape(reciprocal_space, [pixel_number, 3])
+    reciprocal_norm_1d = xp.sqrt(xp.sum(xp.square(reciprocal_space_1d), axis=-1))
 
     # Calculate atom form factor for the reciprocal space
     form_factor = pd.calculate_atomic_factor(particle=particle,
@@ -59,11 +76,11 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
     atom_type_num = len(particle.split_idx) - 1
 
     # create
-    pattern_cos = np.zeros(pixel_number, dtype=np.float64)
-    pattern_sin = np.zeros(pixel_number, dtype=np.float64)
+    pattern_cos = xp.zeros(pixel_number, dtype=xp.float64)
+    pattern_sin = xp.zeros(pixel_number, dtype=xp.float64)
 
     # atom_number = atom_position.shape[0]
-    split_index = np.array(particle.split_idx)
+    split_index = xp.array(particle.split_idx)
 
     cuda_split_index = cuda.to_device(split_index)
     cuda_atom_position = cuda.to_device(atom_position)
@@ -76,16 +93,29 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
         pattern_cos, pattern_sin, atom_type_num, cuda_split_index,
         pixel_number)
 
+    # Add the hydration layer
+    water_position = np.ascontiguousarray(particle.mesh[particle.solvent_mask,:])
+    water_num = np.sum(particle.solvent_mask)
+    water_prefactor = particle.solvent_mean_electron_density * particle.mesh_voxel_size**3
+
+    cuda_water_position = cuda.to_device(water_position)
+
+    calculate_solvent_pattern_gpu_back_engine[(pixel_number + 511) // 512, 512](
+        cuda_reciprocal_position, cuda_water_position,
+        pattern_cos, pattern_sin, water_prefactor, water_num,
+        pixel_number)
+
     if return_type == "intensity":
         pattern = np.reshape(np.square(np.abs(pattern_cos + 1j * pattern_sin)), shape[:-1])
-        return pattern
+        return xp.asarray(pattern)
     elif return_type == "complex_field":
         pattern = np.reshape(pattern_cos + 1j * pattern_sin, shape[:-1])
-        return pattern
+        return xp.asarray(pattern)
     else:
         print("Please set the parameter return_type = 'intensity' or 'complex_field'")
         print("This time, this program return the complex field.")
-        return np.reshape(pattern_cos + 1j * pattern_sin, shape[:-1])
+        pattern = np.reshape(pattern_cos + 1j * pattern_sin, shape[:-1])
+        return xp.asarray(pattern)
 
 
 def calculate_fxs_diffraction_pattern_gpu(reciprocal_space, particle, coords, return_type='intensity'):

@@ -75,7 +75,7 @@ def test_circle_diameter():
 def test_circle_double_diameter_clash():
     with pytest.raises(TypeError):
         beam = ps.Beam(photon_energy=PHOTON_ENERGY, focus_x=DIM,
-                       focus_y=DIM, focus_shape="circle", fluence=FLUENCE)
+                       focus_y=1.1*DIM, focus_shape="circle", fluence=FLUENCE)
 
 
 def test_ellipse():
