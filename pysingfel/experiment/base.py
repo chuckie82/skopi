@@ -54,7 +54,6 @@ class Experiment(object):
         beam_spectrum = self.beam.generate_new_state()
         sample_state = self.generate_new_sample_state()
         intensities_stack = 0.
-        photons_stack = 0.
 
         for spike in beam_spectrum:
             recidet = ReciprocalDetector(self.det, spike)
