@@ -41,6 +41,7 @@ mpi4py         >=2.0
   
 Optional:  
 psana-conda    >1.3  (Required for LCLS simulations only)
+prody          >1.10 (Required for conformations)
 
 
 ## Setting Up LCLS2 Conda Environment
