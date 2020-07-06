@@ -9,7 +9,6 @@ from scipy.spatial import distance
 def max_radius(particles):
     radius_current = 0
     for particle in particles:
-        print (particle, '->', particles[particle])
         radius_arr = particle.atom_pos - np.mean(particle.atom_pos, axis=0)
         for row in radius_arr:
             radius = np.sqrt(row[0]**2+row[1]**2+row[2]**2)

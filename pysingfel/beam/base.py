@@ -83,8 +83,11 @@ class Beam(object):
 
         if focus_shape in {'circle', 'square'}:
             if "focus_y" in arg_dict:
-                raise TypeError("Focus with {} shape incompatible with "
-                                "focus y.".format(focus_shape))
+                focus_y = arg_dict.pop("focus_y")
+                if focus_x != focus_y:
+                    # Complain if incompatible x and y
+                    raise TypeError("Focus with {} shape incompatible with "
+                                    "focus y.".format(focus_shape))
             self._focus_xFWHM = focus_x
             self._focus_yFWHM = focus_x
         elif focus_shape in {'ellipse', 'rectangle'}:
@@ -217,6 +220,22 @@ class Beam(object):
                         self.set_photons_per_pulse(float(tmp[1]))
                     if tmp[0] == 'beam/radius':
                         self.set_focus(radius=float(tmp[1]))
+
+    def get_highest_wavenumber_beam(self):
+        """
+        For variable/polychromatic beam to return highest wavenumber.
+        """
+        # If simple Beam, return itself.
+        # Composed beams should return simple one.
+        return self
+
+    def generate_new_state(self):
+        """
+        Return list of Beams at each pulse to represent a variable spectrum.
+        """
+        # If simple Beam, return itself.
+        # Variable beams should return simple one.
+        return [self]
 
     ####
     # Old-style setters and getters, for compatibility

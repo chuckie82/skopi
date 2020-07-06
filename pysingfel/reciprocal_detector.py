@@ -12,42 +12,20 @@ from pysingfel.particlePlacement import max_radius, distribute_particles
 from pysingfel.geometry import quaternion2rot3d, get_random_rotation, get_random_translations
 
 
-class DetectorBase(object):
+class ReciprocalDetector(object):
     """
-    This is the base object for all detector object.
-    This class contains some basic operations of the detector.
-    It provides interfaces for the other modules.
+    Base object for the detector in reciprocal space.
+
+    Focus on wavelength-specific elements.
     """
 
-    def __init__(self):
-        # We no longer want detectors to have direct access to the beam
-        # but we keep it for a while for retro-compatibility
-        self._has_beam = False
-
-        # Define the hierarchy system. For simplicity, we only use two-layer structure.
-        self.panel_num = 1
-
-        # Define all properties the detector should have
-        self._distance = 1  # (m) detector distance
-        self.pixel_width = 0  # (m)
-        self.pixel_height = 0  # (m)
-        self.pixel_area = 0  # (m^2)
-        self.panel_pixel_num_x = 0  # number of pixels in x
-        self.panel_pixel_num_y = 0  # number of pixels in y
-        self.pixel_num_total = 0  # total number of pixels (px*py)
-        self.center_x = 0  # center of detector in x
-        self.center_y = 0  # center of detector in y
-        self.orientation = xp.array([0, 0, 1])
-        self.pixel_position = None  # (m)
+    def __init__(self, detector, beam):
+        self.detector = detector
+        self.beam = beam
 
         # pixel information in reciprocal space
         self.pixel_position_reciprocal = None  # (m^-1)
         self.pixel_distance_reciprocal = None  # (m^-1)
-
-        # Pixel map
-        self.pixel_index_map = None
-        self.detector_pixel_num_x = 1
-        self.detector_pixel_num_y = 1
 
         # Corrections
         self.solid_angle_per_pixel = None  # solid angle
@@ -66,74 +44,14 @@ class DetectorBase(object):
         # Total scaling and correction factor.
         self.linear_correction = None
 
-        # Detector effects
-        self._pedestal = 0
-        self._pixel_rms = 0
-        self._pixel_bkgd = 0
-        self._pixel_status = 0
-        self._pixel_mask = 0
-        self._pixel_gain = 0
+        self.initialize_pixels_with_beam(beam)
 
-        # self.geometry currently only work for the pre-defined detectors
-        self.geometry = None
-
-    @property
-    def distance(self):
-        """Sample-detector distance."""
-        return self._distance
-
-    @distance.setter
-    def distance(self, value):
-        if not xp.allclose(self.orientation, xp.array([0, 0, 1])):
-            raise NotImplementedError(
-                "Detector distance setter only implemented for "
-                "detector orientations along the z axis.")
-        self.pixel_position[..., 2] *= value/self._distance
-        self._distance = value
-        if self._has_beam:  # Update pixel_position_reciprocal & co
-            self.initialize_pixels_with_beam(beam=self._beam)
-
-    @property
-    def shape(self):
-        """Unassembled detector shape."""
-        return self._shape
-
-    @property
-    def pedestals(self):
-        return self._pedestals
-
-    @property
-    def pixel_rms(self):
-        return self._pixel_rms
-
-    @property
-    def pixel_mask(self):
-        return self._pixel_mask
-
-    @property
-    def pixel_bkgd(self):
-        return self._pixel_bkgd
-
-    @property
-    def pixel_status(self):
-        return self._pixel_status
-
-    @property
-    def pixel_gain(self):
-        return self._pixel_gain
-
-    def initialize_pixels_with_beam(self, beam=None):
+    def initialize_pixels_with_beam(self, beam):
         """
         Calculate the pixel position in the reciprocal space and several corrections.
         :param beam: The beam object
         :return: None
         """
-        if beam is None:
-            return
-
-        self._has_beam = True
-        self._beam = beam
-
         wavevector = beam.get_wavevector()
         polar = beam.Polarization
         intensity = beam.get_photons_per_pulse() / beam.get_focus_area()
@@ -143,22 +61,16 @@ class DetectorBase(object):
          self.pixel_distance_reciprocal,
          self.polarization_correction,
          self.solid_angle_per_pixel) = pg.get_reciprocal_position_and_correction(
-            pixel_position=self.pixel_position,
+            pixel_position=self.detector.pixel_position,
             polarization=polar,
             wave_vector=wavevector,
-            pixel_area=self.pixel_area,
-            orientation=self.orientation)
+            pixel_area=self.detector.pixel_area,
+            orientation=self.detector.orientation)
 
         # Put all the corrections together
         self.linear_correction = intensity * self.Thomson_factor * xp.multiply(
             self.polarization_correction,
             self.solid_angle_per_pixel)
-
-    def ensure_beam(self):
-        if not self._has_beam:
-            raise RuntimeError(
-                "This Detector hasn't been initialized with a beam. "
-                "Use this function from a ReciprocalDetector instead.")
 
     ###############################################################################################
     # Calculate diffraction patterns
@@ -171,14 +83,12 @@ class DetectorBase(object):
         :param particle: The particle object.
         :return: A diffraction pattern.
         """
-        self.ensure_beam()
-
         if device:
             deprecation_message(
                 "Device option is deprecated. "
                 "Everything now runs on the GPU.")
 
-        import pysingfel.gpu.diffraction as pgd  # Only import GPU if needed
+        import pysingfel.gpu.diffraction as pgd
         diffraction_pattern = pgd.calculate_diffraction_pattern_gpu(
             self.pixel_position_reciprocal,
             particle,
@@ -193,8 +103,6 @@ class DetectorBase(object):
         :param particle: The particle object.
         :return: A diffraction pattern.
         """
-        self.ensure_beam()
-
         if device:
             deprecation_message(
                 "Device option is deprecated. "
@@ -216,14 +124,12 @@ class DetectorBase(object):
         :param particle: The particle object.
         :return: A diffraction pattern.
         """
-        self.ensure_beam()
-
         if device:
             deprecation_message(
                 "Device option is deprecated. "
                 "Everything now runs on the GPU.")
 
-        import pysingfel.gpu.diffraction as pgd  # Only import GPU if needed
+        import pysingfel.gpu.diffraction as pgd
         diffraction_pattern = pgd.calculate_diffraction_pattern_gpu(
             self.pixel_position_reciprocal,
             particle,
@@ -239,18 +145,9 @@ class DetectorBase(object):
         :param displ: displ(acement) (position) of the particle (m).
         :return: modified complex field pattern.
         """
-        self.ensure_beam()
         pattern = xp.asarray(pattern)
         displ = xp.asarray(displ)
         return pattern * xp.exp(1j * xp.dot(self.pixel_position_reciprocal, displ))
-
-    def add_static_noise(self, pattern):
-        """
-        Add static noise to the diffraction pattern.
-        :param pattern: The pattern stack.
-        :return: Pattern stack + static_noise
-        """
-        return pattern + xp.random.uniform(0, 2 * xp.sqrt(3 * self.pixel_rms))
 
     def add_solid_angle_correction(self, pattern):
         """
@@ -258,7 +155,6 @@ class DetectorBase(object):
         :param pattern: Pattern stack
         :return:
         """
-        self.ensure_beam()
         return xp.multiply(pattern, self.solid_angle_per_pixel)
 
     def add_polarization_correction(self, pattern):
@@ -267,7 +163,6 @@ class DetectorBase(object):
         :param pattern: image stack
         :return:
         """
-        self.ensure_beam()
         return xp.multiply(pattern, self.polarization_correction)
 
     def add_correction(self, pattern):
@@ -276,7 +171,6 @@ class DetectorBase(object):
         :param pattern: The image stack
         :return:
         """
-        self.ensure_beam()
         return xp.multiply(pattern, self.linear_correction)
 
     def add_quantization(self,pattern):
@@ -293,7 +187,6 @@ class DetectorBase(object):
         :param pattern: The image stack.
         :return:
         """
-        self.ensure_beam()
         return xp.random.poisson(xp.multiply(pattern, self.linear_correction))
 
     def add_correction_batch(self,pattern_batch):
@@ -302,7 +195,6 @@ class DetectorBase(object):
         :param pattern_batch [image stack index,image stack shape]
         :return:
         """
-        self.ensure_beam()
         return xp.multiply(pattern_batch, self.linear_correction[xp.newaxis])
 
     def add_quantization_batch(self,pattern_batch):
@@ -319,7 +211,6 @@ class DetectorBase(object):
         :param pattern_batch: [image stack index, image stack shape]
         :return:
         """
-        self.ensure_beam()
         return xp.random.poisson(xp.multiply(pattern_batch, self.linear_correction[xp.newaxis]))
 
     def remove_polarization(self, img, res=None):
@@ -327,7 +218,6 @@ class DetectorBase(object):
         img: assembled (2D) or unassembled (3D) diffraction image
         res: diffraction resolution in Angstroms
         """
-        self.ensure_beam()
         if res is not None:
             mask = self.pixel_distance_reciprocal < (1./res)
         else:
@@ -436,8 +326,6 @@ class DetectorBase(object):
         :param wave_vector: The wavevector of in this experiment.
         :return: The reciprocal mesh number along 1 dimension
         """
-        self.ensure_beam()
-
         """ Return the prefered the reciprocal voxel grid number along 1 dimension. """
         voxel_length = self.preferred_voxel_length(wave_vector)
         reciprocal_space_range = xp.max(self.pixel_distance_reciprocal)
@@ -455,49 +343,6 @@ class DetectorBase(object):
         :param voxel_number_1d: The voxel number along 1 dimension.
         :return: The reciprocal mesh, voxel length.
         """
-        self.ensure_beam()
         dist_max = xp.max(self.pixel_distance_reciprocal)
         return pg.get_reciprocal_mesh(voxel_number_1d, dist_max)
 
-    def assemble_image_stack(self, image_stack):
-        """
-        Assemble the image stack into a 2D diffraction pattern.
-        For this specific object, since it only has one panel, the result is to remove the
-        first dimension.
-
-        :param image_stack: The [1, num_x, num_y] numpy array.
-        :return: The [num_x, num_y] numpy array.
-        """
-        if self.pixel_index_map is None:
-            raise RuntimeError(
-                "This detector does not have pixel mapping information.")
-        # construct the image holder:
-        image = xp.zeros((self.detector_pixel_num_x, self.detector_pixel_num_y))
-        for l in range(self.panel_num):
-            image[self.pixel_index_map[l, :, :, 0],
-                  self.pixel_index_map[l, :, :, 1]] = image_stack[l, :, :]
-
-        return image
-
-    def assemble_image_stack_batch(self, image_stack_batch):
-        """
-        Assemble the image stack batch into a stack of 2D diffraction patterns.
-        For this specific object, since it has only one panel, the result is a simple reshape.
-
-        :param image_stack_batch: The [stack_num, 1, num_x, num_y] numpy array
-        :return: The [stack_num, num_x, num_y] numpy array
-        """
-        if self.pixel_index_map is None:
-            raise RuntimeError(
-                "This detector does not have pixel mapping information.")
-
-        stack_num = image_stack_batch.shape[0]
-
-        # construct the image holder:
-        image = xp.zeros((stack_num, self.detector_pixel_num_x, self.detector_pixel_num_y))
-        for l in range(self.panel_num):
-            idx_map_1 = self.pixel_index_map[l, :, :, 0]
-            idx_map_2 = self.pixel_index_map[l, :, :, 1]
-            image[:, idx_map_1, idx_map_2] = image_stack_batch[:, l]
-
-        return image
