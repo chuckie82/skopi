@@ -68,7 +68,9 @@ class Experiment(object):
 
             group_intensities = recidet.add_correction(group_pattern)
             intensities_stack += group_intensities
-
+        
+        # We are summing up intensities then converting to photons as opposed to converting to photons then summing up.
+        # Note: We may want to revisit the correctness of this procedure.
         photons_stack = recidet.add_quantization(intensities_stack)
 
         ret = []
