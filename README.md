@@ -22,7 +22,8 @@ pytest
 
 Simulate open and closed states of chaperones on an LCLS pnccd detector
 ```
-python pysingfel/examples/scripts/ExampleMultipleChaperones.py
+cd examples/scripts
+python ExampleMultipleChaperones.py
 ```
 
 ## Dependencies
