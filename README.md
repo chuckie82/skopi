@@ -22,7 +22,7 @@ pytest
 
 Simulate open and closed states of chaperones on an LCLS pnccd detector
 ```
-python pysingfel/examples/scripts/ExampleMultipleChaperone.py
+python pysingfel/examples/scripts/ExampleMultipleChaperones.py
 ```
 
 ## Dependencies
@@ -40,7 +40,7 @@ scipy          >1.1
 mpi4py         >=2.0  
   
 Optional:  
-psana-conda    >1.3  (Required for LCLS simulations only)
+psana-conda    >1.3  (Required for LCLS simulations only). 
 prody          >1.10 (Required for conformations)
 
 
