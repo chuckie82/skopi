@@ -54,7 +54,6 @@ class Experiment(object):
         beam_spectrum = self.beam.generate_new_state()
         sample_state = self.generate_new_sample_state()
         intensities_stack = 0.
-        photons_stack = 0.
 
         for spike in beam_spectrum:
             recidet = ReciprocalDetector(self.det, spike)
@@ -68,9 +67,10 @@ class Experiment(object):
 
             group_intensities = recidet.add_correction(group_pattern)
             intensities_stack += group_intensities
-
-            group_photons = recidet.add_quantization(group_intensities)
-            photons_stack += group_photons
+        
+        # We are summing up intensities then converting to photons as opposed to converting to photons then summing up.
+        # Note: We may want to revisit the correctness of this procedure.
+        photons_stack = recidet.add_quantization(intensities_stack)
 
         ret = []
         if return_photons:
