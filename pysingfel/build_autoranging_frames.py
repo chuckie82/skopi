@@ -29,8 +29,7 @@ class BuildAutoRangeFrames(object):
                 detectorFried = False
                 break
         if detectorFried:
-            print("flux in pixel exceeds limit, giving up") # we should set frame[i, j] = maxEnergy+1
-            raise Exception
+            raise Exception("flux in pixel exceeds limit, giving up")
         nonLinearity = (energy-self.det.minE[i])**2*self.det.nonLinearity[i]
         pixelVal = energy*self.det.residualGains[i, :, :, :]+self.det.offsets[i, :, :, :]+nonLinearity
         self.frame = pixelVal
