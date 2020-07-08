@@ -3,13 +3,13 @@ import six
 import numpy as np
 
 from pysingfel.util import deprecated
-from .lcls import LCLSDetector
+from .autoranging import AutoRangingDetector
 
 class JungfrauDetector(AutoRangingDetector):
     def __init__(self, cameraConfig, *args, **kwargs):
         super(JungfrauDetector, self).__init__(cameraConfig=cameraConfig, *args, **kwargs)
 
-    cameraConfigs = [None, 
+        cameraConfigs = [None, 
                          "highLow", "mediumLow", ## autoranging ePix10k
                          "fixedHigh", "fixedMedium", "fixedLow"] ## fixed
 
