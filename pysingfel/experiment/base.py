@@ -27,12 +27,17 @@ class Experiment(object):
             self.volumes.append(
                 pg.calculate_diffraction_pattern_gpu(mesh, particle, return_type='complex_field'))
 
-    def generate_image(self):
-        img_stack = self.generate_image_stack()
-        return self.det.assemble_image_stack(img_stack)
+    def generate_image(self, return_orientation=False):
+        if return_orientation:
+            img_stack, orientation = self.generate_image_stack(return_orientation=return_orientation)
+            return self.det.assemble_image_stack(img_stack), orientation
+        else:
+            img_stack = self.generate_image_stack()
+            return self.det.assemble_image_stack(img_stack)
 
     def generate_image_stack(self, return_photons=None,
                              return_intensities=False,
+                             return_orientation=False,
                              always_tuple=False):
         """
         Generate and return a snapshot of the experiment.
@@ -55,6 +60,8 @@ class Experiment(object):
         sample_state = self.generate_new_sample_state()
         intensities_stack = 0.
 
+        orientations = sample_state[0][1]
+        
         for spike in beam_spectrum:
             recidet = ReciprocalDetector(self.det, spike)
 
@@ -78,9 +85,14 @@ class Experiment(object):
         if return_intensities:
             ret.append(intensities_stack)
 
-        if len(ret) == 1:
-            return ret[0]
-        return tuple(ret)
+        if return_orientation:
+            if len(ret) == 1:
+                return ret[0], orientations[0]
+            return tuple(ret), orientations
+        else:
+            if len(ret) == 1:
+                return ret[0]
+            return tuple(ret)
 
     def _generate_group_complex_pattern(self, recidet, i, particle_group):
         positions, orientations = particle_group
@@ -94,7 +106,7 @@ class Experiment(object):
 
         for j, position in enumerate(positions):
             slices[j] = recidet.add_phase_shift(slices[j], position)
-
+            
         return slices.sum(axis=0)
 
     def generate_new_sample_state(self):
