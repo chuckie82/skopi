@@ -8,7 +8,8 @@ from .autoranging import AutoRangingDetector
 class JungfrauDetector(AutoRangingDetector):
     def __init__(self, cameraConfig, *args, **kwargs):
         super(JungfrauDetector, self).__init__(cameraConfig=cameraConfig, *args, **kwargs)
-
+        
+        # Note: parameters for different cameraConfigs are not available yet.
         cameraConfigs = [None, 
                          "highLow", "mediumLow", ## autoranging ePix10k
                          "fixedHigh", "fixedMedium", "fixedLow"] ## fixed
