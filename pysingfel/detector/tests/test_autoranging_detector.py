@@ -15,11 +15,7 @@ if six.PY3:
 
 
 class TestAutorangingDetector(object):
-<<<<<<< HEAD
-    """Test base detector functions."""
-=======
     """Test autoranging detector functions."""
->>>>>>> dfc4c4497ab77119664484dd7283d69db8b6ae33
     @classmethod
     def setup_class(cls):
         ex_dir_ = os.path.dirname(__file__) + '/../../../examples'
@@ -28,23 +24,14 @@ class TestAutorangingDetector(object):
         beam = ps.Beam(ex_dir_+'/input/beam/amo86615.beam')
 
         # Load and initialize the detector
-<<<<<<< HEAD
-        det = ps.PnccdDetector(
-            geom=ex_dir_+'/input/lcls/xcsx35617/'
-                    'Epix10ka2M::CalibV1/XcsEndstation.0:Epix10ka2M.0/geometry/0-end.data',
-=======
         det = ps.Epix10kDetector(
             geom=ex_dir_+'/input/lcls/xcsx35617/'
                  'Epix10ka2M::CalibV1/XcsEndstation.0:Epix10ka2M.0/geometry/0-end.data',
->>>>>>> dfc4c4497ab77119664484dd7283d69db8b6ae33
             run_num=0,
             beam=beam,
             cameraConfig='fixedMedium')
         cls.det = det
-<<<<<<< HEAD
-
-=======
->>>>>>> dfc4c4497ab77119664484dd7283d69db8b6ae33
+            
         cls.pos_recip = det.pixel_position_reciprocal
 
         # Ref Particle
