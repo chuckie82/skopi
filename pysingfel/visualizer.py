@@ -80,3 +80,33 @@ class Visualizer(object):
         i_max = steps[-1]
         for i in steps:
             self.add_diffraction_ring(i*q_start/i_max)
+
+class ShowMasks(object):
+    def __init__(self, particle):
+        self.particle = particle
+        if self.particle.mesh is None:
+            print('Masks not defined...')
+        else:
+            self.plot(np.floor(self.particle.mesh.shape[0]/2).astype('int'))
+
+    def plot(self, islice):
+        fig, axes = plt.subplots(nrows=3, ncols=2, figsize=(6,9), sharex=True,  sharey=True, dpi=180)
+
+        axes[0,0].set_title('Solute mask')
+        axes[0,0].set_ylabel('YZ central slice')
+        axes[0,0].imshow(self.particle.solute_mask[islice,...]*1, cmap='Greys_r')
+        axes[1,0].set_ylabel('XZ central slice')
+        axes[1,0].imshow(self.particle.solute_mask[:,islice,:]*1, cmap='Greys_r')
+        axes[2,0].set_xlabel('voxel index')
+        axes[2,0].set_ylabel('XY central slice')
+        axes[2,0].imshow(self.particle.solute_mask[:,:,islice]*1, cmap='Greys_r')
+
+        axes[0,1].set_title('Solvent mask')
+        axes[0,1].imshow(self.particle.solvent_mask[islice,...]*1, cmap='Blues')
+        axes[1,1].imshow(self.particle.solvent_mask[:,islice,:]*1, cmap='Blues')
+        axes[2,1].set_xlabel('voxel index')
+        axes[2,1].imshow(self.particle.solvent_mask[:,:,islice]*1, cmap='Blues')
+
+        plt.tight_layout()
+        plt.show()
+
