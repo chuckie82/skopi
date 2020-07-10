@@ -67,7 +67,7 @@ plt.title('Mixed chaperones (photons)')
 fig = plt.figure()
 polarization = det.polarization_correction
 plt.subplot(121)
-plt.imshow(det.assemble_image_stack(polarization),vmin=0, vmax=1)
+plt.imshow(det.assemble_image_stack(polarization),vmin=0.995, vmax=1)
 plt.colorbar()
 plt.title('Polarization')
 plt.subplot(122)
