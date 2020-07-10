@@ -13,10 +13,16 @@ tar -xvf lcls.tar.gz
 
 ## Unit Test
 
-Run unit tests
+With your environment loaded, run the unit tests with
 ```
 pytest
 ```
+from the root directory of this repository or from the pysingfel subdirectory.
+If pysingfel is not installed in the environment and pytest cannot find it, add it to Python path by running
+```
+export PYTHONPATH=$PWD:$PYTHONPATH
+```
+from the root directory of the repository.
 
 ## Example
 
