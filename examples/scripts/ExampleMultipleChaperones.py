@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 import h5py as h5
 import time, os
-from pysingfel import *
 import pysingfel as ps
 
 numOp = 1
@@ -55,20 +54,25 @@ fig = plt.figure(figsize=(10, 8))
 plt.subplot(131)
 plt.imshow(det.assemble_image_stack(patternOp),norm=LogNorm())
 plt.colorbar()
-plt.title('Open')
+plt.title('Open chaperone diffraction pattern (photons)')
 plt.subplot(132)
 plt.imshow(det.assemble_image_stack(patternCl),norm=LogNorm())
 plt.colorbar()
-plt.title('Closed')
+plt.title('Closed chaperone  diffraction pattern (photons)')
 plt.subplot(133)
 plt.imshow(det.assemble_image_stack(pattern),norm=LogNorm())
 plt.colorbar()
-plt.title('Mixed')
+plt.title('Mixed chaperones diffraction pattern (photons)')
 plt.show()
 
 fig = plt.figure()
 polarization = det.polarization_correction
+plt.subplot(121)
 plt.imshow(det.assemble_image_stack(polarization),vmin=0, vmax=1)
 plt.colorbar()
 plt.title('Polarization')
+plt.subplot(122)
+plt.imshow(det.assemble_image_stack(np_mask),vmin=0, vmax=1)
+plt.colorbar()
+plt.title('Polarization corrected region')
 plt.show()
