@@ -5,7 +5,6 @@ import pytest
 import pysingfel as ps
 import pysingfel.gpu as pg
 import pysingfel.constants as cst
-from pysingfel.util import xp
 
 import six
 if six.PY2:
