@@ -54,7 +54,6 @@ fig = plt.figure(figsize=(10, 8))
 plt.subplot(131)
 plt.imshow(det.assemble_image_stack(patternOp),norm=LogNorm())
 plt.colorbar()
-<<<<<<< HEAD
 plt.title('Open chaperone diffraction pattern (photons)')
 plt.subplot(132)
 plt.imshow(det.assemble_image_stack(patternCl),norm=LogNorm())
@@ -64,18 +63,6 @@ plt.subplot(133)
 plt.imshow(det.assemble_image_stack(pattern),norm=LogNorm())
 plt.colorbar()
 plt.title('Mixed chaperones diffraction pattern (photons)')
-=======
-plt.title('Open')
-plt.subplot(132)
-plt.imshow(det.assemble_image_stack(patternCl),norm=LogNorm())
-plt.colorbar()
-plt.title('Closed')
-plt.subplot(133)
-plt.imshow(det.assemble_image_stack(pattern),norm=LogNorm())
-plt.colorbar()
-plt.title('Mixed')
->>>>>>> ee887d0f4655800a9cf6c37fcd13a4776b14802d
-plt.show()
 
 fig = plt.figure()
 polarization = det.polarization_correction
