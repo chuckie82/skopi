@@ -1,10 +1,18 @@
-<p align="center"><a href="https://github.com/chuckie82/pysingfel"><img src="https://user-images.githubusercontent.com/1917664/87212570-1b97a600-c2d4-11ea-86d5-8d1cdea0f5c5.gif" alt="pysingfel" height="281px"></a></p>
+<p align="center"><a href="https://github.com/chuckie82/pysingfel"><img src="https://user-images.githubusercontent.com/1917664/87212570-1b97a600-c2d4-11ea-86d5-8d1cdea0f5c5.gif" alt="pysingfel" height="128px"></a></p>
+
+<div class="row">
+  <div class="column">
+    <img src="https://user-images.githubusercontent.com/1917664/87213664-60730b00-c2db-11ea-8777-faf6cbefef44.png" alt="pysingfel" style="width:100%">
+  </div>
+</div>
 <br />
 
-<p align="center"><a href="https://github.com/chuckie82/pysingfel"><img src="https://user-images.githubusercontent.com/1917664/87211614-256ada80-c2cf-11ea-9761-cdeca76ccb65.png" alt="Installation" height="64px" style="float:left"></a><strong>Installation</strong></p>
-<p align="center"><a href="https://github.com/chuckie82/pysingfel"><img src="https://user-images.githubusercontent.com/1917664/87212210-39fca200-c2d2-11ea-8b94-6534e391bd5e.png" alt="Quickstart" height="64px" style="float:left"></a><strong>Quick start</strong></p>
-<p align="center"><a href="https://github.com/chuckie82/pysingfel"><img src="https://user-images.githubusercontent.com/1917664/87211819-2f410d80-c2d0-11ea-8490-0d7126a3a73a.png" alt="Tutorials" height="64px" style="float:left"></a><strong>Tutorials</strong></p>
-<p align="center"><a href="https://github.com/chuckie82/pysingfel"><img src="https://user-images.githubusercontent.com/1917664/87211764-e721eb00-c2cf-11ea-8663-11c6d2dd0fdf.png" alt="Developer" height="64px" style="float:left"></a><strong>Developer</strong></p>
+
+
+<p align="center"><a href="https://github.com/chuckie82/pysingfel"><img src="https://user-images.githubusercontent.com/1917664/87211614-256ada80-c2cf-11ea-9761-cdeca76ccb65.png" alt="Installation" height="64px" style="float:left"></a><strong><a href="https://github.com/chuckie82/pysingfel">Installation</a></strong></p>
+<p align="center"><a href="https://github.com/chuckie82/pysingfel"><img src="https://user-images.githubusercontent.com/1917664/87212210-39fca200-c2d2-11ea-8b94-6534e391bd5e.png" alt="Quickstart" height="64px" style="float:left"></a><strong><a href="https://github.com/chuckie82/pysingfel">Quick start</a></strong></p>
+<p align="center"><a href="https://github.com/chuckie82/pysingfel"><img src="https://user-images.githubusercontent.com/1917664/87211819-2f410d80-c2d0-11ea-8490-0d7126a3a73a.png" alt="Tutorials" height="64px" style="float:left"></a><strong><a href="https://github.com/chuckie82/pysingfel">Tutorials</a></strong></p>
+<p align="center"><a href="https://github.com/chuckie82/pysingfel"><img src="https://user-images.githubusercontent.com/1917664/87211764-e721eb00-c2cf-11ea-8663-11c6d2dd0fdf.png" alt="Developer" height="64px" style="float:left"></a><strong><a href="https://github.com/chuckie82/pysingfel">Developer</a></strong></p>
 
 # Pysingfel
 Python-based Single Particle Imaging Simulation for Free-Electron Lasers
