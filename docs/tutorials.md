@@ -1,11 +1,12 @@
 ## Tutorials
 
-Tutorials are available as Jupyter notebooks here:
-https://github.com/chuckie82/pysingfel/tree/master/examples/notebooks
+Tutorials are available as Jupyter notebooks [here](https://github.com/chuckie82/pysingfel/tree/master/examples/notebooks)
+
+Topics available: :+1:
 
 [cspi_generate_synthetic_dataset](#cspi_generate_synthetic_dataset) 
 
-[lhydration_layer](#hydration_layer)
+[hydration_layer](#hydration_layer)
 
 [normal-mode-sampling](#normal-mode-sampling)
 <br />
