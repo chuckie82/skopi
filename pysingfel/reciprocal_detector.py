@@ -96,27 +96,6 @@ class ReciprocalDetector(object):
 
         return diffraction_pattern
 
-    def get_fxs_pattern_without_corrections(self, particle, coords, device=None, return_type="intensity"):
-        """
-        Generate a single diffraction pattern without any correction from the particle object.
-
-        :param particle: The particle object.
-        :return: A diffraction pattern.
-        """
-        if device:
-            deprecation_message(
-                "Device option is deprecated. "
-                "Everything now runs on the GPU.")
-
-        import pysingfel.gpu.diffraction as pgd
-        diffraction_pattern = pgd.calculate_fxs_diffraction_pattern_gpu(
-            self.pixel_position_reciprocal,
-            particle,
-            coords,
-            return_type)
-
-        return diffraction_pattern
-
     def get_intensity_field(self, particle, device=None):
         """
         Generate a single diffraction pattern without any correction from the particle object.
@@ -239,45 +218,6 @@ class ReciprocalDetector(object):
 
         raw_data = self.get_pattern_without_corrections(particle=particle,return_type="intensity")
         return self.add_correction_and_quantization(raw_data)
-
-
-    def get_fxs_photons(self, particles, beam_focus_radius, jet_radius, device=None):
-        raw_data = None
-        state, coords = distribute_particles(particles, beam_focus_radius, jet_radius)
-        for i in range(len(state)):
-            this_data = self.get_pattern_without_corrections(particle=state[i], return_type="complex_field")
-            this_data *= xp.exp(1j*xp.dot(self.pixel_position_reciprocal, coords[i]))
-            if raw_data is None:
-                raw_data = this_data
-            else:
-                raw_data += this_data
-        return self.add_correction_and_quantization(xp.square(xp.abs(raw_data)))
-
-    def get_fxs_photons_slices(self, particles, beam_focus_radius, jet_radius, mesh_length, device=None):
-        mesh, voxel_length= self.get_reciprocal_mesh(voxel_number_1d = mesh_length)
-        state, coords = distribute_particles(particles, beam_focus_radius, jet_radius)
-        count = 0
-        field_acc = xp.zeros(self.pixel_position_reciprocal.shape[:3], dtype=xp.complex128)
-        for particle in particles:
-            if particles[particle] > 0:
-                volume = pgd.calculate_diffraction_pattern_gpu(mesh, particle, return_type="complex_field")
-                orientations = ps.geometry.get_random_quat(num_pts=particles[particle])
-                slices = ps.geometry.take_n_slices(volume = volume, voxel_length = voxel_length, pixel_momentum = self.pixel_position_reciprocal, orientations = orientations)
-                for i in range(particles[particle]):
-                    field_acc += self.add_phase_shift(slices[i], coords[count])
-                    count += 1
-        return self.add_correction_and_quantization(xp.square(xp.abs(field_acc)))
-
-    def get_fxs_photons_unittest(self, particles, beam_focus_radius, jet_radius, device=None):
-        raw_data = None
-        state, coords = distribute_particles(particles, beam_focus_radius, jet_radius)
-        for i in range(len(state)):
-            this_data = self.get_fxs_pattern_without_corrections(particle=state[i], coords=coords[i], return_type="complex_field")
-            if raw_data is None:
-                raw_data = this_data
-            else:
-                raw_data += this_data
-        return self.add_correction_and_quantization(xp.square(xp.abs(raw_data)))
 
     def get_adu(self, particle, path, device=None):
         """

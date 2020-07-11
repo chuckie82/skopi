@@ -1,3 +1,19 @@
+<p align="center"><a href="https://github.com/chuckie82/pysingfel"><img src="https://user-images.githubusercontent.com/1917664/87212570-1b97a600-c2d4-11ea-86d5-8d1cdea0f5c5.gif" alt="pysingfel" height="128px"></a></p>
+
+<div class="row">
+  <div class="column">
+    <img src="https://user-images.githubusercontent.com/1917664/87213664-60730b00-c2db-11ea-8777-faf6cbefef44.png" alt="pysingfel" style="width:100%">
+  </div>
+</div>
+<br />
+
+
+
+<p align="center"><a href="https://github.com/chuckie82/pysingfel"><img src="https://user-images.githubusercontent.com/1917664/87211614-256ada80-c2cf-11ea-9761-cdeca76ccb65.png" alt="Installation" height="64px" style="float:left"></a><strong><a href="https://github.com/chuckie82/pysingfel">Installation</a></strong></p>
+<p align="center"><a href="https://github.com/chuckie82/pysingfel"><img src="https://user-images.githubusercontent.com/1917664/87212210-39fca200-c2d2-11ea-8b94-6534e391bd5e.png" alt="Quickstart" height="64px" style="float:left"></a><strong><a href="https://github.com/chuckie82/pysingfel">Quick start</a></strong></p>
+<p align="center"><a href="https://github.com/chuckie82/pysingfel"><img src="https://user-images.githubusercontent.com/1917664/87211819-2f410d80-c2d0-11ea-8490-0d7126a3a73a.png" alt="Tutorials" height="64px" style="float:left"></a><strong><a href="https://github.com/chuckie82/pysingfel">Tutorials</a></strong></p>
+<p align="center"><a href="https://github.com/chuckie82/pysingfel"><img src="https://user-images.githubusercontent.com/1917664/87211764-e721eb00-c2cf-11ea-8663-11c6d2dd0fdf.png" alt="Developer" height="64px" style="float:left"></a><strong><a href="https://github.com/chuckie82/pysingfel">Developer</a></strong></p>
+
 # Pysingfel
 Python-based Single Particle Imaging Simulation for Free-Electron Lasers
 
@@ -13,10 +29,16 @@ tar -xvf lcls.tar.gz
 
 ## Unit Test
 
-Run unit tests
+With your environment loaded, run the unit tests with
 ```
 pytest
 ```
+from the root directory of this repository or from the pysingfel subdirectory.
+If pysingfel is not installed in the environment and pytest cannot find it, add it to Python path by running
+```
+export PYTHONPATH=$PWD:$PYTHONPATH
+```
+from the root directory of the repository.
 
 ## Example
 
@@ -45,18 +67,48 @@ psana-conda    >1.3  (Required for LCLS simulations only).
 prody          >1.10 (Required for conformations)
 
 
-## Setting Up LCLS2 Conda Environment
+## Installing psana
 
-1. Install LCLS2 on psana
-Refer to README.md on the webpage https://github.com/slac-lcls/lcls2
+To install the LCLS2 code base, which includes psana, refer to README.md on the webpage https://github.com/slac-lcls/lcls2
 
 
-2. Install CuPy on psana
+## Installing and using CuPy
+
+pysingfel uses GPU acceleration when computing the diffraction volumes using numba.cuda.
+The slicing of these volumes into 2D diffraction patterns is then used on the CPU via NumPy.
+These operations can be offloaded to the GPU as well using CuPy: https://cupy.chainer.org/.
+
+To install CuPy, you might be able to clone it from GitHub
 ```
 git clone https://github.com/cupy/cupy.git
+```
+then, from the cupy root directory and within your Python environment, install it with the following command:
+```
 pip install --no-cache-dir .
 ```
 
+Using CuPy changes the behavior of pysingfel in that it returns a CuPy array when you would be expecting a NumPy one, which other libraries might not be able to use.
+You can also not use NumPy functions on CuPy arrays.
+However, you can access NumPy/CuPy (whichever pysingfel uses) by using `xp` from the module `util`.
+You can then write NumPy/CuPy compatible code using functions as `xp.abs(numpy_or_cupy_array)`.
+Sometimes, you need to actually have a NumPy array. To cast either arrays into a NumPy one, use `asnumpy` from the same module: `asnumpy(numpy_or_cupy_array)`.
+The reverse operation (turning a NumPy array into a NumPy/CuPy one) can be performed using `xp.asarray`.
+To know which one you are using, type `xp.__name__`.
+Get `xp` and `asnumpy` with:
+```
+from pysingfel.util import xp, asnumpy
+```
+
+Since CuPy can be difficult to use for untrained users, it is deactivated by default. pysingfel will only use CuPy if CuPy is installed and the environment variable USE_CUPY is set to 1 (before loading pysingfel).
+To set the environment variable, type
+```
+export USE_CUPY=1
+```
+in your terminal. In a Jupyter session, run
+```
+%env USE_CUPY=1
+```
+in a cell.
 
 ## Quick-install on Summit
 
@@ -120,3 +172,5 @@ httpProxy.createProxyServer({
 export LCLS_CALIB_HTTP=http://YOUR_HOST_NAME:LISTEN_PORT_NUMBER/calib_ws
 ```
 where YOUR_HOST_NAME is your current node (type printenv HOSTNAME to see the name) and LISTEN_PORT_NUMBER is the number that you chose in step 2.
+
+Icons made by <a href="https://www.flaticon.com/authors/icongeek26" title="Icongeek26">Icongeek26</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a>
