@@ -80,3 +80,4 @@ class Visualizer(object):
         i_max = steps[-1]
         for i in steps:
             self.add_diffraction_ring(i*q_start/i_max)
+

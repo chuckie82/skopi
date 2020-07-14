@@ -2,6 +2,7 @@ import h5py
 import numpy as np
 import itertools as itertools
 from scipy import ndimage
+from matplotlib import pyplot as plt
 from pysingfel.util import symmpdb
 from pysingfel.geometry import quaternion2rot3d, get_random_rotation, get_random_translations
 from pysingfel.ff_waaskirf_database import *
@@ -422,12 +423,38 @@ class Particle(object):
     
     #### MASKS AND MESHES ####
     
-    def get_masks(self):
+    def create_masks(self):
         """create_masks
         """
         self.mesh         = self.build_particle_mesh()
         self.solute_mask  = self.create_solute_mask(dry=True)
         self.solvent_mask = self.solute_mask * ~self.create_solute_mask(dry=False)
+
+    def show_masks(self):
+        if self.mesh is None:
+            print('... masks not created yet ...')
+        else:
+            islice = np.floor(self.mesh.shape[0]/2).astype('int')
+            
+            fig, axes = plt.subplots(nrows=3, ncols=2, figsize=(6,9), sharex=True,  sharey=True, dpi=180)
+
+            axes[0,0].set_title('Solute mask')
+            axes[0,0].set_ylabel('YZ central slice')
+            axes[0,0].imshow(self.solute_mask[islice,...]*1, cmap='Greys_r')
+            axes[1,0].set_ylabel('XZ central slice')
+            axes[1,0].imshow(self.solute_mask[:,islice,:]*1, cmap='Greys_r')
+            axes[2,0].set_xlabel('voxel index')
+            axes[2,0].set_ylabel('XY central slice')
+            axes[2,0].imshow(self.solute_mask[:,:,islice]*1, cmap='Greys_r')
+
+            axes[0,1].set_title('Solvent mask')
+            axes[0,1].imshow(self.solvent_mask[islice,...]*1, cmap='Blues')
+            axes[1,1].imshow(self.solvent_mask[:,islice,:]*1, cmap='Blues')
+            axes[2,1].set_xlabel('voxel index')
+            axes[2,1].imshow(self.solvent_mask[:,:,islice]*1, cmap='Blues')
+
+            plt.tight_layout()
+            plt.show()
 
     def build_particle_mesh(self):
         """build_particle_mesh:
@@ -537,8 +564,8 @@ class Particle(object):
 
     #### DYNAMICS ####
 
-    def get_normal_modes(self):
-        """get_normal_modes
+    def gen_normal_modes(self):
+        """gen_normal_modes
         """
         print('>>> Computing normal modes with ProDy')
         from prody import ANM as prody_ANM
