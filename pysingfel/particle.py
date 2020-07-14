@@ -564,8 +564,8 @@ class Particle(object):
 
     #### DYNAMICS ####
 
-    def get_normal_modes(self):
-        """get_normal_modes
+    def gen_normal_modes(self):
+        """gen_normal_modes
         """
         print('>>> Computing normal modes with ProDy')
         from prody import ANM as prody_ANM
