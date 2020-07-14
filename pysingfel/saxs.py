@@ -1,12 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pysingfel as ps
+import pysingfel.gpu as gpu
 
 class SAXS():
-    def __init__(self, particle, N, qmax):
+    def __init__(self, particle, N, resmax):
         self.particle = particle
         self.N        = N
-        self.qmax     = qmax
+        self.qmax     = 1/resmax
         self.hkl      = self.define_hkl()
         self.qs, self.saxs = self.compute()
     
@@ -21,7 +22,7 @@ class SAXS():
         return hkl
     
     def compute(self):
-        stack = ps.gpu.calculate_diffraction_pattern_gpu(self.hkl, 
+        stack = gpu.calculate_diffraction_pattern_gpu(self.hkl, 
                                                          self.particle, 
                                                          return_type="intensity")
         dist = np.linalg.norm(self.hkl, axis=-1)
@@ -37,6 +38,6 @@ class SAXS():
         plt.yscale('log')
         plt.xlim(0,self.qmax/10**10)
         plt.xlabel('q (inverse Angstroem)')
-        plt.ylabel('log(I/I0)')
+        plt.ylabel('logI')
         plt.plot(self.qs/10**10, self.saxs)
         plt.show()
