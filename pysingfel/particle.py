@@ -422,7 +422,7 @@ class Particle(object):
     
     #### MASKS AND MESHES ####
     
-    def get_masks(self):
+    def create_masks(self):
         """create_masks
         """
         self.mesh         = self.build_particle_mesh()
