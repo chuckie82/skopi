@@ -18,6 +18,9 @@ To turn on cupy in pysingfel:
 export USE_CUPY=1
 ```
 
+## Contributing jupyter notebooks
+Add notebooks to pysingfel/examples/notebooks and add a description in pysingfel/docs/tutorials.md
+
 ## Contributing code
 
 Test code with Flake8 and Pytest before pull request
