@@ -3,7 +3,7 @@ Test your code in 3 environments before pull request: 1) python2, 2) python3, an
 
 For python2 envrionment:  
 ```
-conda activate ana-1.5.11 (or the latest version)
+source /reg/g/psdm/etc/psconda.sh
 ```
 
 For python3 environment:  
