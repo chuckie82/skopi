@@ -2,15 +2,21 @@
 Test your code in 3 environments before pull request: 1) python2, 2) python3, and 3) python3 with cupy.  
 
 For python2 envrionment:  
+```
 conda activate ana-1.5.11 (or the latest version)
+```
 
 For python3 environment:  
+```
 git clone https://github.com/slac-lcls/lcls2.git
 source lcls2/setup_env.sh
 export PYTHONPATH=<YOUR_PYSINGFEL_PATH>:$PYTHONPATH
+```
 
 To turn on cupy in pysingfel:  
+```
 export USE_CUPY=1
+```
 
 ## Contributing code
 
