@@ -1,15 +1,22 @@
 from pysingfel.util import deprecated
 from pysingfel.detector.epix10k import Epix10kDetector
 from pysingfel.detector.jungfrau import JungfrauDetector
+import numpy as np
 
 class BuildAutoRangeFrames(object):
     def __init__(self, detector, I0width, I0min=0, I0max=300000, field=None):
         self.det = detector
-        self.panels = self.panel_num
-        self.rows = self.panel_pixel_num_x[0]
-        self.cols = self.panel_pixel_num_y[0]
-        self.frame = np.zeros((self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0]))
-        self.gainBits = np.zeros((self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0]), dtype=int)
+        self.panels = self.det.panel_num
+        self.rows = self.det.panel_pixel_num_x[0]
+        self.cols = self.det.panel_pixel_num_y[0]
+        self.frame = np.zeros((self.det.panel_num, self.det.panel_pixel_num_x[0], self.det.panel_pixel_num_y[0]))
+        self.gainBits = np.zeros((self.det.panel_num, self.det.panel_pixel_num_x[0], self.det.panel_pixel_num_y[0]), dtype=int)
+
+        self.I0max = I0max
+        self.I0min = I0min
+        self.I0saturated = 250000 # empirical value
+        self.I0width = I0width
+        self.field = field
     
     def getTrueI0(self):
         self.trueI0 = np.random.random()*(self.I0max-self.I0min) + self.I0min
