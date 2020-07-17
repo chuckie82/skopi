@@ -26,7 +26,7 @@ class AutoRangingDetector(LCLSDetector):
         self.offsets = self.matricize(self.offsets)
         self.switchPoints = self.smear(self.matricize(self.switchPoints), None, self.switchPointVariations)
 
-    def matricize(self, array, relativeSmear=None, absoluteSmear=None):
+    def matricize(self, array):
         base = np.ones((self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0]))
         tmp = []
         [tmp.append(array[i]*base) for i in range(self.nRanges)]
