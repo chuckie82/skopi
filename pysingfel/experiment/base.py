@@ -87,7 +87,7 @@ class Experiment(object):
 
         if return_orientation:
             if len(ret) == 1:
-                return ret[0], orientations[0]
+                return ret[0], orientations
             return tuple(ret), orientations
         else:
             if len(ret) == 1:
