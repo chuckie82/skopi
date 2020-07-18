@@ -28,7 +28,7 @@ class AutoRangingDetector(LCLSDetector):
 
     def matricize(self, array):
         base = np.ones((self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0]))
-        return np.array([ i*base for i in range(self.nRanges)])
+        return np.array([ array[i]*base for i in range(self.nRanges)])
 
     def smear(self, matrices, relativeSmear=None, absoluteSmear=None):
         if relativeSmear is not None: ## should probably be by range, handle array or scalar
