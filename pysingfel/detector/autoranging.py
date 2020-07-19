@@ -22,37 +22,38 @@ class AutoRangingDetector(LCLSDetector):
         self.switchPoints = switchPoints
 
     def setupMatrices(self):
-        self.residualGains = self.smear(self.matricize(self.gains), self.gainErrors, None)/self.matricize(self.gains) # unitless
+        self.residualGains = self.smear_rel(self.matricize(self.gains), self.gainErrors)/self.matricize(self.gains) # unitless
         self.offsets = self.matricize(self.offsets)
-        self.switchPoints = self.smear(self.matricize(self.switchPoints), None, self.switchPointVariations)
+        self.switchPoints = self.smear_abs(self.matricize(self.switchPoints), self.switchPointVariations)
 
     def matricize(self, array):
         base = np.ones((self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0]))
         return np.array([ array[i]*base for i in range(self.nRanges)])
 
-    def smear(self, matrices, relativeSmear=None, absoluteSmear=None):
-        if relativeSmear is not None: ## should probably be by range, handle array or scalar
-            if not np.isscalar(relativeSmear):
-                if len(relativeSmear)==self.nRanges:
-                    for n in range(self.nRanges): ## lazy and unidiomatic
-                        smears = 1 + (np.random.normal(size=self.panel_num*self.panel_pixel_num_x[0]*self.panel_pixel_num_y[0]).reshape((self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0]))).clip(-3,3)*relativeSmear[n]
-                        ## clip to eliminate unfortunate tails, e.g. negative gain 
-                        matrices[n] *= smears
-                else:
-                    raise Exception("nRanges not matched")
+    def smear_rel(self, matrices, relativeSmear):
+        if not np.isscalar(relativeSmear):
+            if len(relativeSmear)==self.nRanges:
+                for n in range(self.nRanges): ## lazy and unidiomatic
+                    smears = 1 + (np.random.normal(size=self.panel_num*self.panel_pixel_num_x[0]*self.panel_pixel_num_y[0]).reshape((self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0]))).clip(-3,3)*relativeSmear[n]
+                    ## clip to eliminate unfortunate tails, e.g. negative gain 
+                    matrices[n] *= smears
             else:
-                smears = 1 + np.random.normal(size=self.nRanges*self.panel_num*self.panel_pixel_num_x[0]*self.panel_pixel_num_y[0]).reshape((nRanges, self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0]))*relativeSmear
-                matrices += smears
-        if absoluteSmear is not None: ## should probably be by range, handle array or scalar
-            if not np.isscalar(absoluteSmear):
-                if len(absoluteSmear)==self.nRanges:
-                    for n in range(self.nRanges): ## lazy and unidiomatic
-                        smears = (np.random.random(self.panel_num*self.panel_pixel_num_x[0]*self.panel_pixel_num_y[0]).reshape((self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0]))-0.5)*absoluteSmear[n] ## shifts 0, 1 to -0.5, 0.5 and scales
-                        matrices[n] += smears
-                else:
-                    raise Exception("nRanges not matched")
+                raise Exception("nRanges not matched")
+        else:
+            smears = 1 + np.random.normal(size=self.nRanges*self.panel_num*self.panel_pixel_num_x[0]*self.panel_pixel_num_y[0]).reshape((nRanges, self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0]))*relativeSmear
+            matrices += smears
+        return matrices
+
+    def smear_abs(self, matrices, absoluteSmear):
+        if not np.isscalar(absoluteSmear):
+            if len(absoluteSmear)==self.nRanges:
+                for n in range(self.nRanges): ## lazy and unidiomatic
+                    smears = (np.random.random(self.panel_num*self.panel_pixel_num_x[0]*self.panel_pixel_num_y[0]).reshape((self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0]))-0.5)*absoluteSmear[n] ## shifts 0, 1 to -0.5, 0.5 and scales
+                    matrices[n] += smears
             else:
-                smears = (np.random.random(self.nRanges*self.panel_num*self.panel_pixel_num_x[0]*self.panel_pixel_num_y[0]).reshape((nRanges, self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0]))-0.5)*absoluteSmear ## shifts 0, 1 to -0.5, 0.5 and scales
+                raise Exception("nRanges not matched")
+        else:
+            smears = (np.random.random(self.nRanges*self.panel_num*self.panel_pixel_num_x[0]*self.panel_pixel_num_y[0]).reshape((nRanges, self.panel_num, self.panel_pixel_num_x[0], self.panel_pixel_num_y[0]))-0.5)*absoluteSmear ## shifts 0, 1 to -0.5, 0.5 and scales
             matrices += smears
         return matrices
 
