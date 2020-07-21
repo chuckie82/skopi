@@ -1,0 +1,20 @@
+{
+    "3iyf": 
+    {
+        "pdb": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/pdb/3iyf.pdb",
+        "beam": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/beam/amo86615.beam",
+        "beamFluenceIncreaseFactor": 1,
+        "geom": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data",
+        "numPatterns": 1,
+        "outDir": "/reg/neh/home5/deebanr/test-data"
+    },
+    "two-atoms": 
+    {
+        "pdb": "/reg/neh/home5/deebanr/two-atoms.pdb",
+        "beam": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/beam/amo86615.beam",
+        "beamFluenceIncreaseFactor": 1e12,
+        "geom": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data",
+        "numPatterns": 1,
+        "outDir": "/reg/neh/home5/deebanr/test-data"
+    }
+}
