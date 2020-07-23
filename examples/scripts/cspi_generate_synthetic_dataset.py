@@ -10,7 +10,7 @@ import tqdm
 
 import numpy as np
 
-import scipy.misc
+from PIL import Image
 
 import h5py as h5
 
@@ -196,8 +196,18 @@ def save_diffraction_pattern_as_image(data_index, img_dir, diffraction_pattern):
 
     img_file = 'diffraction-pattern-{}.png'.format(data_index)
     img_path = os.path.join(img_dir, img_file)
-    scipy.misc.imsave(img_path, diffraction_pattern)
+    
+    im = gnp2im(diffraction_pattern)
+    im.save(img_path, format='png')
 
+def gnp2im(image_np):
+    """
+    Converts an image stored as a 2-D grayscale Numpy array into a PIL image.
+    """
+    rescaled = (255.0 / image_np.max() * (image_np - image_np.min())).astype(np.uint8)
+    im = Image.fromarray(rescaled, mode='L')
+    return im
+    
 def get_output_file_name(dataset_name, dataset_size, diffraction_pattern_height, diffraction_pattern_width):
     return "cspi_synthetic_dataset_diffraction_patterns_{}_uniform_quat_dataset-size={}_diffraction-pattern-shape={}x{}.hdf5".format(dataset_name, dataset_size, diffraction_pattern_height, diffraction_pattern_width)
 
