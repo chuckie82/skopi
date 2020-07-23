@@ -10,6 +10,8 @@ import tqdm
 
 import numpy as np
 
+import scipy.misc
+
 import h5py as h5
 
 import pysingfel as ps
@@ -29,13 +31,25 @@ Examples on how to run this script:
 
 1. python cspi_generate_synthetic_dataset.py --config cspi_generate_synthetic_dataset_config.json --dataset 3iyf
 
-2. python cspi_generate_synthetic_dataset.py --config cspi_generate_synthetic_dataset_config.json --dataset two-atoms 
+2. python cspi_generate_synthetic_dataset.py --config cspi_generate_synthetic_dataset_config.json --dataset two-atoms-100
 
 Tips on using this script:
 
 1. For an example config file, look at: pysingfel/examples/scripts/cspi_generate_synthetic_dataset_config.json
 
 2. Use the previously defined datasets in this file to add or modify an existing experiment of your choice.
+
+If you wish to use the Latent Space Visualizer to visualize the synthetic dataset, make the image output directory accessible to JupyterHub on PSWWW after running the script.
+
+Examples on how to make the image output directory accessible to the Latent Space Visualizer:
+
+1. ln -s /reg/data/ana03/scratch/deebanr/3iyf /reg/neh/home/deebanr/3iyf
+
+2. ln -s /reg/data/ana03/scratch/deebanr/two-atoms-100 /reg/neh/home/deebanr/two-atoms-100
+
+Tips on creating file system links with the ln command from the Terminal:
+
+https://www.linode.com/docs/tools-reference/tools/create-file-system-links-with-ln/#use-cases-for-symbolic-links
 
 """
 
@@ -63,6 +77,7 @@ def main():
     beam_fluence_increase_factor = dataset_params['beamFluenceIncreaseFactor']
     geom_file = dataset_params['geom']
     dataset_size = dataset_params['numPatterns']
+    img_dir = dataset_params['imgDir']
     output_dir = dataset_params['outDir']
     
     # PDB
@@ -114,7 +129,9 @@ def main():
     tic = time.time()
     
     for data_index in tqdm.tqdm(range(dataset_size)):
-        diffraction_patterns[data_index] = experiment.generate_image()
+        diffraction_pattern = experiment.generate_image()
+        diffraction_patterns[data_index] = diffraction_pattern
+        save_diffraction_pattern_as_image(data_index, img_dir, diffraction_pattern)
     
     toc = time.time()
     
@@ -123,7 +140,7 @@ def main():
     # Create output directory if it does not exist
     if not os.path.exists(output_dir):
         print("Creating output directory: {}".format(output_dir))
-        os.mkdir(output_dir)
+        os.makedirs(output_dir)
 
     # Define path to output HDF5 file
     output_file = get_output_file_name(dataset_name, dataset_size, diffraction_pattern_height, diffraction_pattern_width)    
@@ -170,6 +187,16 @@ def parse_input_arguments(args):
 
     # convert argparse to dict
     return vars(parse.parse_args(args))
+
+def save_diffraction_pattern_as_image(data_index, img_dir, diffraction_pattern):
+    # Create image output directory if it does not exist
+    if not os.path.exists(img_dir):
+        print("Creating image output directory: {}".format(img_dir))
+        os.makedirs(img_dir)
+
+    img_file = 'diffraction-pattern-{}.png'.format(data_index)
+    img_path = os.path.join(img_dir, img_file)
+    scipy.misc.imsave(img_path, diffraction_pattern)
 
 def get_output_file_name(dataset_name, dataset_size, diffraction_pattern_height, diffraction_pattern_width):
     return "cspi_synthetic_dataset_diffraction_patterns_{}_uniform_quat_dataset-size={}_diffraction-pattern-shape={}x{}.hdf5".format(dataset_name, dataset_size, diffraction_pattern_height, diffraction_pattern_width)
