@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pysingfel as ps
-import pysingfel.gpu as gpu
 
 class SAXS():
     def __init__(self, particle, N, resmax):
@@ -22,6 +21,7 @@ class SAXS():
         return hkl
     
     def compute(self):
+        import pysingfel.gpu as gpu
         stack = gpu.calculate_diffraction_pattern_gpu(self.hkl, 
                                                          self.particle, 
                                                          return_type="intensity")
