@@ -1,0 +1,82 @@
+{
+    "3iyf": 
+    {
+        "pdb": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/pdb/3iyf.pdb",
+        "beam": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/beam/amo86615.beam",
+        "beamFluenceIncreaseFactor": 1,
+        "geom": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data",
+        "numPatterns": 100,
+        "imgDir": "/reg/data/ana03/scratch/deebanr/3iyf/images",
+        "outDir": "/reg/data/ana03/scratch/deebanr/3iyf/dataset"
+    },
+    "3iyf-1K": 
+    {
+        "pdb": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/pdb/3iyf.pdb",
+        "beam": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/beam/amo86615.beam",
+        "beamFluenceIncreaseFactor": 1,
+        "geom": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data",
+        "numPatterns": 1000,
+        "imgDir": "/reg/data/ana03/scratch/deebanr/3iyf-1K/images",
+        "outDir": "/reg/data/ana03/scratch/deebanr/3iyf-1K/dataset"
+    },
+     "two-atoms-100": 
+    {
+        "pdb": "/reg/neh/home5/deebanr/two-atoms.pdb",
+        "beam": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/beam/amo86615.beam",
+        "beamFluenceIncreaseFactor": 1e12,
+        "geom": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data",
+        "numPatterns": 100,
+        "imgDir": "/reg/data/ana03/scratch/deebanr/two-atoms-100/images",
+        "outDir": "/reg/data/ana03/scratch/deebanr/two-atoms-100/dataset"
+    },
+    "two-atoms-1K": 
+    {
+        "pdb": "/reg/neh/home5/deebanr/two-atoms.pdb",
+        "beam": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/beam/amo86615.beam",
+        "beamFluenceIncreaseFactor": 1e12,
+        "geom": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data",
+        "numPatterns": 1000,
+        "imgDir": "/reg/data/ana03/scratch/deebanr/two-atoms-1k/images",
+        "outDir": "/reg/data/ana03/scratch/deebanr/two-atoms-1k/dataset"
+    },
+    "two-atoms-1": 
+    {
+        "pdb": "/reg/neh/home5/deebanr/two-atoms.pdb",
+        "beam": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/beam/amo86615.beam",
+        "beamFluenceIncreaseFactor": 1e12,
+        "geom": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data",
+        "numPatterns": 1,
+        "imgDir": "/reg/data/ana03/scratch/deebanr/two-atoms-1/images",
+        "outDir": "/reg/data/ana03/scratch/deebanr/two-atoms-1/dataset"
+    },
+    "two-atoms-2": 
+    {
+        "pdb": "/reg/neh/home5/deebanr/two-atoms.pdb",
+        "beam": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/beam/amo86615.beam",
+        "beamFluenceIncreaseFactor": 1e12,
+        "geom": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data",
+        "numPatterns": 2,
+        "imgDir": "/reg/data/ana03/scratch/deebanr/two-atoms-2/images",
+        "outDir": "/reg/data/ana03/scratch/deebanr/two-atoms-2/dataset"
+    },
+    "3iyf-mpi": 
+    {
+        "pdb": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/pdb/3iyf.pdb",
+        "beam": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/beam/amo86615.beam",
+        "beamFluenceIncreaseFactor": 1,
+        "geom": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data",
+        "numPatterns": 10,
+        "imgDir": "/reg/data/ana03/scratch/deebanr/3iyf-mpi/images",
+        "outDir": "/reg/data/ana03/scratch/deebanr/3iyf-mpi/dataset"
+    },
+    "two-atoms-mpi": 
+    {
+        "pdb": "/reg/neh/home5/deebanr/two-atoms.pdb",
+        "beam": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/beam/amo86615.beam",
+        "beamFluenceIncreaseFactor": 1e12,
+        "geom": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data",
+        "numPatterns": 10,
+        "imgDir": "/reg/data/ana03/scratch/deebanr/two-atoms-mpi/images",
+        "outDir": "/reg/data/ana03/scratch/deebanr/two-atoms-mpi/dataset"
+    }
+}
