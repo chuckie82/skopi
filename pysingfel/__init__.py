@@ -6,7 +6,6 @@ from pysingfel.geometry import *
 from pysingfel.particle import *
 from pysingfel.util import *
 from pysingfel.ff_waaskirf_database import *
-from pysingfel.solvent_form_factor import *
 from pysingfel.experiment import *
 from pysingfel.visualizer import *
 from pysingfel.saxs import *
