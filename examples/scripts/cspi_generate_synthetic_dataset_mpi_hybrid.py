@@ -1,31 +1,27 @@
 """
 Deeban Ramalingam (deebanr@slac.stanford.edu)
 
-This script generates a synthetic dataset of diffraction patterns and their associated orientations for computational Single Particle Imaging (cSPI). This script uses Pysingfel to simulate an SPI Experiment.
+This script implements a hybrid CPU-GPU approach to efficiently generate a synthetic dataset of diffraction patterns and their associated orientations as an HDF5 file using both the CPU and GPU. This approach uses the Message Passing Interface (MPI) communication model. In this communication model, there are three types of processes: the Master rank, the CPU ranks, and the GPU rank. Using the PDB, beamline instrument, and detector geometry, the GPU rank calculates and broadcasts the diffraction volume of the particle to the CPU ranks. The Master rank generates orientations as uniformly distributed quaternions and saves these orientations to HDF5 file. The CPU and GPU ranks repeatedly query the Master rank for batches of the orientations. The CPU and GPU ranks then use the orientations and diffraction volume to produce diffraction images, which are also added to the HDF5 file.
 
 How to run this script:
 
-mpiexec -n 10 python SPI_MPI_hybrid_deeban.py --config <path to Config file> --dataset <alias for the dataset>
+mpiexec -n <number of processors> python cspi_generate_synthetic_dataset_mpi_hybrid.py --config <path to Config file> --dataset <alias for the dataset>
 
-Examples on how to run this script:
+Example on how to run this script:
 
-1. python cspi_generate_synthetic_dataset.py --config cspi_generate_synthetic_dataset_config.json --dataset 3iyf
-
-2. python cspi_generate_synthetic_dataset.py --config cspi_generate_synthetic_dataset_config.json --dataset two-atoms-100
+mpiexec -n 16 python cspi_generate_synthetic_dataset_mpi_hybrid.py --config cspi_generate_synthetic_dataset_config.json --dataset 2cex-10K
 
 Tips on using this script:
 
 1. For an example config file, look at: pysingfel/examples/scripts/cspi_generate_synthetic_dataset_config.json
 
-2. Use the previously defined datasets in this file to add or modify an existing experiment of your choice.
+2. Use the previously defined datasets in this file to add or modify an existing dataset of your choice.
 
 If you wish to use the Latent Space Visualizer to visualize the synthetic dataset, make the image output directory accessible to JupyterHub on PSWWW after running the script.
 
-Examples on how to make the image output directory accessible to the Latent Space Visualizer:
+Example on how to make the image output directory accessible to the Latent Space Visualizer:
 
-1. ln -s /reg/data/ana03/scratch/deebanr/3iyf /reg/neh/home/deebanr/3iyf
-
-2. ln -s /reg/data/ana03/scratch/deebanr/two-atoms-100 /reg/neh/home/deebanr/two-atoms-100
+ln -s /reg/data/ana03/scratch/deebanr/2cex /reg/neh/home/deebanr/2cex
 
 Tips on creating file system links with the ln command from the Terminal:
 
@@ -33,13 +29,7 @@ https://www.linode.com/docs/tools-reference/tools/create-file-system-links-with-
 
 MPI Communication Model adapted from: https://github.com/AntoineDujardin/pysingfel/blob/mpi-gpu/examples/scripts/SPI_2CEX_MPI_hybrid.py
 
-The parameter n specifies the number of ranks. This script requires at least 2 ranks.
-
-The current target is a single node on a hybrid system with 1 GPU.
-Master rank: Rank 0 coordinates.
-GPU rank: Rank 1 uses the GPU.
-CPU ranks: Ranks 2+ use the CPU.
-
+The parameter n specifies the number of ranks. This script requires at least 2 ranks. Rank 0 is the Master Rank and Rank 1 is the GPU Rank. All other ranks are CPU ranks.
 """
 
 # MPI parameters
