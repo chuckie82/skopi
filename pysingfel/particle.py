@@ -659,7 +659,7 @@ class Particle(object):
 
         self.atom_pos_centered_and_aligned_according_to_principal_axes = dr_rotated
         
-    def inertia_matrix(self, r):
+    def build_inertia_matrix(self, r):
         """
         Calculate the inertia matrix for a given set of (x, y, z) positions. The mass is assumed to be one.
         
