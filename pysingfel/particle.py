@@ -23,6 +23,9 @@ class Particle(object):
         # Index array saving indices that split atom_pos to get pos for each atom type
         # More specifically, let m = split_idx[i] and n = split_idx[i+1], then
         # atom_pos[m:n] contains all atoms for the ith atom type.
+        
+        # Atom positions centered and aligned according to its principal axes
+        self.atom_pos_centered_and_aligned_according_to_principal_axes = None
 
         self.trans = None
 
@@ -134,9 +137,13 @@ class Particle(object):
     # setters and getters
     def set_atom_pos(self, pos):
         self.atom_pos = pos
+        self.center_and_align_according_to_principal_axes()
 
     def get_atom_pos(self):
         return self.atom_pos
+    
+    def get_atom_pos_centered_and_aligned_to_principal_axes(self):
+        return self.atom_pos_centered_and_aligned_to_principal_axes
 
     def get_num_atoms(self):
         return self.atom_pos.shape[0]
@@ -159,7 +166,7 @@ class Particle(object):
     def set_elastic_network_cutoff(self, elastic_network_cutoff):
         self.elastic_network_cutoff = elastic_network_cutoff  # in Angstroem
         
-    def read_h5file(self, fname, datasetname):
+    def read_h5file(self, fname, datasetname, center_and_align_according_to_principal_axes=False):
         """
         Parse the h5file to get the particle position and the other information
 
@@ -172,6 +179,7 @@ class Particle(object):
             ion_list = f.get(
                 datasetname + '/xyz').value  # length = N, contain atom type id for each atom
             self.atom_pos = atom_pos[np.argsort(ion_list)]
+            self.center_and_align_according_to_principal_axes()
             _, idx = np.unique(np.sort(ion_list), return_index=True)
             self.split_idx = np.append(idx, [len(ion_list)])
 
@@ -188,8 +196,11 @@ class Particle(object):
             self.num_compton_q_samples = len(self.compton_q_sample)
             self.sBound = f.get(datasetname + '/Sq_bound').value
             self.nFree = f.get(datasetname + '/Sq_free').value
+        
+        if center_and_align_according_to_principal_axes:
+            self.center_and_align_according_to_principal_axes()
 
-    def read_pdb(self, fname, ff='WK'):
+    def read_pdb(self, fname, ff='WK', center_and_align_according_to_principal_axes=False):
         """
         Get particle information from reading pdb file.
         Implement the necessary transformation to different chains of the particle based on
@@ -218,7 +229,6 @@ class Particle(object):
         self.split_idx = np.append(idx, [len(tmp)])
 
         bohr_radius = 0.529177206
-
 
         if ff == 'WK':
             """
@@ -347,8 +357,11 @@ class Particle(object):
                     raise ValueError('Unrecognized atom type!')
         else:
             raise ValueError('Unrecognized form factor source!')
+            
+        if center_and_align_according_to_principal_axes:
+            self.center_and_align_according_to_principal_axes()
 
-    def create_from_atoms(self, atoms):
+    def create_from_atoms(self, atoms, center_and_align_according_to_principal_axes=False):
         atom_types = {'H': 1, 'HE': 2, 'C': 6, 'N1+': 6, 'N': 7, 'O': 8, 'O1-': 9, 'P': 15, 'S': 16, 'CL': 18, 'FE': 26}
         
         all_atoms = []
@@ -420,6 +433,9 @@ class Particle(object):
                 if flag:
                     print('Atom number = ' + str(zz) + ' with charge ' + str(qq))
                     raise ValueError('Unrecognized atom type!')
+        
+        if center_and_align_according_to_principal_axes:
+            self.center_and_align_according_to_principal_axes()
     
     #### MASKS AND MESHES ####
     
@@ -612,3 +628,59 @@ class Particle(object):
         
         return scale_factor * latent_coordinates
 
+    ### ALIGNMENT ###
+    def center_and_align_according_to_principal_axes(self):
+        """
+        Center and align the particle according to its principal axes.
+        
+        This function is adapted from:
+        https://en.wikipedia.org/wiki/Moment_of_inertia#Inertia_matrix_in_different_reference_frames
+        
+        :return:
+        """
+        
+        # Get the atom positions
+        r = self.atom_pos
+        
+        # Compute its center of mass
+        r_C = np.mean(r, axis=0)
+
+        # Center the atom positions
+        dr = r - r_C
+
+        # Compute the body frame inertia matrix
+        IcB = self.build_inertia_matrix(dr)
+
+        # Find the principal moments of inertia and the rotation matrix that defines the directions of the principal axes of the particle
+        Ixyz, Q = np.linalg.eig(IcB)
+
+        # Align the centered atom positions in the body frame to the inertial frame
+        dr_rotated = np.matmul(dr, Q)
+
+        self.atom_pos_centered_and_aligned_according_to_principal_axes = dr_rotated
+        
+    def inertia_matrix(self, r):
+        """
+        Calculate the inertia matrix for a given set of (x, y, z) positions. The mass is assumed to be one.
+        
+        This function is adapted from:
+        https://en.wikipedia.org/wiki/Moment_of_inertia#Inertia_matrix_in_different_reference_frames
+        
+        :return:
+        """
+        
+        x = r[:, 0]
+        y = r[:, 1]
+        z = r[:, 2]
+        I = np.zeros((3, 3))
+        I[0, 0] = -np.sum(np.square(y) + np.square(z))
+        I[0, 1] = np.sum(x * y)
+        I[0, 2] = np.sum(x * z)
+        I[1, 0] = np.sum(x * y)
+        I[1, 1] = -np.sum(np.square(x) + np.square(z))
+        I[1, 2] = np.sum(y * z)
+        I[2, 0] = np.sum(x * z)
+        I[2, 1] = np.sum(y * z)
+        I[2, 2] = -np.sum(np.square(x) + np.square(y))
+        return I
+    
