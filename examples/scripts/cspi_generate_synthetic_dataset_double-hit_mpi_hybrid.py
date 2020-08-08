@@ -5,11 +5,11 @@ This script implements a hybrid CPU-GPU approach to efficiently generate a synth
 
 How to run this script:
 
-mpiexec -n <number of processors> python cspi_generate_synthetic_dataset_mpi_hybrid.py --config <path to Config file> --dataset <alias for the dataset>
+mpiexec -n <number of processors> python cspi_generate_synthetic_dataset_double-hit_mpi_hybrid.py --config <path to Config file> --dataset <alias for the dataset>
 
 Example on how to run this script:
 
-mpiexec -n 16 python cspi_generate_synthetic_dataset_mpi_hybrid.py --config cspi_generate_synthetic_dataset_config.json --dataset 3iyf-10K
+mpiexec -n 16 python cspi_generate_synthetic_dataset_double-hit_mpi_hybrid.py --config cspi_generate_synthetic_dataset_config.json --dataset 3iyf-10K
 
 Tips on using this script:
 
@@ -427,7 +427,7 @@ def gnp2im(image_np):
     return im
 
 def get_output_file_name(dataset_name, dataset_size, diffraction_pattern_height, diffraction_pattern_width):
-    return "cspi_synthetic_dataset_diffraction_patterns_{}_uniform_quat_dataset-size={}_diffraction-pattern-shape={}x{}.hdf5".format(dataset_name, dataset_size, diffraction_pattern_height, diffraction_pattern_width)
+    return "cspi_synthetic_dataset_double-hit_diffraction_patterns_{}_uniform_quat_dataset-size={}_diffraction-pattern-shape={}x{}.hdf5".format(dataset_name, dataset_size, diffraction_pattern_height, diffraction_pattern_width)
 
 if __name__ == '__main__':
     main()
