@@ -27,18 +27,19 @@ class Experiment(object):
             self.volumes.append(
                 pg.calculate_diffraction_pattern_gpu(mesh, particle, return_type='complex_field'))
 
-    def generate_image(self, return_orientation=False):
+    def generate_image(self, return_orientation=False, multi_particle_hit=False):
         if return_orientation:
-            img_stack, orientation = self.generate_image_stack(return_orientation=return_orientation)
+            img_stack, orientation = self.generate_image_stack(return_orientation=return_orientation, multi_particle_hit=multi_particle_hit)
             return self.det.assemble_image_stack(img_stack), orientation
         else:
-            img_stack = self.generate_image_stack()
+            img_stack = self.generate_image_stack(multi_particle_hit=multi_particle_hit)
             return self.det.assemble_image_stack(img_stack)
 
     def generate_image_stack(self, return_photons=None,
                              return_intensities=False,
                              return_orientation=False,
-                             always_tuple=False):
+                             always_tuple=False,
+                             multi_particle_hit=False):
         """
         Generate and return a snapshot of the experiment.
 
@@ -57,7 +58,9 @@ class Experiment(object):
             return_photons = True
 
         beam_spectrum = self.beam.generate_new_state()
-        sample_state = self.generate_new_sample_state()
+        
+        sample_state = self.generate_new_sample_state(multi_particle_hit=multi_particle_hit)
+        
         intensities_stack = 0.
 
         orientations = sample_state[0][1]
