@@ -1,0 +1,17 @@
+name: prody
+channels:
+  - conda-forge
+  - omnia
+  - defaults
+  - lcls-ii
+dependencies:
+  - jupyter
+  - matplotlib
+  - seaborn
+  - ipympl
+  - plotly
+  - scikit-learn
+  - psana
+  - pip
+  - pip:
+    - prody

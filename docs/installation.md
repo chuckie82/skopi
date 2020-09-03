@@ -61,6 +61,13 @@ in your terminal. In a Jupyter session, run
 in a cell.
 
 
+## Installing prody
+
+```
+conda env create -f environment.yml
+```
+
+
 ## Quick-install on Summit
 
 To quickly install a standalone version of pysingfel with psana2 on Summit, run

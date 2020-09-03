@@ -3,6 +3,7 @@ import os
 import six
 import sys
 
+# support LCLSI-py2, LCLSI-py3 and LCLSII-py3
 try:
     if six.PY2:
         from PSCalib.GenericCalibPars import GenericCalibPars
