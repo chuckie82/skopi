@@ -5,11 +5,11 @@ This script implements a hybrid CPU-GPU approach to efficiently generate a synth
 
 How to run this script:
 
-mpiexec -n <number of processors> python cspi_generate_synthetic_dataset_mpi_hybrid.py --config <path to Config file> --dataset <alias for the dataset>
+mpiexec -n <number of processors> python cspi_generate_synthetic_dataset_double-hit_mpi_hybrid.py --config <path to Config file> --dataset <alias for the dataset>
 
 Example on how to run this script:
 
-mpiexec -n 16 python cspi_generate_synthetic_dataset_mpi_hybrid.py --config cspi_generate_synthetic_dataset_config.json --dataset 3iyf-10K
+mpiexec -n 16 python cspi_generate_synthetic_dataset_double-hit_mpi_hybrid.py --config cspi_generate_synthetic_dataset_config.json --dataset 3iyf-10K
 
 Tips on using this script:
 
@@ -117,6 +117,7 @@ def main():
     save_volume = False
     with_intensities = False
     given_orientations = True
+    given_positions = True
 
     # Constants
     photons_dtype = np.uint8
@@ -140,10 +141,37 @@ def main():
     output_file = get_output_file_name(dataset_name, dataset_size, diffraction_pattern_height, diffraction_pattern_width)    
     cspi_synthetic_dataset_file = os.path.join(output_dir, output_file)
 
-    # Generate uniform orientations
+    # Generate orientations for both particles
     if given_orientations and RANK == MASTER_RANK:
-        print("(Master) Generate {} uniform orientations".format(dataset_size))
-        orientations = ps.get_uniform_quat(dataset_size, True)
+        print("(Master) Generate {} orientations".format(dataset_size))
+        
+        # Generate orientations for the first particle
+        first_particle_orientations = ps.get_uniform_quat(dataset_size, True)
+
+        # Generate orientations for the second particle
+        second_particle_orientations = ps.get_random_quat(dataset_size)
+
+        # Assemble the orientations for both particles
+        first_particle_orientations_ = first_particle_orientations[np.newaxis]
+        second_particle_orientations_ = second_particle_orientations[np.newaxis]
+        orientations_ = np.concatenate((first_particle_orientations_, second_particle_orientations_))
+        orientations = np.transpose(orientations_, (1, 0, 2))
+        
+    # Generate positions for both particles
+    if given_positions and RANK == MASTER_RANK:
+        print("(Master) Generate {} positions".format(dataset_size))
+        
+        # Generate positions for the first particle
+        first_particle_positions = np.zeros((dataset_size, 3))
+
+        # Generate positions for the second particle
+        second_particle_positions = generate_positions_for_second_particle(dataset_size, 2e-8, 5e-8)
+
+        # Assemble the positions for both particles
+        first_particle_positions_ = first_particle_positions[np.newaxis]
+        second_particle_positions_ = second_particle_positions[np.newaxis]
+        positions_ = np.concatenate((first_particle_positions_, second_particle_positions_))
+        positions = np.transpose(positions_, (1, 0, 2))
 
     sys.stdout.flush()
 
@@ -194,6 +222,9 @@ def main():
         if given_orientations:
             f.create_dataset("orientations", data=orientations)
         
+        if given_positions:
+            f.create_dataset("positions", data=positions)
+        
         f.create_dataset("photons", (dataset_size, 4, 512, 512), photons_dtype)
 
         # Create a dataset to store the diffraction patterns
@@ -240,11 +271,17 @@ def main():
             # Send batch number to that rank
             COMM.send(batch_n, dest=i_rank)
             
-            # Send orientations as well
+            # Send orientations
             if given_orientations:
                 batch_start = batch_n * batch_size
                 batch_end = (batch_n+1) * batch_size
                 COMM.send(orientations[batch_start:batch_end], dest=i_rank)
+                
+            # Send positions as well
+            if given_positions:
+                batch_start = batch_n * batch_size
+                batch_end = (batch_n+1) * batch_size
+                COMM.send(positions[batch_start:batch_end], dest=i_rank)
 
         # Tell non-Master ranks to stop asking for more data since there are no more batches to process
         for _ in range(N_RANKS - 1):
@@ -277,10 +314,15 @@ def main():
             if batch_n is None:
                 break
 
-            # Receive orientations as well from Master rank
+            # Receive orientations from Master rank
             if given_orientations:
                 orientations = COMM.recv(source=MASTER_RANK)
                 experiment.set_orientations(orientations)
+                
+            # Receive positions as well from Master rank
+            if given_positions:
+                positions = COMM.recv(source=MASTER_RANK)
+                experiment.set_positions(positions)
 
             # Define a Numpy array to hold a batch of photons
             np_photons = np.zeros((batch_size, 4, 512, 512), photons_dtype)
@@ -299,8 +341,8 @@ def main():
             # Generate batch of snapshots
             for i in range(batch_size):
                 
-                # Generate image stack
-                image_stack_tuple = experiment.generate_image_stack(return_photons=True, return_intensities=with_intensities, always_tuple=True)
+                # Generate the image stack for the double-particle hit scenario
+                image_stack_tuple = experiment.generate_image_stack(return_photons=True, return_intensities=with_intensities, always_tuple=True, multi_particle_hit=True)
                 
                 # Photons
                 photons = image_stack_tuple[0]
@@ -353,7 +395,22 @@ def parse_input_arguments(args):
 
     # convert argparse to dict
     return vars(parse.parse_args(args))
-    
+
+def generate_positions_for_second_particle(n_positions_for_second_particle, lower_boundary, upper_boundary):
+    positions_for_second_particle = np.zeros((n_positions_for_second_particle, 3))
+    position_idx = 0
+    while position_idx < n_positions_for_second_particle:
+        # Adapted from: http://extremelearning.com.au/how-to-generate-uniformly-random-points-on-n-spheres-and-n-balls/
+        x_position = np.random.uniform(low=-upper_boundary, high=upper_boundary)
+        y_position = np.random.uniform(low=-upper_boundary, high=upper_boundary)
+        z_position = np.random.uniform(low=-upper_boundary, high=upper_boundary)
+        position_for_second_particle = np.array([x_position, y_position, z_position])
+        distance_from_origin = np.linalg.norm(position_for_second_particle)
+        if lower_boundary < distance_from_origin and distance_from_origin < upper_boundary:
+            positions_for_second_particle[position_idx] = position_for_second_particle
+            position_idx += 1
+    return positions_for_second_particle
+
 def save_diffraction_pattern_as_image(data_index, img_dir, diffraction_pattern):
     img_file = 'diffraction-pattern-{}.png'.format(data_index)
     img_path = os.path.join(img_dir, img_file)
@@ -370,7 +427,7 @@ def gnp2im(image_np):
     return im
 
 def get_output_file_name(dataset_name, dataset_size, diffraction_pattern_height, diffraction_pattern_width):
-    return "cspi_synthetic_dataset_diffraction_patterns_{}_uniform_quat_dataset-size={}_diffraction-pattern-shape={}x{}.hdf5".format(dataset_name, dataset_size, diffraction_pattern_height, diffraction_pattern_width)
+    return "cspi_synthetic_dataset_double-hit_diffraction_patterns_{}_uniform_quat_dataset-size={}_diffraction-pattern-shape={}x{}.hdf5".format(dataset_name, dataset_size, diffraction_pattern_height, diffraction_pattern_width)
 
 if __name__ == '__main__':
     main()
