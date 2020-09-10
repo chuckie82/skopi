@@ -32,6 +32,39 @@
         "imgDir": "/reg/data/ana03/scratch/deebanr/3iyf-10K/images",
         "outDir": "/reg/data/ana03/scratch/deebanr/3iyf-10K/dataset"
     },
+    "3iyf-10K-double-hit": 
+    {
+        "pdb": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/pdb/3iyf.pdb",
+        "beam": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/beam/amo86615.beam",
+        "beamFluenceIncreaseFactor": 1,
+        "geom": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data",
+        "numPatterns": 10000,
+        "batchSize": 20,
+        "imgDir": "/reg/data/ana03/scratch/deebanr/3iyf-10K-double-hit/images",
+        "outDir": "/reg/data/ana03/scratch/deebanr/3iyf-10K-double-hit/dataset"
+    },
+    "3iyf-100K": 
+    {
+        "pdb": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/pdb/3iyf.pdb",
+        "beam": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/beam/amo86615.beam",
+        "beamFluenceIncreaseFactor": 1,
+        "geom": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data",
+        "numPatterns": 100000,
+        "batchSize": 20,
+        "imgDir": "/reg/data/ana03/scratch/deebanr/3iyf-100K/images",
+        "outDir": "/reg/data/ana03/scratch/deebanr/3iyf-100K/dataset"
+    },
+    "3iyf-100K-double-hit": 
+    {
+        "pdb": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/pdb/3iyf.pdb",
+        "beam": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/beam/amo86615.beam",
+        "beamFluenceIncreaseFactor": 1,
+        "geom": "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel/examples/input/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data",
+        "numPatterns": 100000,
+        "batchSize": 20,
+        "imgDir": "/reg/data/ana03/scratch/deebanr/3iyf-100K-double-hit/images",
+        "outDir": "/reg/data/ana03/scratch/deebanr/3iyf-100K-double-hit/dataset"
+    },
     "two-atoms-100": 
     {
         "pdb": "/reg/neh/home5/deebanr/two-atoms.pdb",
