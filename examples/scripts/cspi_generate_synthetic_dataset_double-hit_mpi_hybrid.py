@@ -9,7 +9,7 @@ mpiexec -n <number of processors> python cspi_generate_synthetic_dataset_double-
 
 Example on how to run this script:
 
-mpiexec -n 16 python cspi_generate_synthetic_dataset_double-hit_mpi_hybrid.py --config cspi_generate_synthetic_dataset_config.json --dataset 3iyf-10K
+mpiexec -n 16 python cspi_generate_synthetic_dataset_double-hit_mpi_hybrid.py --config cspi_generate_synthetic_dataset_config.json --dataset 3iyf-10K-double-hit
 
 Tips on using this script:
 
@@ -21,7 +21,7 @@ If you wish to use the Latent Space Visualizer to visualize the synthetic datase
 
 Example on how to make the image output directory accessible to the Latent Space Visualizer:
 
-ln -s /reg/data/ana03/scratch/deebanr/3iyf-10K /reg/neh/home/deebanr/3iyf-10K
+ln -s /reg/data/ana03/scratch/deebanr/3iyf-10K-double-hit /reg/neh/home/deebanr/3iyf-10K-double-hit
 
 Tips on creating file system links with the ln command from the Terminal:
 
