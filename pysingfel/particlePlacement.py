@@ -18,7 +18,6 @@ def max_radius(particles):
     radius_max = radius_current
     return radius_max
 
-
 def distribute_particles(particles, beam_focus_radius, jet_radius, sticking=False): #beam_focus_radius = 10e-6 #jet_radius = 1e-4
     state = []
     for particle in particles:
@@ -28,7 +27,18 @@ def distribute_particles(particles, beam_focus_radius, jet_radius, sticking=Fals
     N = sum(particles.values()) # total number of particles
     coords = np.zeros((N,3)) # initialize N*3 array
     # generate N*3 random positions
-    if sticking is False:
+    if sticking:
+        agg = build_bpca(num_pcles=N, radius=radius_max)
+        reference = np.zeros((1,3))
+        reference[0,0] = beam_focus_radius*np.random.uniform(-1, 1)
+        reference[0,1] = beam_focus_radius*np.random.uniform(-1, 1)
+        reference[0,2] = jet_radius*np.random.uniform(-1, 1)
+        for i in range(1,N):
+            coords[i,0] = agg.pos[i,0]+reference[0,0]
+            coords[i,1] = agg.pos[i,1]+reference[0,1]
+            coords[i,2] = agg.pos[i,2]+reference[0,2]
+        return state, coords 
+    else:
         for i in range(N):
             coords[i,0] = beam_focus_radius*np.random.uniform(-1, 1)
             coords[i,1] = beam_focus_radius*np.random.uniform(-1, 1)
@@ -41,17 +51,6 @@ def distribute_particles(particles, beam_focus_radius, jet_radius, sticking=Fals
         if any(item == True for item in checkList):
             distribute_particles(particles, beam_focus_radius, jet_radius)
         return state, coords
-    elif sticking is True:
-        agg = build_bpca(num_pcles=N, radius=radius_max)
-        reference = np.zeros((1,3))
-        reference[0,0] = beam_focus_radius*np.random.uniform(-1, 1)
-        reference[0,1] = beam_focus_radius*np.random.uniform(-1, 1)
-        reference[0,2] = jet_radius*np.random.uniform(-1, 1)
-        for i in range(1,N):
-            coords[i,0] = agg.pos[i,0]+reference[0,0]
-            coords[i,1] = agg.pos[i,1]+reference[0,1]
-            coords[i,2] = agg.pos[i,2]+reference[0,2]
-        return state, coords 
 
 def position_in_3d(particles, beam_focus_radius, jet_radius):
     state, coords = distribute_particles(particles, beam_focus_radius, jet_radius)
