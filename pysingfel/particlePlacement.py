@@ -5,6 +5,7 @@ from pysingfel.util import symmpdb
 from pysingfel.ff_waaskirf_database import *
 import pysingfel.particle
 from scipy.spatial import distance
+from pysingfel.aggregate import build_bpca
 
 def max_radius(particles):
     radius_current = 0
@@ -18,7 +19,7 @@ def max_radius(particles):
     return radius_max
 
 
-def distribute_particles(particles, beam_focus_radius, jet_radius): #beam_focus_radius = 10e-6 #jet_radius = 1e-4
+def distribute_particles(particles, beam_focus_radius, jet_radius, sticking=False): #beam_focus_radius = 10e-6 #jet_radius = 1e-4
     state = []
     for particle in particles:
         for count in range(particles[particle]):
@@ -27,19 +28,26 @@ def distribute_particles(particles, beam_focus_radius, jet_radius): #beam_focus_
     N = sum(particles.values()) # total number of particles
     coords = np.zeros((N,3)) # initialize N*3 array
     # generate N*3 random positions
-    for i in range(N):
-        coords[i,0] = beam_focus_radius*np.random.uniform(-1, 1)
-        coords[i,1] = beam_focus_radius*np.random.uniform(-1, 1)
-        coords[i,2] = jet_radius*np.random.uniform(-1, 1)
-    # calculate N*N distance matrix
-    dist_matrix = distance.cdist(coords, coords, 'euclidean')
-    # collision detection check (<2 maxRadius)
-    collision = dist_matrix < 2*radius_max
-    checkList = [collision[i][j] for i in range(N) for j in range(N) if j > i]
-    if any(item == True for item in checkList):
-        distribute_particles(particles, beam_focus_radius, jet_radius)
-    return state, coords
-
+    if sticking is False:
+        for i in range(N):
+            coords[i,0] = beam_focus_radius*np.random.uniform(-1, 1)
+            coords[i,1] = beam_focus_radius*np.random.uniform(-1, 1)
+            coords[i,2] = jet_radius*np.random.uniform(-1, 1)
+        # calculate N*N distance matrix
+        dist_matrix = distance.cdist(coords, coords, 'euclidean')
+        # collision detection check (<2 maxRadius)
+        collision = dist_matrix < 2*radius_max
+        checkList = [collision[i][j] for i in range(N) for j in range(N) if j > i]
+        if any(item == True for item in checkList):
+            distribute_particles(particles, beam_focus_radius, jet_radius)
+        return state, coords
+    elif sticking is True:
+        agg = build_bpca(num_pcles=N, radius=radius_max)
+        for i in range(N):
+            coords[i,0] = agg.pos[i,0]+beam_focus_radius*np.random.uniform(-1, 1)
+            coords[i,1] = agg.pos[i,1]+beam_focus_radius*np.random.uniform(-1, 1)
+            coords[i,2] = agg.pos[i,2]+jet_radius*np.random.uniform(-1, 1)
+        return state, coords 
 
 def position_in_3d(particles, beam_focus_radius, jet_radius):
     state, coords = distribute_particles(particles, beam_focus_radius, jet_radius)
