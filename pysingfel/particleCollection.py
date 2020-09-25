@@ -32,16 +32,12 @@ class ParticleCollection(object):
         print("position array size: %d" % self.pos.shape[0])
         print("bounding box: %s" % str(self.get_bb()))
 
-        return
-
     def update(self):
         """"Updates internally calculated parameters, such as mass and volume."""
         
         self.volume = (4./3.)*np.pi*self.radius**3.
         self.mass = self.volume*self.density
         
-        return
-
     def scale(self, scale=1.):
         """
         Applies a scale multiplier to all positions and radii. 
@@ -52,8 +48,6 @@ class ParticleCollection(object):
         self.radius *= scale
         self.update()
         
-        return
-
     def __str__(self):
         """
         Returns a string with the number of particles and the bounding box size.
