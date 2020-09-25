@@ -1,8 +1,6 @@
 import numpy as np
 from pysingfel.particleCollection import ParticleCollection
 
-debug=False
-
 def build_bpca(num_pcles=1024, radius=0.5, overlap=None, output=True):
     """
     Build a simple ballistic particle cluster aggregate by generating particle and
@@ -11,6 +9,7 @@ def build_bpca(num_pcles=1024, radius=0.5, overlap=None, output=True):
     If overlap is set to a value between 0 and 1, monomers will be allowed to overlap
     by 0.5*overlap*(radius1+radius2).
     """
+    debug=False
     if overlap is not None:
         if (overlap<0.) or (overlap>1.):
             print('ERROR: overlap must be either None, or 0<overlap<1')
