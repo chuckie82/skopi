@@ -43,10 +43,14 @@ def distribute_particles(particles, beam_focus_radius, jet_radius, sticking=Fals
         return state, coords
     elif sticking is True:
         agg = build_bpca(num_pcles=N, radius=radius_max)
-        for i in range(N):
-            coords[i,0] = agg.pos[i,0]+beam_focus_radius*np.random.uniform(-1, 1)
-            coords[i,1] = agg.pos[i,1]+beam_focus_radius*np.random.uniform(-1, 1)
-            coords[i,2] = agg.pos[i,2]+jet_radius*np.random.uniform(-1, 1)
+        reference = np.zeros((1,3))
+        reference[0,0] = beam_focus_radius*np.random.uniform(-1, 1)
+        reference[0,1] = beam_focus_radius*np.random.uniform(-1, 1)
+        reference[0,2] = jet_radius*np.random.uniform(-1, 1)
+        for i in range(1,N):
+            coords[i,0] = agg.pos[i,0]+reference[0,0]
+            coords[i,1] = agg.pos[i,1]+reference[0,1]
+            coords[i,2] = agg.pos[i,2]+reference[0,2]
         return state, coords 
 
 def position_in_3d(particles, beam_focus_radius, jet_radius):
