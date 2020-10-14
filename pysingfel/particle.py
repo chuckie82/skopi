@@ -23,7 +23,7 @@ class Particle(object):
         # Index array saving indices that split atom_pos to get pos for each atom type
         # More specifically, let m = split_idx[i] and n = split_idx[i+1], then
         # atom_pos[m:n] contains all atoms for the ith atom type.
-        
+
         # Atom positions centered and aligned according to its principal axes
         self.atom_pos_centered_and_aligned_according_to_principal_axes = None
 
@@ -32,14 +32,14 @@ class Particle(object):
         self.split_idx = None
         self.num_atom_types = None  # number of atom types
         self.ff_table = None  # form factor table -> atom_type x qSample
-        
+
         # Masks and solvent
         self.solvent_mean_electron_density = 0.334 * 10**30 # in e/m**3
         self.hydration_layer_thickness = 4.0 / 10**10    # in meter
         self.mesh_voxel_size           = 2.0 / 10**10    # in meter
         self.mesh = None         # real space mesh for mask definitions
-        self.solvent_mask = None 
-        self.solute_mask = None 
+        self.solvent_mask = None
+        self.solute_mask = None
 
         # Normal Mode Analysis
         self.normal_mode_vectors = None
@@ -69,23 +69,23 @@ class Particle(object):
                 self.read_h5file(fname[0], fname[1])
             else:
                 raise ValueError('Wrong number of parameters to construct the particle object!')
-    
+
     def get_atom_type(self):
         #print("Self_at",self.at)
         return self.at
-        
+
     def get_atom_struct(self):
         return self.atom_struct
-    
+
     def get_atomic_symbol(self):
         return self.atomic_symbol
-        
+
     def get_atomic_variant(self):
         return self.atomic_variant
-        
+
     def get_residue(self):
         return self.residue
-        
+
     # Generate some random rotation in the particle
     def rotate(self, quaternion):
         """
@@ -108,7 +108,7 @@ class Particle(object):
         rot3d = get_random_rotation(axis)
         new_pos = np.dot(self.atom_pos, rot3d.T)
         self.set_atom_pos(new_pos)
-    
+
 
     def random_translation_vector(self):#, beam_focus_size):
         """
@@ -141,7 +141,7 @@ class Particle(object):
 
     def get_atom_pos(self):
         return self.atom_pos
-    
+
     def get_atom_pos_centered_and_aligned_to_principal_axes(self):
         return self.atom_pos_centered_and_aligned_to_principal_axes
 
@@ -150,10 +150,10 @@ class Particle(object):
 
     def get_num_compton_q_samples(self):
         return self.num_compton_q_samples
-    
+
     def get_q_sample(self):
         return self.q_sample
-    
+
     def set_hydration_layer_thickness(self, hydration_layer_thickness):
         self.hydration_layer_thickness = hydration_layer_thickness
 
@@ -165,7 +165,7 @@ class Particle(object):
 
     def set_elastic_network_cutoff(self, elastic_network_cutoff):
         self.elastic_network_cutoff = elastic_network_cutoff  # in Angstroem
-        
+
     def read_h5file(self, fname, datasetname, center_and_align_according_to_principal_axes=False):
         """
         Parse the h5file to get the particle position and the other information
@@ -196,7 +196,7 @@ class Particle(object):
             self.num_compton_q_samples = len(self.compton_q_sample)
             self.sBound = f.get(datasetname + '/Sq_bound').value
             self.nFree = f.get(datasetname + '/Sq_free').value
-        
+
         if center_and_align_according_to_principal_axes:
             self.center_and_align_according_to_principal_axes()
 
@@ -357,13 +357,13 @@ class Particle(object):
                     raise ValueError('Unrecognized atom type!')
         else:
             raise ValueError('Unrecognized form factor source!')
-            
+
         if center_and_align_according_to_principal_axes:
             self.center_and_align_according_to_principal_axes()
 
     def create_from_atoms(self, atoms, center_and_align_according_to_principal_axes=False):
         atom_types = {'H': 1, 'HE': 2, 'C': 6, 'N1+': 6, 'N': 7, 'O': 8, 'O1-': 9, 'P': 15, 'S': 16, 'CL': 18, 'FE': 26}
-        
+
         all_atoms = []
         for atom_info in atoms:
             for info in atom_info:
@@ -381,7 +381,7 @@ class Particle(object):
         self.atom_pos = atoms[:, 0:3] * 1e-10
         tmp = (100 * atoms[:, 3] + atoms[:, 4]).astype(int)
         atom_type, idx = np.unique(np.sort(tmp), return_index=True)
-        
+
         self.num_atom_types = len(atom_type)
         self.split_idx = np.append(idx, [len(tmp)])
         bohr_radius = 0.529177206
@@ -433,12 +433,12 @@ class Particle(object):
                 if flag:
                     print('Atom number = ' + str(zz) + ' with charge ' + str(qq))
                     raise ValueError('Unrecognized atom type!')
-        
+
         if center_and_align_according_to_principal_axes:
             self.center_and_align_according_to_principal_axes()
-    
+
     #### MASKS AND MESHES ####
-    
+
     def create_masks(self):
         """create_masks
         """
@@ -451,7 +451,7 @@ class Particle(object):
             print('... masks not created yet ...')
         else:
             islice = np.floor(self.mesh.shape[0]/2).astype('int')
-            
+
             fig, axes = plt.subplots(nrows=3, ncols=2, figsize=(6,9), sharex=True,  sharey=True, dpi=180)
 
             axes[0,0].set_title('Solute mask')
@@ -502,7 +502,7 @@ class Particle(object):
         for i in range(3):
             particle_dimension[i] = (np.max(self.atom_pos[:,i]) -
                                      np.min(self.atom_pos[:,i]))
-        
+
         mesh_length = (np.max(particle_dimension) +
                        4*self.hydration_layer_thickness)
         mesh_vertex_number_1d = np.ceil(mesh_length / self.mesh_voxel_size)
@@ -511,8 +511,8 @@ class Particle(object):
             mesh_length           += self.mesh_voxel_size
             mesh_vertex_number_1d += 1
 
-        linspace = np.linspace(-mesh_length/2.0, 
-                                mesh_length/2.0, 
+        linspace = np.linspace(-mesh_length/2.0,
+                                mesh_length/2.0,
                                 mesh_vertex_number_1d)
         mesh_stack = np.asarray(np.meshgrid(linspace, linspace, linspace, indexing='ij'))
         mesh_stack = np.moveaxis(mesh_stack, 0, -1)
@@ -535,6 +535,7 @@ class Particle(object):
 
     def create_solute_mask(self, dry=True):
         """create_solute_mask
+        Solute mask is False inside and True outside
         """
         mask      = self.initialize_solute_mask()
         mask      = self.dilate_solute_mask(mask, dry=dry)
@@ -578,6 +579,17 @@ class Particle(object):
         sphere = ndimage.iterate_structure(sphere_element, np.ceil(sphere_vertex_number_1d / 3).astype('int'))
         return sphere
 
+    #### SHELL PARTICLES ####
+
+    def create_void_mask(self, capsid_mask, solvent_mask):
+        """create_void_mask
+        virus-like particles can be defined as a shell/capsid enclosing a void.
+        """
+        sphere_radius = 10.0 / 10**10 # in meter. Should be related to Rg...
+        sphere = self.build_mask_sphere(sphere_radius)
+        mask = capsid_mask*ndimage.binary_fill_holes(~capsid_mask, structure=sphere)
+        mask *= ~solvent_mask
+
     #### DYNAMICS ####
 
     def gen_normal_modes(self):
@@ -606,7 +618,7 @@ class Particle(object):
 
         deformation_vector = np.zeros(self.atom_pos.shape)
         for i in range(self.num_normal_modes):
-            deformation_vector += (latent_coordinates[i] * 
+            deformation_vector += (latent_coordinates[i] *
                                    np.sqrt(self.normal_mode_variances[i]) *
                                    self.normal_mode_vectors[...,i])
         deformation_vector /= 10**10 # back to meter
@@ -618,30 +630,30 @@ class Particle(object):
         Outputs a set of latent_coordinates that together would lead to a deformation
         from the initial structure with a RMSD of 1 Angstroem
         """
-        
+
         latent_coordinates = np.random.randn(self.num_normal_modes)
-        
+
         scale_factor = 0.
         for i in range(self.num_normal_modes):
             scale_factor += latent_coordinates[i]**2 * self.normal_mode_variances[i]
         scale_factor = np.sqrt(self.atom_pos.shape[0]) / np.sqrt(scale_factor)
-        
+
         return scale_factor * latent_coordinates
 
     ### ALIGNMENT ###
     def center_and_align_according_to_principal_axes(self):
         """
         Center and align the particle according to its principal axes.
-        
+
         This function is adapted from:
         https://en.wikipedia.org/wiki/Moment_of_inertia#Inertia_matrix_in_different_reference_frames
-        
+
         :return:
         """
-        
+
         # Get the atom positions
         r = self.atom_pos
-        
+
         # Compute its center of mass
         r_C = np.mean(r, axis=0)
 
@@ -658,17 +670,17 @@ class Particle(object):
         dr_rotated = np.matmul(dr, Q)
 
         self.atom_pos_centered_and_aligned_according_to_principal_axes = dr_rotated
-        
+
     def build_inertia_matrix(self, r):
         """
         Calculate the inertia matrix for a given set of (x, y, z) positions. The mass is assumed to be one.
-        
+
         This function is adapted from:
         https://en.wikipedia.org/wiki/Moment_of_inertia#Inertia_matrix_in_different_reference_frames
-        
+
         :return:
         """
-        
+
         x = r[:, 0]
         y = r[:, 1]
         z = r[:, 2]
@@ -683,4 +695,3 @@ class Particle(object):
         I[2, 1] = np.sum(y * z)
         I[2, 2] = -np.sum(np.square(x) + np.square(y))
         return I
-    
