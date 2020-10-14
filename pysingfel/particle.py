@@ -25,7 +25,10 @@ class Particle(object):
         # atom_pos[m:n] contains all atoms for the ith atom type.
 
         # Atom positions centered and aligned according to its principal axes
-        self.atom_pos_centered_and_aligned_according_to_principal_axes = None
+        self.atom_pos_centered = None
+        self.atom_pos_aligned = None
+        self.principal_moments = None
+        self.principal_axes = None
 
         self.trans = None
 
@@ -440,7 +443,9 @@ class Particle(object):
     #### MASKS AND MESHES ####
 
     def create_masks(self):
-        """create_masks
+        """create_masks:
+        Solute mask is False inside
+        Solvent mask is True inside hydration layer
         """
         self.mesh         = self.build_particle_mesh()
         self.solute_mask  = self.create_solute_mask(dry=True)
@@ -524,15 +529,6 @@ class Particle(object):
 
         return mesh_stack
 
-    def get_particle_center(self):
-        """get_particle_center
-        """
-        center = np.zeros(3)
-        for i in np.arange(3):
-            center[i] = 0.5*(np.max(self.atom_pos[:,i]) +
-                             np.min(self.atom_pos[:,i]))
-        return center
-
     def create_solute_mask(self, dry=True):
         """create_solute_mask
         Solute mask is False inside and True outside
@@ -584,11 +580,13 @@ class Particle(object):
     def create_void_mask(self, capsid_mask, solvent_mask):
         """create_void_mask
         virus-like particles can be defined as a shell/capsid enclosing a void.
+        Void mask is True inside, False elsewhere.
         """
-        sphere_radius = 10.0 / 10**10 # in meter. Should be related to Rg...
+        sphere_radius = self.get_radius_of_gyration()/2.
         sphere = self.build_mask_sphere(sphere_radius)
         mask = capsid_mask*ndimage.binary_fill_holes(~capsid_mask, structure=sphere)
         mask *= ~solvent_mask
+        return mask
 
     #### DYNAMICS ####
 
@@ -641,46 +639,50 @@ class Particle(object):
         return scale_factor * latent_coordinates
 
     ### ALIGNMENT ###
+
     def center_and_align_according_to_principal_axes(self):
         """
-        Center and align the particle according to its principal axes.
-
-        This function is adapted from:
-        https://en.wikipedia.org/wiki/Moment_of_inertia#Inertia_matrix_in_different_reference_frames
-
-        :return:
+        Center and align the principal axes of inertia of particle to laboratory frame.
         """
+        self.get_principal_moments_and_axes()
+        self.atom_pos_aligned = np.matmul(self.atom_pos_centered, self.principal_axes)
 
-        # Get the atom positions
-        r = self.atom_pos
-
-        # Compute its center of mass
-        r_C = np.mean(r, axis=0)
-
-        # Center the atom positions
-        dr = r - r_C
-
-        # Compute the body frame inertia matrix
-        IcB = self.build_inertia_matrix(dr)
-
-        # Find the principal moments of inertia and the rotation matrix that defines the directions of the principal axes of the particle
-        Ixyz, Q = np.linalg.eig(IcB)
-
-        # Align the centered atom positions in the body frame to the inertial frame
-        dr_rotated = np.matmul(dr, Q)
-
-        self.atom_pos_centered_and_aligned_according_to_principal_axes = dr_rotated
-
-    def build_inertia_matrix(self, r):
+    def center_particle(self):
         """
-        Calculate the inertia matrix for a given set of (x, y, z) positions. The mass is assumed to be one.
-
-        This function is adapted from:
-        https://en.wikipedia.org/wiki/Moment_of_inertia#Inertia_matrix_in_different_reference_frames
-
-        :return:
+        Center particle on its center of mass
         """
+        self.atom_pos_centered = np.copy(self.atom_pos)
+        self.atom_pos_centered -= get_particle_center(self, mode='COM')
 
+    def calculate_principal_moments_and_axes(self):
+        """
+        See https://en.wikipedia.org/wiki/Moment_of_inertia#Inertia_matrix_in_different_reference_frames
+        """
+        self.center_particle()
+        inertial_tensor = self.build_inertia_matrix(self.atom_pos_centered)
+        self.principal_moments, self.principal_axes = np.linalg.eig(inertial_tensor)
+
+    def get_principal_moments(self):
+        self.calculate_principal_moments_and_axes()
+        return self.principal_moments
+
+    def get_principal_axes(self):
+        self.calculate_principal_moments_and_axes()
+        return self.principal_axes
+
+    def calculate_radius_of_gyration(self):
+        self.get_principal_moments_and_axes()
+        self.Rg = np.sqrt(np.mean(self.principal_moments))/self.get_num_atoms()
+
+    def get_radius_of_gyration(self):
+        self.calculate_radius_of_gyration()
+        return self.Rg
+
+    def build_inertia_matrix(r):
+        """
+        Calculate the inertia matrix for a given set of (x, y, z) positions,
+        assuming unit masses. See https://en.wikipedia.org/wiki/Moment_of_inertia#Inertia_matrix_in_different_reference_frames
+        """
         x = r[:, 0]
         y = r[:, 1]
         z = r[:, 2]
@@ -695,3 +697,13 @@ class Particle(object):
         I[2, 1] = np.sum(y * z)
         I[2, 2] = -np.sum(np.square(x) + np.square(y))
         return I
+
+    def get_particle_center(self, mode=None):
+        center = np.zeros(3)
+        if mode is None:
+            for i in np.arange(3):
+                center[i] = 0.5*(np.max(self.atom_pos[:,i]) +
+                                 np.min(self.atom_pos[:,i]))
+        elif mode is 'COM':
+            center = np.mean(self.atom_pos, axis=0)
+        return center
