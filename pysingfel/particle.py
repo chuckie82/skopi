@@ -698,7 +698,7 @@ class Particle(object):
         return self.principal_axes
 
     def calculate_radius_of_gyration(self):
-        self.get_principal_moments_and_axes()
+        self.calculate_principal_moments_and_axes()
         self.Rg = np.sqrt(np.mean(self.principal_moments))/self.get_num_atoms()
 
     def get_radius_of_gyration(self):
