@@ -686,7 +686,7 @@ class Particle(object):
         See https://en.wikipedia.org/wiki/Moment_of_inertia#Inertia_matrix_in_different_reference_frames
         """
         self.center_particle()
-        inertial_tensor = self.build_inertia_matrix(self.atom_pos_centered)
+        inertial_tensor = self.build_inertia_matrix()
         self.principal_moments, self.principal_axes = np.linalg.eig(inertial_tensor)
 
     def get_principal_moments(self):
@@ -705,14 +705,14 @@ class Particle(object):
         self.calculate_radius_of_gyration()
         return self.Rg
 
-    def build_inertia_matrix(r):
+    def build_inertia_matrix(self):
         """
-        Calculate the inertia matrix for a given set of (x, y, z) positions,
-        assuming unit masses. See https://en.wikipedia.org/wiki/Moment_of_inertia#Inertia_matrix_in_different_reference_frames
+        Calculate the inertia matrix of the centered particle, assuming unit masses.
+        See https://en.wikipedia.org/wiki/Moment_of_inertia#Inertia_matrix_in_different_reference_frames
         """
-        x = r[:, 0]
-        y = r[:, 1]
-        z = r[:, 2]
+        x = self.atom_pos_centered[:, 0]
+        y = self.atom_pos_centered[:, 1]
+        z = self.atom_pos_centered[:, 2]
         I = np.zeros((3, 3))
         I[0, 0] = -np.sum(np.square(y) + np.square(z))
         I[0, 1] = np.sum(x * y)
