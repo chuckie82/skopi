@@ -451,6 +451,14 @@ class Particle(object):
         self.solute_mask  = self.create_solute_mask(dry=True)
         self.solvent_mask = self.solute_mask * ~self.create_solute_mask(dry=False)
 
+    def create_other_mask(self, virus_void=False):
+        """create_other_mask:
+        Add another mask, True inside, False outside.
+        """
+        self.other_mask = None
+        if virus_void:
+            self.other_mask = self.create_void_mask(self.solute_mask, self.solvent_mask)
+
     def show_masks(self):
         if self.mesh is None:
             print('... masks not created yet ...')
