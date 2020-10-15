@@ -714,15 +714,15 @@ class Particle(object):
         y = self.atom_pos_centered[:, 1]
         z = self.atom_pos_centered[:, 2]
         I = np.zeros((3, 3))
-        I[0, 0] = -np.sum(np.square(y) + np.square(z))
-        I[0, 1] = np.sum(x * y)
-        I[0, 2] = np.sum(x * z)
-        I[1, 0] = np.sum(x * y)
-        I[1, 1] = -np.sum(np.square(x) + np.square(z))
-        I[1, 2] = np.sum(y * z)
-        I[2, 0] = np.sum(x * z)
-        I[2, 1] = np.sum(y * z)
-        I[2, 2] = -np.sum(np.square(x) + np.square(y))
+        I[0, 0] = np.sum(np.square(y) + np.square(z))
+        I[0, 1] = -np.sum(x * y)
+        I[0, 2] = -np.sum(x * z)
+        I[1, 0] = -np.sum(x * y)
+        I[1, 1] = np.sum(np.square(x) + np.square(z))
+        I[1, 2] = -np.sum(y * z)
+        I[2, 0] = -np.sum(x * z)
+        I[2, 1] = -np.sum(y * z)
+        I[2, 2] = np.sum(np.square(x) + np.square(y))
         return I
 
     def get_particle_center(self, mode=None):
