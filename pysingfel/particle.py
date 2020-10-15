@@ -165,10 +165,10 @@ class Particle(object):
     def set_mesh_voxel_size(self, mesh_voxel_size):
         self.mesh_voxel_size = mesh_voxel_size
 
-    def set_solvent_mean_electron_density(self, solvent_mean_electron_density)
+    def set_solvent_mean_electron_density(self, solvent_mean_electron_density):
         self.solvent_mean_electron_density = solvent_mean_electron_density
 
-    def set_other_mean_electron_density(self, other_mean_electron_density)
+    def set_other_mean_electron_density(self, other_mean_electron_density):
         self.other_mean_electron_density = other_mean_electron_density
 
     def set_num_normal_modes(self, num_normal_modes):
