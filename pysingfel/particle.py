@@ -679,7 +679,7 @@ class Particle(object):
         Center particle on its center of mass
         """
         self.atom_pos_centered = np.copy(self.atom_pos)
-        self.atom_pos_centered -= get_particle_center(mode='COM')
+        self.atom_pos_centered -= self.get_particle_center(mode='COM')
 
     def calculate_principal_moments_and_axes(self):
         """
