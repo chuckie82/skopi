@@ -39,10 +39,12 @@ class Particle(object):
         # Masks and solvent
         self.solvent_mean_electron_density = 0.334 * 10**30 # in e/m**3
         self.hydration_layer_thickness = 4.0 / 10**10    # in meter
+        self.other_mean_electron_density = self.solvent_mean_electron_density
         self.mesh_voxel_size           = 2.0 / 10**10    # in meter
         self.mesh = None         # real space mesh for mask definitions
         self.solvent_mask = None
         self.solute_mask = None
+        self.other_mask = None
 
         # Normal Mode Analysis
         self.normal_mode_vectors = None
@@ -162,6 +164,12 @@ class Particle(object):
 
     def set_mesh_voxel_size(self, mesh_voxel_size):
         self.mesh_voxel_size = mesh_voxel_size
+
+    def set_solvent_mean_electron_density(self, solvent_mean_electron_density)
+        self.solvent_mean_electron_density = solvent_mean_electron_density
+
+    def set_other_mean_electron_density(self, other_mean_electron_density)
+        self.other_mean_electron_density = other_mean_electron_density
 
     def set_num_normal_modes(self, num_normal_modes):
         self.num_normal_modes = num_normal_modes
@@ -455,7 +463,6 @@ class Particle(object):
         """create_other_mask:
         Add another mask, True inside, False outside.
         """
-        self.other_mask = None
         if virus_void:
             self.other_mask = self.create_void_mask(self.solute_mask, self.solvent_mask)
 
@@ -465,7 +472,12 @@ class Particle(object):
         else:
             islice = np.floor(self.mesh.shape[0]/2).astype('int')
 
-            fig, axes = plt.subplots(nrows=3, ncols=2, figsize=(6,9), sharex=True,  sharey=True, dpi=180)
+            if self.other_mask is None:
+                ncols=2
+            else:
+                ncols=3
+
+            fig, axes = plt.subplots(nrows=3, ncols=ncols, figsize=(ncols*3,9), sharex=True,  sharey=True, dpi=180)
 
             axes[0,0].set_title('Solute mask')
             axes[0,0].set_ylabel('YZ central slice')
@@ -481,6 +493,13 @@ class Particle(object):
             axes[1,1].imshow(self.solvent_mask[:,islice,:]*1, cmap='Blues')
             axes[2,1].set_xlabel('voxel index')
             axes[2,1].imshow(self.solvent_mask[:,:,islice]*1, cmap='Blues')
+
+            if self.other_mask is not None:
+                axes[0,2].set_title('Other mask')
+                axes[0,2].imshow(self.other_mask[islice,...]*1, cmap='Greens')
+                axes[1,2].imshow(self.other_mask[:,islice,:]*1, cmap='Greens')
+                axes[2,2].set_xlabel('voxel index')
+                axes[2,2].imshow(self.other_mask[:,:,islice]*1, cmap='Greens')
 
             plt.tight_layout()
             plt.show()
