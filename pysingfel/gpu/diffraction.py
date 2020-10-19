@@ -106,6 +106,19 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
             pattern_cos, pattern_sin, water_prefactor, water_num,
             pixel_number)
 
+        # Add another contribution if defined, e.g. virus void...
+        if particle.other_mask is not None:
+            other_position = np.ascontiguousarray(particle.mesh[particle.other_mask,:])
+            other_num = np.sum(particle.other_mask)
+            other_prefactor = particle.other_mean_electron_density * particle.mesh_voxel_size**3
+
+            cuda_other_position = cuda.to_device(other_position)
+
+            calculate_solvent_pattern_gpu_back_engine[(pixel_number + 511) // 512, 512](
+                cuda_reciprocal_position, cuda_other_position,
+                pattern_cos, pattern_sin, other_prefactor, other_num,
+                pixel_number)
+
     if return_type == "intensity":
         pattern = np.reshape(np.square(np.abs(pattern_cos + 1j * pattern_sin)), shape[:-1])
         return xp.asarray(pattern)
