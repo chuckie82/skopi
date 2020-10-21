@@ -1,7 +1,9 @@
 import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
 import pysingfel.geometry as psg
 import pysingfel as ps
-from pysingfel.particlePlacement import max_radius, distribute_particles
+from pysingfel.particlePlacement import * #max_radius, distribute_particles, position_in_3d, drawSphere
 
 from .base import Experiment
 
@@ -33,7 +35,8 @@ class FXSExperiment(Experiment):
         particle_distribution = np.random.multinomial(
             self.n_part_per_shot, self.ratios)
         particle_dict = {self.particles[i]: n_particles for i, n_particles in enumerate(particle_distribution)}
-        part_states, part_positions = distribute_particles(particle_dict, self.beam.get_focus()[0]/2, jet_radius = 1e-4)
+        part_states, part_positions = distribute_particles(particle_dict, self.beam.get_focus()[0]/2, jet_radius=1e-4, gamma=0.7)
+        print("part_positions", part_positions)
         part_states = np.array(part_states)
         for i in range(self.n_particle_kinds):
             n_particles = particle_distribution[i]
