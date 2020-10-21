@@ -51,7 +51,7 @@ def distribute_particles(particles, beam_focus_radius, jet_radius, gamma): #beam
     if any(item == True for item in checkList):
         distribute_particles(particles, beam_focus_radius, jet_radius)
     # calculate interaction range
-    R_interaction = np.sqrt(beam_focus_radius**2+beam_focus_radius**2+jet_radius**2)*gamma
+    R_interaction = 2*np.sqrt(beam_focus_radius**2+beam_focus_radius**2+jet_radius**2)*gamma
     for i in range(N):
         for j in range(N):
             if j > i:
