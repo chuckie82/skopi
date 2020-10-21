@@ -38,10 +38,10 @@ def distribute_particles(particles, beam_focus_radius, jet_radius, gamma): #beam
     radius_max = max_radius(particles)
     N = sum(particles.values()) # total number of particles
     coords = np.zeros((N,3)) # initialize N*3 array
-    # generate N*3 random positions
+    # generate N*3 random positions inside the volume illuminated by the beam (cylinder)
     for i in range(N):
-        coords[i,0] = beam_focus_radius*np.random.uniform(-1, 1)
-        coords[i,1] = beam_focus_radius*np.random.uniform(-1, 1)
+        coords[i,0] = beam_focus_radius*np.sqrt(np.random.uniform(0,1))*np.cos(np.random.uniform(0,2*np.pi))
+        coords[i,0] = beam_focus_radius*np.sqrt(np.random.uniform(0,1))*np.sin(np.random.uniform(0,2*np.pi))
         coords[i,2] = jet_radius*np.random.uniform(-1, 1)
     # calculate N*N distance matrix
     dist_matrix = distance.cdist(coords, coords, 'euclidean')
