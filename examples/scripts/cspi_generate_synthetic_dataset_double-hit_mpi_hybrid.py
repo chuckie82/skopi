@@ -76,8 +76,8 @@ def main():
     # Parse user input for config file and dataset name
     user_input = parse_input_arguments(sys.argv)
     config_file = user_input['config']
-    dataset_name = user_input['dataset']   
-    
+    dataset_name = user_input['dataset']
+
     # Get the Config file parameters
     with open(config_file) as config_file:
         config_params = json.load(config_file)
@@ -85,7 +85,7 @@ def main():
     # Check if dataset in Config file
     if dataset_name not in config_params:
         raise Exception("Dataset {} not in Config file.".format(dataset_name))
-    
+
     # Get the dataset parameters from Config file parameters
     dataset_params = config_params[dataset_name]
 
@@ -138,13 +138,13 @@ def main():
     diffraction_pattern_width = det.detector_pixel_num_y.item()
 
     # Define path to output HDF5 file
-    output_file = get_output_file_name(dataset_name, dataset_size, diffraction_pattern_height, diffraction_pattern_width)    
+    output_file = get_output_file_name(dataset_name, dataset_size, diffraction_pattern_height, diffraction_pattern_width)
     cspi_synthetic_dataset_file = os.path.join(output_dir, output_file)
 
     # Generate orientations for both particles
     if given_orientations and RANK == MASTER_RANK:
         print("(Master) Generate {} orientations".format(dataset_size))
-        
+
         # Generate orientations for the first particle
         first_particle_orientations = ps.get_uniform_quat(dataset_size, True)
 
@@ -156,11 +156,11 @@ def main():
         second_particle_orientations_ = second_particle_orientations[np.newaxis]
         orientations_ = np.concatenate((first_particle_orientations_, second_particle_orientations_))
         orientations = np.transpose(orientations_, (1, 0, 2))
-        
+
     # Generate positions for both particles
     if given_positions and RANK == MASTER_RANK:
         print("(Master) Generate {} positions".format(dataset_size))
-        
+
         # Generate positions for the first particle
         first_particle_positions = np.zeros((dataset_size, 3))
 
@@ -177,7 +177,7 @@ def main():
 
     # Create a particle object
     if RANK == GPU_RANKS[0]:
-        
+
         # Load PDB
         print("(GPU 0) Reading PDB file: {}".format(pdb_file))
         particle = ps.Particle()
@@ -189,6 +189,9 @@ def main():
 
     else:
         experiment = ps.SPIExperiment(det, beam, None)
+
+    # Soon obsolete way to handle multiple particles in the beamline
+    experiment.set_multi_particle_hit(True)
 
     sys.stdout.flush()
 
@@ -215,16 +218,16 @@ def main():
 
         print("(Master) Creating HDF5 file to store the datasets: {}".format(cspi_synthetic_dataset_file))
         f = h5.File(cspi_synthetic_dataset_file, "w")
-        
+
         f.create_dataset("pixel_position_reciprocal", data=det.pixel_position_reciprocal)
         f.create_dataset("pixel_index_map", data=det.pixel_index_map)
-        
+
         if given_orientations:
             f.create_dataset("orientations", data=orientations)
-        
+
         if given_positions:
             f.create_dataset("positions", data=positions)
-        
+
         f.create_dataset("photons", (dataset_size, 4, 512, 512), photons_dtype)
 
         # Create a dataset to store the diffraction patterns
@@ -232,10 +235,10 @@ def main():
 
         if save_volume:
             f.create_dataset("volume", data=experiment.volumes[0])
-        
+
         if with_intensities:
             f.create_dataset("intensities", (dataset_size, 4, 512, 512), np.float32)
-        
+
         f.close()
 
     sys.stdout.flush()
@@ -256,7 +259,7 @@ def main():
 
     # Make sure file is closed before others open it
     COMM.barrier()
-        
+
     # Keep track of the number of images processed
     n_images_processed = 0
 
@@ -264,19 +267,19 @@ def main():
 
         # Send batch numbers to non-Master ranks
         for batch_n in tqdm(range(n_batches)):
-            
+
             # Receive query for batch number from a rank
             i_rank = COMM.recv(source=MPI.ANY_SOURCE)
-            
+
             # Send batch number to that rank
             COMM.send(batch_n, dest=i_rank)
-            
+
             # Send orientations
             if given_orientations:
                 batch_start = batch_n * batch_size
                 batch_end = (batch_n+1) * batch_size
                 COMM.send(orientations[batch_start:batch_end], dest=i_rank)
-                
+
             # Send positions as well
             if given_positions:
                 batch_start = batch_n * batch_size
@@ -318,7 +321,7 @@ def main():
             if given_orientations:
                 orientations = COMM.recv(source=MASTER_RANK)
                 experiment.set_orientations(orientations)
-                
+
             # Receive positions as well from Master rank
             if given_positions:
                 positions = COMM.recv(source=MASTER_RANK)
@@ -340,10 +343,10 @@ def main():
 
             # Generate batch of snapshots
             for i in range(batch_size):
-                
+
                 # Generate the image stack for the double-particle hit scenario
-                image_stack_tuple = experiment.generate_image_stack(return_photons=True, return_intensities=with_intensities, always_tuple=True, multi_particle_hit=True)
-                
+                image_stack_tuple = experiment.generate_image_stack(return_photons=True, return_intensities=with_intensities, always_tuple=True)
+
                 # Photons
                 photons = image_stack_tuple[0]
 
@@ -414,7 +417,7 @@ def generate_positions_for_second_particle(n_positions_for_second_particle, lowe
 def save_diffraction_pattern_as_image(data_index, img_dir, diffraction_pattern):
     img_file = 'diffraction-pattern-{}.png'.format(data_index)
     img_path = os.path.join(img_dir, img_file)
-    
+
     im = gnp2im(diffraction_pattern)
     im.save(img_path, format='png')
 
