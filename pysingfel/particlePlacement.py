@@ -24,6 +24,13 @@ def max_radius(particles):
 
 
 def distribute_particles(particles, beam_focus_radius, jet_radius, gamma): #beam_focus_radius = 10e-6 #jet_radius = 1e-4
+    """
+    Randomly distribute particles within the focus region. 
+    Depending on the degree of attraction gamma ranging between 0 and 1, 
+    the interactionn range between particles varies.
+    If the distance between the particle pairs is less than the interaction range, 
+    the particle pairs stick to each other, otherwise stay still.
+    """ 
     state = []
     for particle in particles:
         for count in range(particles[particle]):
