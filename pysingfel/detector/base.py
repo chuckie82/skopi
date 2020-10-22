@@ -8,8 +8,8 @@ import pysingfel.util as pu
 import pysingfel.crosstalk as pc
 from pysingfel.util import deprecation_message, xp
 from pysingfel import particle
-from pysingfel.particlePlacement import max_radius, distribute_particles
-from pysingfel.geometry import quaternion2rot3d, get_random_rotation, get_random_translations
+from pysingfel.particlePlacement import * #max_radius, distribute_particles
+from pysingfel.geometry import * #quaternion2rot3d, get_random_rotation, get_random_translations
 
 
 class DetectorBase(object):
