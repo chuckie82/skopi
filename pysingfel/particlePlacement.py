@@ -52,9 +52,8 @@ def distribute_particles(particles, beam_focus_radius, jet_radius, gamma): #beam
         distribute_particles(particles, beam_focus_radius, jet_radius)
     # calculate interaction range
     R_interaction = 2*np.sqrt(beam_focus_radius**2+jet_radius**2)*gamma
-    for i in range(N):
-        for j in range(N):
-            if j > i:
+    for i in range(N-1):
+        for j in range(i+1,N):
                 if dist_matrix[i][j] < R_interaction:
                     dist_matrix[i][j] = 2*radius_max
                     direction = (coords[j]-coords[i])
