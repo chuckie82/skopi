@@ -216,7 +216,7 @@ class Beam(object):
                     tmp = line.replace('=', ' ').split()
                     if tmp[0] == 'beam/photon_energy':
                         self.photon_energy = float(tmp[1])
-                    if tmp[0] == 'beam/fluence':
+                    if tmp[0] == 'beam/photonsPerShot':
                         self.set_photons_per_pulse(float(tmp[1]))
                     if tmp[0] == 'beam/radius':
                         self.set_focus(radius=float(tmp[1]))
