@@ -35,8 +35,8 @@ class FXSExperiment(Experiment):
         particle_distribution = np.random.multinomial(
             self.n_part_per_shot, self.ratios)
         particle_dict = {self.particles[i]: n_particles for i, n_particles in enumerate(particle_distribution)}
+        print("particle_dict =", particle_dict)
         part_states, part_positions = distribute_particles(particle_dict, self.beam.get_focus()[0]/2, jet_radius=1e-4, gamma=0.5)
-        print("part_positions =", part_positions)
         part_states = np.array(part_states)
         for i in range(self.n_particle_kinds):
             n_particles = particle_distribution[i]

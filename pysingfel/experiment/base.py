@@ -5,7 +5,7 @@ from pysingfel.reciprocal_detector import ReciprocalDetector
 
 class Experiment(object):
     mesh_size = 151
-
+    
     def __init__(self, det, beam, particles):
         self.det = det
         self.beam = beam

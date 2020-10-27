@@ -60,6 +60,11 @@ def distribute_particles(particles, beam_focus_radius, jet_radius, gamma): #beam
                     direction = direction/np.linalg.norm(direction)
                     hit = coords[i]+direction*radius_max
                     coords[j] = hit+(hit-coords[i])
+    dist_matrix = distance.cdist(coords, coords, 'euclidean')
+    overlap = dist_matrix < 2*radius_max
+    checkList = [overlap[i][j] for i in range(N) for j in range(N) if j > i]
+    if any(item == True for item in checkList):
+        distribute_particles(particles, beam_focus_radius, jet_radius, gamma)    
     return state, coords
 
 
