@@ -5,7 +5,7 @@ from .base import Experiment
 
 
 class SPIExperiment(Experiment):
-    def __init__(self, det, beam, particle, orientations=None):
+    def __init__(self, det, beam, jet_radius, particle, orientations=None):
         super(SPIExperiment, self).__init__(det, beam, [particle])
         self.set_orientations(orientations)
 

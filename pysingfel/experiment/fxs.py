@@ -9,11 +9,12 @@ from .base import Experiment
 
 
 class FXSExperiment(Experiment):
-    def __init__(self, det, beam, particles, n_part_per_shot, gamma, ratios=None):
-        super(FXSExperiment, self).__init__(det, beam, particles)
-        self.n_part_per_shot = n_part_per_shot
+    def __init__(self, det, beam, jet_radius, particles, n_part_per_shot, gamma, ratios=None):
+        super(FXSExperiment, self).__init__(det, beam, jet_radius, particles)
         self.particles = particles
+        self.n_part_per_shot = n_part_per_shot
         self.gamma = gamma
+
         if ratios is None:
             ratios = np.ones(len(particles))
         ratios = np.array(ratios)
@@ -37,7 +38,7 @@ class FXSExperiment(Experiment):
             self.n_part_per_shot, self.ratios)
         particle_dict = {self.particles[i]: n_particles for i, n_particles in enumerate(particle_distribution)}
         print("particle_dict =", particle_dict)
-        part_states, part_positions = distribute_particles(particle_dict, self.gamma, self.beam.get_focus()[0]/2, jet_radius=1e-4)
+        part_states, part_positions = distribute_particles(particle_dict, self.beam.get_focus()[0]/2, self.jet_radius, self.gamma)
         part_states = np.array(part_states)
         for i in range(self.n_particle_kinds):
             n_particles = particle_distribution[i]
