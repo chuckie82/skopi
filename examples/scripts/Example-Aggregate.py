@@ -2,7 +2,6 @@ import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import sys
-sys.path.append('/cds/home/i/iris/pysingfel')
 import pysingfel as ps
 from pysingfel.particlePlacement import *
 
