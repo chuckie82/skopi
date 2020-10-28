@@ -2,7 +2,7 @@ import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import sys
-
+sys.path.append('/cds/home/i/iris/pysingfel')
 import pysingfel as ps
 from pysingfel.particlePlacement import *
 
@@ -16,19 +16,30 @@ def drawSphere(xCenter, yCenter, zCenter, r):
     z = r*z + zCenter
     return (x,y,z)
 
-num = 5
-
 input_dir='../input'
 beamfile=input_dir+'/beam/amo86615.beam'
+geom=input_dir+'/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data'
 pdbfile=input_dir+'/pdb/3iyf.pdb'
 
 beam = ps.Beam(beamfile)
+beam.photon_energy = 1600.0 # reset the photon energy
+print ("photon energy=", beam.photon_energy)
+print ("beam radius=", beam._focus_xFWHM/2)
+print ("focus area=", beam._focus_area)
+print ("number of photons per shot=", beam._n_phot)
+
+det = ps.PnccdDetector(geom=geom, beam=beam)
+det.distance = 0.581*0.5
+print ("detector distance=", det.distance)
+
 particle = ps.Particle()
 particle.read_pdb(pdbfile, ff='WK')
 
-particles = {particle: num} 
-part_states, part_positions = distribute_particles(particles, beam.get_focus()[0]/2, jet_radius=1e-4, gamma=1.)
-radius = max_radius(particles)
+num = 8
+experiment = ps.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particle], n_part_per_shot=num, gamma=1.)
+particle_group = experiment.generate_new_sample_state()
+part_positions = particle_group[0][0]
+radius = max_radius({particle: num})
 
 x = []
 y = []
