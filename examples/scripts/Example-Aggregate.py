@@ -2,6 +2,7 @@ import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import sys
+
 import pysingfel as ps
 from pysingfel.particlePlacement import *
 
@@ -15,7 +16,7 @@ def drawSphere(xCenter, yCenter, zCenter, r):
     z = r*z + zCenter
     return (x,y,z)
 
-num = 4
+num = 5
 
 input_dir='../input'
 beamfile=input_dir+'/beam/amo86615.beam'
