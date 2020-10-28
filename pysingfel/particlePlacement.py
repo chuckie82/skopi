@@ -23,7 +23,7 @@ def max_radius(particles):
     return radius_max
 
 
-def distribute_particles(particles, beam_focus_radius, jet_radius, gamma): #beam_focus_radius = 10e-6 #jet_radius = 1e-4
+def distribute_particles(particles, beam_focus_radius, jet_radius, gamma=0): #beam_focus_radius = 10e-6 #jet_radius = 1e-4
     """
     Randomly distribute particles within the focus region. 
     Depending on the degree of attraction gamma ranging between 0 and 1, 
