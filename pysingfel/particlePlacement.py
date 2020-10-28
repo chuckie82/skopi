@@ -30,6 +30,8 @@ def distribute_particles(particles, beam_focus_radius, jet_radius, gamma): #beam
     the interactionn range between particles varies.
     If the distance between the particle pairs is less than the interaction range, 
     the particle pairs stick to each other, otherwise stay still.
+    Remove particles that overlap each other after performing the sticking feature,
+    and add particle cluster using the bpca() class so that the overall number of particles in the system remain equal to the user input.
     """ 
     state = []
     for particle in particles:
@@ -62,9 +64,23 @@ def distribute_particles(particles, beam_focus_radius, jet_radius, gamma): #beam
                     coords[j] = hit+(hit-coords[i])
     dist_matrix = distance.cdist(coords, coords, 'euclidean')
     overlap = dist_matrix < 2*radius_max
-    checkList = [overlap[i][j] for i in range(N) for j in range(N) if j > i]
+    removeList = []
+    for i in range(N-1):
+        for j in range(i+1,N):
+            if overlap[i][j] == True:
+                removeList.extend([i,j])
+    num_removed = len(set(removeList))
+    if len(set(removeList)) != 0:
+        agg = build_bpca(num_pcles=num_removed, radius=radius_max)
+        for i in range(num_removed):
+            coords[sorted(set(removeList))[i],0] = agg.pos[i,0]+coords[sorted(set(removeList))[0],0]
+            coords[sorted(set(removeList))[i],1] = agg.pos[i,1]+coords[sorted(set(removeList))[0],1]
+            coords[sorted(set(removeList))[i],2] = agg.pos[i,2]+coords[sorted(set(removeList))[0],2]
+    dist_matrix = distance.cdist(coords, coords, 'euclidean')
+    collision = dist_matrix < 2*radius_max
+    checkList = [collision[i][j] for i in range(N) for j in range(N) if j > i]
     if any(item == True for item in checkList):
-        distribute_particles(particles, beam_focus_radius, jet_radius, gamma)    
+        distribute_particles(particles, beam_focus_radius, jet_radius, gamma)
     return state, coords
 
 
