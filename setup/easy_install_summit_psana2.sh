@@ -8,9 +8,9 @@ cd "$root_dir"
 # Setup environment.
 cat > env.sh <<EOF
 module load gcc/7.4.0
-module load cuda/10.1.168
+module load cuda/10.2.89
 
-export PYVER=3.7
+export PYVER=3.8
 export CUDA_HOME=\$OLCF_CUDA_ROOT
 export CUPY_DIR="$PWD/cupy"
 
@@ -27,7 +27,7 @@ export PS_PARALLEL=none
 if [[ -d \$CONDA_PREFIX ]]; then
     source \$CONDA_PREFIX/etc/profile.d/conda.sh
     # This change $CONDA_PREFIX
-    conda activate myenv
+    conda activate mypysingfel
     export PATH=\$CONDA_PREFIX/bin:\$PATH
     export LD_LIBRARY_PATH=\$CONDA_PREFIX/lib:\$LD_LIBRARY_PATH
 fi
@@ -62,6 +62,8 @@ PACKAGE_LIST=(
     requests
     mypy
     h5py
+    setuptools=46.4.0
+    prometheus_client
 
     # cupy requirements:
     fastrlock
@@ -73,10 +75,11 @@ PACKAGE_LIST=(
     scikit-learn
 )
 
-conda create -y -n myenv "${PACKAGE_LIST[@]}" -c defaults -c anaconda
-conda activate myenv
+conda create -y -n mypysingfel "${PACKAGE_LIST[@]}" -c defaults -c anaconda
+conda activate mypysingfel
 conda install -y amityping -c lcls-ii
 conda install -y bitstruct -c conda-forge
+conda install -y krtc -c conda-forge
 
 # Build mpi4py
 CC=$OMPI_CC MPICC=mpicc pip install -v --no-binary mpi4py mpi4py
@@ -90,7 +93,10 @@ popd
 # Install cupy
 git clone https://github.com/cupy/cupy.git $CUPY_DIR
 pushd $CUPY_DIR
-pip install --no-cache-dir .
+git submodule update --init
+#pip install --no-cache-dir .
+# Need to specify CC/CXX since psana keeps changing
+CC=/sw/summit/gcc/7.4.0/bin/gcc CXX=/sw/summit/gcc/7.4.0/bin/g++ pip install --no-cache-dir . 
 popd
 
 # Install pysingfel
