@@ -28,6 +28,9 @@ class Experiment(object):
             self.volumes.append(
                 pg.calculate_diffraction_pattern_gpu(mesh, particle, return_type='complex_field'))
 
+        # soon obsolete flag to handle multi particle hit
+        self.multi_particle_hit = False
+
     def generate_image(self, return_orientation=False):
         if return_orientation:
             img_stack, orientation = self.generate_image_stack(return_orientation=return_orientation)
@@ -58,11 +61,13 @@ class Experiment(object):
             return_photons = True
 
         beam_spectrum = self.beam.generate_new_state()
+
         sample_state = self.generate_new_sample_state()
+
         intensities_stack = 0.
 
         orientations = sample_state[0][1]
-        
+
         for spike in beam_spectrum:
             recidet = ReciprocalDetector(self.det, spike)
 
@@ -75,7 +80,7 @@ class Experiment(object):
 
             group_intensities = recidet.add_correction(group_pattern)
             intensities_stack += group_intensities
-        
+
         # We are summing up intensities then converting to photons as opposed to converting to photons then summing up.
         # Note: We may want to revisit the correctness of this procedure.
         photons_stack = recidet.add_quantization(intensities_stack)
@@ -107,7 +112,7 @@ class Experiment(object):
 
         for j, position in enumerate(positions):
             slices[j] = recidet.add_phase_shift(slices[j], position)
-            
+
         return slices.sum(axis=0)
 
     def generate_new_sample_state(self):
@@ -119,3 +124,6 @@ class Experiment(object):
         per particle in the sample at this state.
         """
         raise NotImplementedError
+
+    def set_multi_particle_hit(self, multi_particle_hit):
+        self.multi_particle_hit = multi_particle_hit
