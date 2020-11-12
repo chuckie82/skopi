@@ -157,7 +157,6 @@ def make_one_diffr(myquaternions, counter, parameters, output_name):
         if not given_fluence:
             # sum up the photon fluence inside a slice_interval
             set_fluence_from_file(input_name, time_slice, slice_interval, beam)
-        total_phot += beam.get_photons_per_pulse()
         # Coherent contribution
         f_hkl_sq = calculate_molecular_form_factor_square(particle=particle,
                                                           q_space=det.pixel_distance_reciprocal,
@@ -168,10 +167,9 @@ def make_one_diffr(myquaternions, counter, parameters, output_name):
         else:
             compton = np.zeros((py, px))
         photon_field = f_hkl_sq + compton
-        detector_intensity += photon_field
+        detector_intensity += photon_field*beam.get_photons_per_pulse_per_area()
     detector_intensity *= (det.solid_angle_per_pixel *
-                           det.polarization_correction *
-                           beam.get_photons_per_pulse_per_area())
+                           det.polarization_correction)
 
     detector_counts = np.random.poisson(detector_intensity)
     pu.save_as_diffr_outfile(output_name, input_name, counter,
