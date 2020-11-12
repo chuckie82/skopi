@@ -3,7 +3,6 @@ import pysingfel.geometry as psg
 
 from .base import Experiment
 
-
 class SPIExperiment(Experiment):
     def __init__(self, det, beam, particle, positions=None, orientations=None):
         super(SPIExperiment, self).__init__(det, beam, [particle])
