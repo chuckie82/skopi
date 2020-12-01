@@ -36,6 +36,10 @@ then, from the cupy root directory and within your Python environment, install i
 ```
 pip install --no-cache-dir .
 ```
+Alternatively, you can try
+```
+pip install cupy --no-cache-dir
+```
 
 Using CuPy changes the behavior of pysingfel in that it returns a CuPy array when you would be expecting a NumPy one, which other libraries might not be able to use.
 You can also not use NumPy functions on CuPy arrays.
