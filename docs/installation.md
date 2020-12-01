@@ -10,7 +10,9 @@ matplotlib     >2.1
 setuptools     >44.0  
 h5py           >2.6  
 scipy          >1.1  
-mpi4py         >=2.0  
+mpi4py         >=2.0
+llvmlite
+lmfit
 
 Optional:  
 psana-conda    >1.3  (Required for LCLS simulations only)  
@@ -21,6 +23,17 @@ prody          >1.10 (Required for conformations)
 
 To install the LCLS2 code base, which includes psana2, refer to README.md on the webpage: https://github.com/slac-lcls/lcls2
 
+## Installing pysingfel
+
+To install pysingfel, run
+```
+python -m pip install -e pysingfel
+```
+or
+```
+pip install -e .
+```
+in the root directory.
 
 ## Installing and using CuPy
 
