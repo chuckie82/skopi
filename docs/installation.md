@@ -10,9 +10,9 @@ matplotlib     >2.1
 setuptools     >44.0  
 h5py           >2.6  
 scipy          >1.1  
-mpi4py         >=2.0
-llvmlite
-lmfit
+mpi4py         >=2.0  
+llvmlite  
+lmfit   
 
 Optional:  
 psana-conda    >1.3  (Required for LCLS simulations only)  
