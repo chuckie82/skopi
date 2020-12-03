@@ -671,7 +671,7 @@ class Particle(object):
         """
         Center and align the principal axes of inertia of particle to laboratory frame.
         """
-        self.get_principal_moments_and_axes()
+        self.calculate_principal_moments_and_axes()
         self.atom_pos_aligned = np.matmul(self.atom_pos_centered, self.principal_axes)
 
     def center_particle(self):
