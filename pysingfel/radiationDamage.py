@@ -141,7 +141,6 @@ def make_one_diffr(myquaternions, counter, parameters, output_name):
 
     done = False
     time_slice = 0
-    total_phot = 0
     detector_intensity = np.zeros((py, px))
     while not done:
         # set time slice to calculate diffraction pattern
