@@ -140,6 +140,6 @@ def test_file():
     focus_x, focus_y, focus_shape = beam.get_focus()
     assert np.isclose(beam.photon_energy, 4600)
     assert np.isclose(beam.get_photons_per_pulse(), 1e12)
-    assert np.isclose(focus_x, 2e-7)
-    assert np.isclose(focus_y, 2e-7)
+    assert np.isclose(focus_x, 1e-6)
+    assert np.isclose(focus_y, 1e-6)
     assert focus_shape == "circle"
