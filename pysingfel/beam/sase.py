@@ -12,6 +12,7 @@ class SASEBeam(Beam):
         self.mu = mu
         self.sigma = sigma
         self.n_spikes = n_spikes
+        self.photon_energy = mu
 
     def get_highest_wavenumber_beam(self):
         """
