@@ -142,8 +142,7 @@ def get_random_rotation(rotation_axis=None):
         Otherwise the rotation is totally random.
     :return: A rotation matrix
     """
-    rotation_axis = rotation_axis.lower()
-    if rotation_axis in ('x', 'y', 'z'):
+    if rotation_axis is not None and rotation_axis.lower() in ('x', 'y', 'z'):
         u = np.random.rand() * 2 * np.pi  # random angle between [0, 2pi]
         return convert.angle_axis_to_rot3d(rotation_axis, u)
     else:
