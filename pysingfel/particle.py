@@ -545,7 +545,7 @@ class Particle(object):
 
         linspace = np.linspace(-mesh_length/2.0,
                                 mesh_length/2.0,
-                                mesh_vertex_number_1d)
+                                int(mesh_vertex_number_1d))
         mesh_stack = np.asarray(np.meshgrid(linspace, linspace, linspace, indexing='ij'))
         mesh_stack = np.moveaxis(mesh_stack, 0, -1)
 
