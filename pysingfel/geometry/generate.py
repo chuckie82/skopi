@@ -178,3 +178,82 @@ def get_uniform_quat(num_pts, avoid_symmetric=False):
     :return: Quaternion list of shape [number of quaternion, 4]
     """
     return points_on_Nsphere(num_pts, 3, half=avoid_symmetric)
+
+
+def quaternion_product(q1, q0):
+    """
+    Compute quaternion product, q1 x q0, according to: 
+    https://www.mathworks.com/help/aeroblks/quaternionmultiplication.html.
+    
+    :param q0: first quaternion to rotate by
+    :param q1: second quaternion to rotate by
+    :return q2: quaternion product q1 x q0, rotation by q0 followed by q1
+    """
+    p0, p1, p2, p3 = q1
+    r0, r1, r2, r3 = q0
+    return np.array([r0 * p0 - r1 * p1 - r2 * p2 - r3 * p3,
+                     r0 * p1 + r1 * p0 - r2 * p3 + r3 * p2,
+                     r0 * p2 + r1 * p3 + r2 * p0 - r3 * p1,
+                     r0 * p3 - r1 * p2 + r2 * p1 + r3 * p0])
+
+
+def get_preferred_orientation_quat(sigma, num_pts, base_quat=None):
+    """
+    Sample quaternions distributed around a given or random position in a restricted 
+    range in SO(3), where the spread of the distribution is determined by sigma.
+    
+    :param sigma: standard deviation in radians from which to sample angles
+    :param num_pts: number of quaternions to generate
+    :param base_quat: quaternion about which to distribute samples, random if None
+    :return quaternions: array of quaternions with preferred orientations
+    """
+    quaternions = np.zeros((num_pts,4))
+    if base_quat is None:
+        base_quat = get_random_quat(1)[0]
+    
+    for i in range(num_pts):
+        R_random = get_random_rotation()
+        rot_axis = R_random.dot(np.array([0,0,1]))
+        theta = sigma * np.random.randn()
+        R_preferred = convert.angle_axis_to_rot3d(rot_axis, theta)
+        pref_quat = convert.rotmat_to_quaternion(R_preferred)
+        quaternions[i] = quaternion_product(pref_quat, base_quat)
+        
+    return quaternions
+
+
+def visualize_quaternions(quaternions):
+    """
+    Visualize how given quaternions rotate the [0,0,1] unit vector on the surface
+    of the unit sphere.
+    
+    :param quaternions: array of quaternions
+    """
+    from matplotlib import pyplot as plt
+    
+    # apply quaternions to [0,0,1] and convert to Cartesian coordinates
+    coords = np.zeros((quaternions.shape[0], 3))
+    for i in range(coords.shape[0]):
+        theta, axis = convert.quaternion_to_angle_axis(quaternions[i])
+        R = convert.angle_axis_to_rot3d(axis, theta)
+        coords[i] = R.dot(np.array([0,0,1]))
+    
+    # generate latitutde/longitude lines along unit sphere
+    phi = np.linspace(0, np.pi, 20)
+    theta = np.linspace(0, 2 * np.pi, 40)
+    x = np.outer(np.sin(theta), np.cos(phi))
+    y = np.outer(np.sin(theta), np.sin(phi))
+    z = np.outer(np.cos(theta), np.ones_like(phi))
+
+    # plot coordinates and unit sphere mesh
+    fig, ax = plt.subplots(1, 1, subplot_kw={'projection':'3d'})
+    ax.plot_wireframe(x, y, z, color='k', rstride=1, cstride=1, alpha=0.2)
+    ax.scatter(coords[:,0], coords[:,1], coords[:,2], s=10, c='r', zorder=10)
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    ax.set_zlabel("Z")
+    
+    plt.tight_layout()
+    plt.show()
+    
+    return
