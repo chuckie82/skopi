@@ -204,7 +204,7 @@ def get_preferred_orientation_quat(sigma, num_pts, base_quat=None):
     
     :param sigma: standard deviation in radians from which to sample angles
     :param num_pts: number of quaternions to generate
-    :param rand_quat: quaternion about which to distribute samples, random if None
+    :param base_quat: quaternion about which to distribute samples, random if None
     :return quaternions: array of quaternions with preferred orientations
     """
     quaternions = np.zeros((num_pts,4))
