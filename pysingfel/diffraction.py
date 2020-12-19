@@ -1,7 +1,6 @@
 import numpy as np
 from numba import jit
 from scipy.interpolate import CubicSpline
-from pysingfel.geometry import reshape_pixels_position_arrays_to_1d
 from pysingfel.util import xp, asnumpy
 
 
@@ -26,7 +25,7 @@ def calculate_compton(particle, detector):
     :return:
     """
 
-    half_q = reshape_pixels_position_arrays_to_1d(detector.pixel_distance_reciprocal * 1e-10 / 2.)
+    half_q = detector.pixel_distance_reciprocal * 1e-10 / 2.
 
     cs = CubicSpline(particle.compton_q_sample, particle.sBound)
     s_bound = cs(half_q)
