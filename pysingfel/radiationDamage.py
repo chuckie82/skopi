@@ -17,7 +17,7 @@ def generate_rotations(uniform_rotation, rotation_axis, num_quaternions):
     :return: quaternion list of shape [number of quaternion, 4]
     """
 
-    if uniform_rotation is None:
+    if not uniform_rotation:
         # No rotation desired, init quaternions as (1,0,0,0)
         quaternions = np.empty((num_quaternions, 4))
         quaternions[:, 0] = 1.
@@ -130,9 +130,9 @@ def make_one_diffr(myquaternions, counter, parameters, output_name):
     if not given_focus_radius:
         set_focus_from_file(input_name, beam)
 
-    #det = PlainDetector(geom=geomfile, beam=beam)
-    n_pixels, det_size, det_dist = 512, 0.1, 0.2 # temp fix due to error in PlainDetector
-    det = SimpleSquareDetector(n_pixels, det_size, det_dist, beam=beam) # temp fix due to error in PlainDetector 
+    det = PlainDetector(geom=geomfile, beam=beam)
+    #n_pixels, det_size, det_dist = 512, 0.1, 0.2 # temp fix due to error in PlainDetector
+    #det = SimpleSquareDetector(n_pixels, det_size, det_dist, beam=beam) # temp fix due to error in PlainDetector 
     beam.set_photons_per_pulse(1e4 * beam.get_photons_per_pulse()) # temp fix until correct settings known
 
     # Detector geometry
