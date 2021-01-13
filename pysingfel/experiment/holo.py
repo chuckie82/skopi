@@ -28,14 +28,11 @@ class HOLOExperiment(Experiment):
         particle_groups = []
         part_orientations = self.get_next_part_orientation()
         part_positions = self.get_next_part_position()
-        print("part_positions =", part_positions)
         ref_orientation = self.get_ref_orientation()
         ref_position = self.get_ref_position()
-        print("ref_position =", ref_position)
         positions = np.concatenate((ref_position,part_positions), axis=0)
         orientations = np.concatenate((ref_orientation,part_orientations), axis=0)
         particle_groups.append((positions, orientations))
-        print("particle_groups =", particle_groups)
         return particle_groups
 
     def get_ref_orientation(self):
@@ -93,7 +90,6 @@ class HOLOExperiment(Experiment):
         Return the next position.
         """
         if self._part_positions is None:
-            #return np.array([[0., -1e-6, 0.]])
             return np.array([[0., 0., 0.]])
 
         if self._i_part_positions >= len(self._part_positions):
