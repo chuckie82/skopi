@@ -9,7 +9,23 @@ from .base import Experiment
 
 
 class HOLOExperiment(Experiment):
+    """
+    Class for holography experiment.
+    """
+
     def __init__(self, det, beam, reference, particles, ref_position=None, ref_orientation=None, part_positions=None, part_orientations=None):
+        """
+        Initialize a holography experiment.
+        
+        :param det: The detector object.
+        :param beam: The beam object.
+        :param reference: The reference particle object.
+        :param particles: The sample particle objects.
+        :param ref_position: The position of the reference particle object.
+        :param ref_orientation: The orientation of the reference particle object.
+        :param part_positions: The positions of the sample particle objects.
+        :param part_orientations: The orientations of the sample particle objects.
+        """
         super(HOLOExperiment, self).__init__(det, beam, particles)
         self.reference = reference
         self.set_ref_position(ref_position)
