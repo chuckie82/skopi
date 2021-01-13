@@ -4,7 +4,20 @@ import pysingfel.geometry as psg
 from .base import Experiment
 
 class SPIExperiment(Experiment):
+    """
+    Class for SPI experiment.
+    """
+
     def __init__(self, det, beam, particle, positions=None, orientations=None):
+        """
+        Initialize a SPI experiment.
+        
+        :param det: The detector object.
+        :param beam: The beam object.
+        :param particle: The particle object. 
+        :param positions: The positions of the particle object.
+        :param orientations: The orientations of the particle object.
+        """
         super(SPIExperiment, self).__init__(det, beam, [particle])
         self.set_positions(positions)
         self.set_orientations(orientations)
