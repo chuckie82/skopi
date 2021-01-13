@@ -10,7 +10,8 @@ from .base import Experiment
 
 class FXSExperiment(Experiment):
     def __init__(self, det, beam, jet_radius, particles, n_part_per_shot, gamma, ratios=None):
-        super(FXSExperiment, self).__init__(det, beam, jet_radius, particles)
+        super(FXSExperiment, self).__init__(det, beam, particles)
+        self.jet_radius = jet_radius
         self.particles = particles
         self.n_part_per_shot = n_part_per_shot
         self.gamma = gamma
