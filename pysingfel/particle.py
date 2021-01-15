@@ -459,12 +459,12 @@ class Particle(object):
         self.solute_mask  = self.create_solute_mask(dry=True)
         self.solvent_mask = self.solute_mask * ~self.create_solute_mask(dry=False)
 
-    def create_other_mask(self, virus_void=False):
+    def create_other_mask(self, virus_void=False, probe_scale=0.5):
         """create_other_mask:
         Add another mask, True inside, False outside.
         """
         if virus_void:
-            self.other_mask = self.create_void_mask(self.solute_mask, self.solvent_mask)
+            self.other_mask = self.create_void_mask(self.solute_mask, self.solvent_mask, probe_scale=probe_scale)
 
     def show_masks(self):
         if self.mesh is None:
@@ -604,12 +604,12 @@ class Particle(object):
 
     #### SHELL PARTICLES ####
 
-    def create_void_mask(self, capsid_mask, solvent_mask):
+    def create_void_mask(self, capsid_mask, solvent_mask, probe_scale=0.5):
         """create_void_mask
         virus-like particles can be defined as a shell/capsid enclosing a void.
         Void mask is True inside, False elsewhere.
         """
-        sphere_radius = self.get_radius_of_gyration()/2.
+        sphere_radius = self.get_radius_of_gyration()*probe_scale
         sphere = self.build_mask_sphere(sphere_radius)
         mask = capsid_mask*ndimage.binary_fill_holes(~capsid_mask, structure=sphere)
         mask *= ~solvent_mask
