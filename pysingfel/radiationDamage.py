@@ -27,41 +27,32 @@ def generate_rotations(uniform_rotation, rotation_axis, num_quaternions):
 
     # Case uniform:
     if uniform_rotation and num_quaternions!=1:
-        if rotation_axis == 'y' or rotation_axis == 'z':
+        if rotation_axis == 'x' or rotation_axis == 'y' or rotation_axis == 'z':
             return points_on_1sphere(num_quaternions, rotation_axis)
         elif rotation_axis == 'xyz':
             return points_on_3sphere(num_quaternions)
     else:
-        # Case non-uniform:
+        # edge case of one quaternion requested
         quaternions = get_random_quat(num_quaternions)
         return quaternions
 
 
-def set_energy_from_file(fname, beam):
+def initialize_beam_from_pmi(fname):
     """
-    Set photon energy from pmi file.
-
+    Generate beam object from pmi file, with fluence set to 0.
     :param fname: pmi file
-    :param beam: beam object
+    :return beam: beam object
     """
-
+    params = dict()
     with h5py.File(fname, 'r') as f:
-        photon_energy = f.get('/history/parent/detail/params/photonEnergy').value
-    beam.set_photon_energy(photon_energy)
-
-
-def set_focus_from_file(fname, beam):
-    """
-    Set beam focus from pmi file.
-
-    :param fname: pmi file
-    :param beam: beam object
-    """
-
-    with h5py.File(fname, 'r') as f:
-        focus_xfwhm = f.get('/history/parent/detail/misc/xFWHM').value
-        focus_yfwhm = f.get('/history/parent/detail/misc/yFWHM').value
-    beam.set_focus(focus_xfwhm, focus_yfwhm, shape='ellipse')
+        params['photon_energy'] = f.get('/history/parent/detail/params/photonEnergy')[()]
+        params['focus_x'] = f.get('/history/parent/detail/misc/xFWHM')[()]
+        params['focus_y'] = f.get('/history/parent/detail/misc/yFWHM')[()]
+        params['focus_shape'] = 'ellipse'
+        params['fluence'] = 0 # placeholder, gets reset at each shot
+                
+    beam = Beam(**params)
+    return beam
 
 
 def set_fluence_from_file(fname, time_slice, slice_interval, beam):
@@ -78,7 +69,7 @@ def set_fluence_from_file(fname, time_slice, slice_interval, beam):
     for i in range(slice_interval):
         with h5py.File(fname, 'r') as f:
             datasetname = '/data/snp_' + '{0:07}'.format(time_slice - i) + '/Nph'
-            n_phot += f.get(datasetname).value
+            n_phot += f.get(datasetname)[()]
     beam.set_photons_per_pulse(n_phot)
 
 
@@ -104,31 +95,26 @@ def make_one_diffr(myquaternions, counter, parameters, output_name):
     geomfile = parameters['geomFile']
     input_dir = parameters['inputDir']
 
-    # Set up beam and detector from file
-    beam = Beam(beamfile)
-
-    # If not given, read from pmi file later
-    given_fluence = False
-    if beam.get_photons_per_pulse() > 0:
-        given_fluence = True
-    given_photon_energy = False
-    if beam.get_photon_energy() > 0:
-        given_photon_energy = True
-    given_focus_radius = False
-    if (beam.get_focus()[0] > 0) and (beam.get_focus()[1] > 0):
-        given_focus_radius = True
-
-    # Setup quaternion.
-    quaternion = myquaternions[counter, :]
-
     # Input file
     input_name = input_dir + '/pmi_out_' + '{0:07}'.format(pmi_id) + '.h5'
 
-    # Set up diffraction geometry
-    if not given_photon_energy:
-        set_energy_from_file(input_name, beam)
-    if not given_focus_radius:
-        set_focus_from_file(input_name, beam)
+    # Set up quaternion 
+    quaternion = myquaternions[counter, :]
+
+    # Set up beam from beam or pmi file
+    given_fluence =True
+    if beamfile is not None:
+        beam = Beam(beamfile)
+    else:
+        try:
+            # check whether current pmi file has beam information
+            beamfile = input_name
+            beam = initialize_beam_from_pmi(beamfile)
+        except TypeError:
+            # otherwise, extract beam information from first pmi file in the series
+            beamfile = input_dir + '/pmi_out_' + '{0:07}'.format(1) + '.h5'
+            beam = initialize_beam_from_pmi(beamfile)
+        given_fluence = False
 
     # Detector geometry
     det = PlainDetector(geom=geomfile, beam=beam)
@@ -152,7 +138,7 @@ def make_one_diffr(myquaternions, counter, parameters, output_name):
         particle.rotate(quaternion)
         if not given_fluence:
             # sum up the photon fluence inside a slice_interval
-            set_fluence_from_file(input_name, time_slice, slice_interval, beam)
+            set_fluence_from_file(beamfile, time_slice, slice_interval, beam)
         # Coherent contribution
         f_hkl_sq = det.get_pattern_without_corrections(particle)
 

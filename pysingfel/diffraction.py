@@ -22,13 +22,21 @@ def calculate_compton(particle, detector):
 
     :param particle: The particle object
     :param detector: The detector object
-    :return:
+    :return compton: Compton contribution in shape of detector array
     """
 
+    from scipy.interpolate import InterpolatedUnivariateSpline
     half_q = detector.pixel_distance_reciprocal * 1e-10 / 2.
 
-    cs = CubicSpline(particle.compton_q_sample, particle.sBound)
-    s_bound = cs(half_q)
+    # cubic interpolation for pixels in q-range of compton_q_sample
+    f = InterpolatedUnivariateSpline(particle.compton_q_sample, particle.sBound, k=3)
+    s_bound = f(half_q)
+    
+    # reduce inteprolation order for pixels that require extrapolation
+    f = InterpolatedUnivariateSpline(particle.compton_q_sample, particle.sBound, k=1)
+    extrapolate_indices = np.where(half_q>particle.compton_q_sample.max())
+    s_bound[extrapolate_indices] = f(half_q[extrapolate_indices])
+
     if isinstance(particle.nFree, (list, tuple, np.ndarray)):
         # if iterable, take first element to be number of free electrons
         n_free = particle.nFree[0]
