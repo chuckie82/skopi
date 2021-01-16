@@ -11,6 +11,7 @@ try:
     else:
         from psana.pscalib.geometry.GeometryAccess import GeometryAccess
         from psana.pscalib.calib.MDBWebUtils import calib_constants
+        
 except:
     print("Psana functionality is not available.")
 
@@ -27,7 +28,7 @@ class LCLSDetector(DetectorBase):
     Class for lcls detectors.
     """
 
-    def __init__(self, geom, beam=None, run_num=0):
+    def __init__(self, geom, beam=None, run_num=0, cframe=0):
         """
         Initialize a pnccd detector.
 
@@ -35,6 +36,8 @@ class LCLSDetector(DetectorBase):
         :param beam: The beam object.
         :param run_num: The run_num containing the background, rms and gain and the other pixel
         pixel properties.
+        :param cframe: The desired coordinate frame, 0 for psana and 1 for lab conventions. The
+        default (psana) matches the convention of non-LCLS detectors. Lab frame yields the transpose.
         """
         super(LCLSDetector, self).__init__()
 
@@ -54,16 +57,19 @@ class LCLSDetector(DetectorBase):
                 " your absolute address or relative address.\n"
                 "The experiment_name is also essential in Python 3.")
 
-        self.initialize(geom=geom, run_num=run_num)
-        # Initialize the pixel effects
+        self.initialize(geom=geom, run_num=run_num, cframe=cframe)
+        # Initialize the pixel effects, enforcing detector distance to be positive
+        if self.distance < 0:
+            self.distance *= -1
         self.initialize_pixels_with_beam(beam=beam)
 
-    def initialize(self, geom, run_num=0):
+    def initialize(self, geom, run_num=0, cframe=0):
         """
         Initialize the detector as pnccd
         :param geom: The pnccd .data file which characterize the geometry profile.
         :param run_num: The run_num containing the background, rms and gain and the other
                         pixel pixel properties.
+        :param cframe: The desired coordinate frame, 0 for psana and 1 for lab conventions.
         :return:  None
         """
         # Redirect the output stream
@@ -75,13 +81,13 @@ class LCLSDetector(DetectorBase):
         ###########################################################################################
         # Initialize the geometry configuration
         ############################################################################################
-        self.geometry = GeometryAccess(geom, 0)
+        self.geometry = GeometryAccess(geom, cframe=cframe)
         self.run_num = run_num
 
         # Set coordinate in real space (convert to m)
-        temp = [xp.asarray(t) * 1e-6 for t in self.geometry.get_pixel_coords()]
+        temp = [xp.asarray(t) * 1e-6 for t in self.geometry.get_pixel_coords(cframe=cframe)]
         temp_index = [xp.asarray(t)
-                      for t in self.geometry.get_pixel_coord_indexes()]
+                      for t in self.geometry.get_pixel_coord_indexes(cframe=cframe)]
 
         self.panel_num = np.prod(temp[0].shape[:-2])
         self._distance = float(temp[2].mean())
