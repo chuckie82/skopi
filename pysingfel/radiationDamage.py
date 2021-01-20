@@ -45,14 +45,99 @@ def initialize_beam_from_pmi(fname):
     """
     params = dict()
     with h5py.File(fname, 'r') as f:
-        params['photon_energy'] = f.get('/history/parent/detail/params/photonEnergy')[()]
-        params['focus_x'] = f.get('/history/parent/detail/misc/xFWHM')[()]
-        params['focus_y'] = f.get('/history/parent/detail/misc/yFWHM')[()]
+        # Set photon_energy
+        if "photon_energy" in f['params'].keys():
+            # SimEx PMI output format
+            params['photon_energy'] = f.get('/params/photon_energy')[()]
+        elif 'xparams' in f['params'].keys():
+            lines = [
+                l.split(' ')
+                for l in f['params/xparams'][()].decode('utf-8').split("\n")
+            ]
+            xparams = get_dict_from_lines(lines)
+            params['photon_energy'] = xparams['EPH']
+        else:
+            # Legacy support: PMI output before the development of SimEx
+            params['photon_energy'] = f.get(
+                '/history/parent/detail/params/photonEnergy')[()]
+
+        # Set focus
+        if "focus" in f['params'].keys():
+            # SimEx PMI output format
+            params['focus_x'] = f.get('/params/focus/xFWHM')[()]
+            params['focus_y'] = f.get('/params/focus/yFWHM')[()]
+        elif 'xparams' in f['params'].keys():
+            lines = [
+                l.split(' ')
+                for l in f['params/xparams'][()].decode('utf-8').split("\n")
+            ]
+            xparams = get_dict_from_lines(lines)
+            diam = xparams['DIAM']
+            params['focus_x'] = diam
+            params['focus_y'] = diam
+        else:
+            # Legacy support: PMI output before the development of SimEx
+            params['focus_x'] = f.get('/history/parent/detail/misc/xFWHM')[()]
+            params['focus_y'] = f.get('/history/parent/detail/misc/yFWHM')[()]
+
         params['focus_shape'] = 'ellipse'
-        params['fluence'] = 0 # placeholder, gets reset at each shot
-                
+        params['fluence'] = 0  # placeholder, gets reset at each shot
+
     beam = Beam(**params)
     return beam
+
+
+def get_dict_from_lines(reader):
+    """ Turn a list of [key, ' ', ..., value] elements into a dict.
+
+    :params reader: An iterable that contains lists of strings in format [key, ' ', ' ', ..., value]
+    :type: iterable (list, array, generator).
+
+    """
+    # These fields shall be handled as numeric data.
+    numeric_keys = [
+        'N',
+        'Z',
+        'DIST',
+        'EPH',
+        'NPH',
+        'DIAM',
+        'FLU_MAX',
+        'T',
+        'T0',
+        'R0',
+        'DT',
+        'STEPS',
+        'PROGRESS',
+        'RANDSEED',
+        'RSTARTE',
+    ]
+    # Initialize return dictionary.
+    ret = dict()
+
+    # Iteratoe through all lines.
+    for line in reader:
+        # Skip empty lines and comments.
+        if line == [] or line == ['']:
+            continue
+        if line[0][0] == '#':
+            continue
+
+        # Get key-value pair (they're separated by random number of whitespaces.
+        key, val = line[0], line[-1]
+
+        # Fix numeric data.
+        if key in numeric_keys:
+            try:
+                val = float(val)
+            except:
+                raise
+
+        # Store on dict.
+        ret[key] = val
+
+    # Return finished dict.
+    return ret
 
 
 def set_fluence_from_file(fname, time_slice, slice_interval, beam):
@@ -98,7 +183,7 @@ def make_one_diffr(myquaternions, counter, parameters, output_name):
     # Input file
     input_name = input_dir + '/pmi_out_' + '{0:07}'.format(pmi_id) + '.h5'
 
-    # Set up quaternion 
+    # Set up quaternion
     quaternion = myquaternions[counter, :]
 
     # Set up beam from beam or pmi file
