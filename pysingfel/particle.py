@@ -186,9 +186,9 @@ class Particle(object):
         :return:
         """
         with h5py.File(fname, 'r') as f:
-            atom_pos = f.get(datasetname + '/r').value  # atom position -> N x 3 array
+            atom_pos = f.get(datasetname + '/r')[()]  # atom position -> N x 3 array
             ion_list = f.get(
-                datasetname + '/xyz').value  # length = N, contain atom type id for each atom
+                datasetname + '/xyz')[()]  # length = N, contain atom type id for each atom
             self.atom_pos = atom_pos[np.argsort(ion_list)]
             self.center_and_align_according_to_principal_axes()
             _, idx = np.unique(np.sort(ion_list), return_index=True)
@@ -196,17 +196,17 @@ class Particle(object):
 
             # get atom factor table, sorted by atom type id
             atom_type = f.get(
-                datasetname + '/T').value  # atom type array, each type is represented by an integer
+                datasetname + '/T')[()]  # atom type array, each type is represented by an integer
             self.num_atom_types = len(atom_type)
-            ff_table = f.get(datasetname + '/ff').value
+            ff_table = f.get(datasetname + '/ff')[()]
             self.ff_table = ff_table[np.argsort(atom_type)]
 
-            self.q_sample = f.get(datasetname + '/halfQ').value
+            self.q_sample = f.get(datasetname + '/halfQ')[()]
             self.num_q_samples = len(self.q_sample)
-            self.compton_q_sample = f.get(datasetname + '/Sq_halfQ').value
+            self.compton_q_sample = f.get(datasetname + '/Sq_halfQ')[()]
             self.num_compton_q_samples = len(self.compton_q_sample)
-            self.sBound = f.get(datasetname + '/Sq_bound').value
-            self.nFree = f.get(datasetname + '/Sq_free').value
+            self.sBound = f.get(datasetname + '/Sq_bound')[()]
+            self.nFree = f.get(datasetname + '/Sq_free')[()]
 
         if center_and_align_according_to_principal_axes:
             self.center_and_align_according_to_principal_axes()
@@ -731,6 +731,6 @@ class Particle(object):
             for i in np.arange(3):
                 center[i] = 0.5*(np.max(self.atom_pos[:,i]) +
                                  np.min(self.atom_pos[:,i]))
-        elif mode is 'COM':
+        elif mode == 'COM':
             center = np.mean(self.atom_pos, axis=0)
         return center
