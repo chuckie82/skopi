@@ -92,7 +92,7 @@ def get_dict_from_lines(reader):
 
     :params reader: An iterable that contains lists of strings in format [key, ' ', ' ', ..., value]
     :type: iterable (list, array, generator).
-
+    :return ret: A dictionary of beam-related parameters.
     """
     # These fields shall be handled as numeric data.
     numeric_keys = [
@@ -191,14 +191,8 @@ def make_one_diffr(myquaternions, counter, parameters, output_name):
     if beamfile is not None:
         beam = Beam(beamfile)
     else:
-        try:
-            # check whether current pmi file has beam information
-            beamfile = input_name
-            beam = initialize_beam_from_pmi(beamfile)
-        except TypeError:
-            # otherwise, extract beam information from first pmi file in the series
-            beamfile = input_dir + '/pmi_out_' + '{0:07}'.format(1) + '.h5'
-            beam = initialize_beam_from_pmi(beamfile)
+        beamfile = input_name
+        beam = initialize_beam_from_pmi(beamfile)
         given_fluence = False
 
     # Detector geometry
