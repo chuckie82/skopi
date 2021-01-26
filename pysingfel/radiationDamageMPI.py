@@ -1,4 +1,4 @@
-import argparse
+import argparse, os
 
 from mpi4py import MPI
 
@@ -13,10 +13,7 @@ def main():
     :return:
     """
 
-    # Delete the first argument from the command line, which is the file name.
-    del sys.argv[0]
-    # Parse the input command line argumment to get parameters for simulation.
-    parameters = parse_input(sys.argv)
+    parameters = parse_input()
 
     # Initialize MPI
     comm = MPI.COMM_WORLD
@@ -40,7 +37,7 @@ def master_diffract(comm, parameters):
     Master node. Get the diffraction patterns with mpi
 
     :param comm: MPI comm
-    :param parameters:
+    :param parameters: dictionary of command line arguments
     :return:
     """
     pmi_start_id = int(parameters['pmiStartID'])
@@ -81,7 +78,7 @@ def slave_diffract(comm, parameters):
     Slave node. Get the diffraction patterns with mpi
 
     :param comm: MPI comm
-    :param parameters:
+    :param parameters: dictionary of command line arguments
     :return:
     """
     pmi_start_id = int(parameters['pmiStartID'])
@@ -113,12 +110,11 @@ def slave_diffract(comm, parameters):
         comm.send(counter, dest=0, tag=1)
 
 
-def parse_input(args):
+def parse_input():
     """
     Parse the input command arguments and return a dict containing all simulation parameters.
 
-    :param args:
-    :return:
+    :return parameters: dictionary of command-line arguments
     """
 
     # Instantiate the parser
@@ -127,8 +123,7 @@ def parse_input(args):
     parser.add_argument('--outputDir', help='Output directory for saving diffraction')
     parser.add_argument('--beamFile', help='Beam file defining X-ray beam')
     parser.add_argument('--geomFile', help='Geometry file defining diffraction geometry')
-    parser.add_argument('--configFile', help='Absolute path to the config file')
-    parser.add_argument('--rotationAxis', default='xyz', help='Euler rotation convention')
+    parser.add_argument('--rotationAxis', default='xyz', help='Preferred axis of rotation or xyz if none')
     parser.add_argument('--uniformRotation', type=parse_boolean,
                         help='If 1, rotates the sample uniformly in SO(3),\
                                 if 0 random orientation in SO(3),\
@@ -141,10 +136,9 @@ def parse_input(args):
     parser.add_argument('--pmiStartID', type=int, help='First Photon Matter Interaction (PMI) file ID to use')
     parser.add_argument('--pmiEndID', type=int, help='Last Photon Matter Interaction (PMI) file ID to use')
     parser.add_argument('--numDP', type=int, help='Number of diffraction patterns per PMI file')
-    parser.add_argument('--prepHDF5File', help='Absolute path to the prepHDF5.py script')
 
     # convert argparse to dict
-    return vars(parser.parse_args(args))
+    return vars(parser.parse_args())
 
 
 def parse_boolean(b):
