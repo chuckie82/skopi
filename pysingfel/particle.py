@@ -45,6 +45,8 @@ class Particle(object):
         self.solvent_mask = None
         self.solute_mask = None
         self.other_mask = None
+        self.other_mask_name = None
+        self.other_mask_probe_scale = 0.5
 
         # Normal Mode Analysis
         self.normal_mode_vectors = None
@@ -170,6 +172,12 @@ class Particle(object):
 
     def set_other_mean_electron_density(self, other_mean_electron_density):
         self.other_mean_electron_density = other_mean_electron_density
+
+    def set_other_mask_name(self, other_mask_name):
+        self.other_mask_name = other_mask_name
+
+    def set_other_mask_probe_scale(self, other_mask_probe_scale):
+        self.other_mask_probe_scale = other_mask_prob_scale
 
     def set_num_normal_modes(self, num_normal_modes):
         self.num_normal_modes = num_normal_modes
@@ -454,17 +462,26 @@ class Particle(object):
         """create_masks:
         Solute mask is False inside
         Solvent mask is True inside hydration layer
+        Other mask is True inside if not None.
         """
         self.mesh         = self.build_particle_mesh()
         self.solute_mask  = self.create_solute_mask(dry=True)
         self.solvent_mask = self.solute_mask * ~self.create_solute_mask(dry=False)
+        self.other_mask   = self.create_other_mask()
 
-    def create_other_mask(self, virus_void=False):
+    def create_other_mask(self):
         """create_other_mask:
-        Add another mask, True inside, False outside.
+        This function provides a way to define another mask after the solute and
+        solvent masks have been defined. The mask is True, the rest if False.
+        For now, only 'virus_void' has been implemented, used to fill virus with material.
         """
-        if virus_void:
-            self.other_mask = self.create_void_mask(self.solute_mask, self.solvent_mask)
+        mask = None
+        if self.other_mask_name='virus_void':
+            mask = self.create_virus_void_mask()
+        else:
+            if self.other_mask_name is not None:
+                raise ValueError('other_mask_name ' + str(self.other_mask_name) + 'is not implemented yet')
+        return mask
 
     def show_masks(self):
         if self.mesh is None:
@@ -604,15 +621,15 @@ class Particle(object):
 
     #### SHELL PARTICLES ####
 
-    def create_void_mask(self, capsid_mask, solvent_mask):
+    def create_virus_void_mask(self):
         """create_void_mask
         virus-like particles can be defined as a shell/capsid enclosing a void.
         Void mask is True inside, False elsewhere.
         """
-        sphere_radius = self.get_radius_of_gyration()/2.
+        sphere_radius = self.other_mask_probe_scale*self.get_radius_of_gyration()
         sphere = self.build_mask_sphere(sphere_radius)
-        mask = capsid_mask*ndimage.binary_fill_holes(~capsid_mask, structure=sphere)
-        mask *= ~solvent_mask
+        mask = self.solute_mask*ndimage.binary_fill_holes(~self.solute_mask, structure=sphere)
+        mask *= ~self.solvent_mask
         return mask
 
     #### DYNAMICS ####
