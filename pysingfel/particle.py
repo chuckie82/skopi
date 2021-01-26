@@ -476,7 +476,7 @@ class Particle(object):
         For now, only 'virus_void' has been implemented, used to fill virus with material.
         """
         mask = None
-        if self.other_mask_name='virus_void':
+        if self.other_mask_name == 'virus_void':
             mask = self.create_virus_void_mask()
         else:
             if self.other_mask_name is not None:
