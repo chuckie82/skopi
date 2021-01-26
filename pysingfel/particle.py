@@ -469,17 +469,12 @@ class Particle(object):
         self.solvent_mask = self.solute_mask * ~self.create_solute_mask(dry=False)
         self.other_mask   = self.create_other_mask()
 
-<<<<<<< HEAD
     def create_other_mask(self):
-=======
-    def create_other_mask(self, virus_void=False, probe_scale=0.5):
->>>>>>> b49f433074ab6a1ead43b71c7f891d80aa52821a
         """create_other_mask:
         This function provides a way to define another mask after the solute and
         solvent masks have been defined. The mask is True, the rest if False.
         For now, only 'virus_void' has been implemented, used to fill virus with material.
         """
-<<<<<<< HEAD
         mask = None
         if self.other_mask_name='virus_void':
             mask = self.create_virus_void_mask()
@@ -487,10 +482,6 @@ class Particle(object):
             if self.other_mask_name is not None:
                 raise ValueError('other_mask_name ' + str(self.other_mask_name) + 'is not implemented yet')
         return mask
-=======
-        if virus_void:
-            self.other_mask = self.create_void_mask(self.solute_mask, self.solvent_mask, probe_scale=probe_scale)
->>>>>>> b49f433074ab6a1ead43b71c7f891d80aa52821a
 
     def show_masks(self):
         if self.mesh is None:
@@ -630,20 +621,12 @@ class Particle(object):
 
     #### SHELL PARTICLES ####
 
-<<<<<<< HEAD
     def create_virus_void_mask(self):
-=======
-    def create_void_mask(self, capsid_mask, solvent_mask, probe_scale=0.5):
->>>>>>> b49f433074ab6a1ead43b71c7f891d80aa52821a
         """create_void_mask
         virus-like particles can be defined as a shell/capsid enclosing a void.
         Void mask is True inside, False elsewhere.
         """
-<<<<<<< HEAD
         sphere_radius = self.other_mask_probe_scale*self.get_radius_of_gyration()
-=======
-        sphere_radius = self.get_radius_of_gyration()*probe_scale
->>>>>>> b49f433074ab6a1ead43b71c7f891d80aa52821a
         sphere = self.build_mask_sphere(sphere_radius)
         mask = self.solute_mask*ndimage.binary_fill_holes(~self.solute_mask, structure=sphere)
         mask *= ~self.solvent_mask
