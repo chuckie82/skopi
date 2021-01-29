@@ -8,6 +8,14 @@ from .base import Beam
 class SASEBeam(Beam):
     def __init__(self, mu=None, sigma=None, n_spikes=0,
                  *args, **kargs):
+        """Initialize the SASE beam object.
+
+        :param mu: The mean photon energy of the SASE beam
+        :param sigma: The standard deviation of the SASE beam photon energy
+        :param n_spikes: The number of SASE spikes
+        :return: None
+        """
+
         super(SASEBeam, self).__init__(**kargs)
         self.photon_energy = mu
         self.sigma = sigma
@@ -18,7 +26,7 @@ class SASEBeam(Beam):
         For variable/polychromatic beam to return highest wavenumber.
         """
         return Beam(
-            wavenumber=self.wavenumber*1.01, # Gaussian truncates after 4-5 sigmas
+            wavenumber=self.wavenumber*(1+(5*self.sigma/(self.photon_energy-5*self.sigma))), # Gaussian truncates after 4-5 sigmas
             focus_x=self._focus_xFWHM,
             focus_y=self._focus_yFWHM,
             focus_shape=self._focus_shape,
