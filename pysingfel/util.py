@@ -123,14 +123,17 @@ def read_geomfile(fname):
         for line in content:
             if line[0] != '#' and line[0] != ';' and len(line) > 1:
                 tmp = line.replace('=', ' ').split()
-                if tmp[0] == 'geom/d':
-                    geom.update({'distance': float(tmp[1])})
-                if tmp[0] == 'geom/pix_width':
-                    geom.update({'pixel size x': float(tmp[1])})
-                    geom.update({'pixel size y': float(tmp[1])})
-                if tmp[0] == 'geom/px':
-                    geom.update({'pixel number x': int(tmp[1])})
-                    geom.update({'pixel number y': int(tmp[1])})
+                if "geom" or "panel" in tmp[0]:
+                    if tmp[0].split("/")[1] == 'd':
+                        geom.update({'distance': float(tmp[1])})
+                    if tmp[0].split("/")[1] == 'pix_width':
+                        geom.update({'pixel size x': float(tmp[1])})
+                        geom.update({'pixel size y': float(tmp[1])})
+                    if tmp[0].split("/")[1] == 'px':
+                        geom.update({'pixel number x': int(tmp[1])})
+                        geom.update({'pixel number y': int(tmp[1])})
+            elif line[0] == '#' or line[0] == ';':
+                geom.update({'panel number': int(line.strip()[-1])})
 
     return geom
 

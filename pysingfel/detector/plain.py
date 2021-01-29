@@ -45,7 +45,7 @@ class PlainDetector(DetectorBase):
         self.panel_pixel_num_x = int(geom['pixel number x'])
         self.panel_pixel_num_y = int(geom['pixel number y'])
         self.pixel_num_total = np.array([self.panel_pixel_num_x * self.panel_pixel_num_y, ])
-        self.distance = np.array([geom['distance'], ])
+        self._distance = geom['distance']
 
         self.pixel_width = np.ones((self.panel_num,
                                     self.panel_pixel_num_x, self.panel_pixel_num_y)) * geom[
@@ -62,8 +62,8 @@ class PlainDetector(DetectorBase):
         self.pixel_position[0, ::, ::, 2] += self.distance
 
         # x,y direction position
-        total_length_x = (self.panel_pixel_num_x - 1) * self.pixel_width
-        total_length_y = (self.panel_pixel_num_y - 1) * self.pixel_height
+        total_length_x = (self.panel_pixel_num_x - 1) * geom[ 'pixel size x']
+        total_length_y = (self.panel_pixel_num_y - 1) * geom[ 'pixel size y']
 
         x_coordinate_temp = np.linspace(-total_length_x / 2, total_length_x / 2,
                                         num=self.panel_pixel_num_x,
@@ -71,16 +71,17 @@ class PlainDetector(DetectorBase):
         y_coordinate_temp = np.linspace(-total_length_y / 2, total_length_y / 2,
                                         num=self.panel_pixel_num_y,
                                         endpoint=True)
-        mesh_temp = np.meshgrid(x_coordinate_temp, y_coordinate_temp)
+        mesh_temp = np.meshgrid(x_coordinate_temp, y_coordinate_temp, indexing='ij')
 
         self.pixel_position[0, ::, ::, 0] = mesh_temp[0][::, ::]
         self.pixel_position[0, ::, ::, 1] = mesh_temp[1][::, ::]
 
         # Calculate the index map for the image
         mesh_temp = np.meshgrid(np.arange(self.panel_pixel_num_x),
-                                np.arange(self.panel_pixel_num_y))
-        self.pixel_index_map[0, :, :, 0] = mesh_temp[0][::, ::]
-        self.pixel_index_map[0, :, :, 1] = mesh_temp[1][::, ::]
+                                np.arange(self.panel_pixel_num_y), indexing='ij')
+        p_map_x = np.stack((mesh_temp[0],))
+        p_map_y = np.stack((mesh_temp[1],))
+        self.pixel_index_map = np.stack((p_map_x, p_map_y), axis=-1)
         self.detector_pixel_num_x = self.panel_pixel_num_x
         self.detector_pixel_num_y = self.panel_pixel_num_y
 
