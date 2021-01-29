@@ -386,7 +386,7 @@ class LCLSDetector(DetectorBase):
         :param det_shape: boolean, if True reassemble panels into detector's shape
         :param dark_idx: index of dark run; if None, a run number will be chosen randomly
         :param mask_neg: boolean, if True mask any negative-valued pixels
-        :return dark_shots: array of pedestal-subtracted darks with shape 
+        :return dark_data: array of calibrated dark shots with shape 
            (n_shots, det_x, det_y) if det_shape is True 
            (n_shots, n_panels, panel_x, panel_y) if det_shape is False
            None if pedestals and/or XTC files for a dark run are unavailable
