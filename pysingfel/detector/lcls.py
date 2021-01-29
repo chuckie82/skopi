@@ -382,13 +382,13 @@ class LCLSDetector(DetectorBase):
         """
         Retrieve calibrated images from dark runs.
     
-        :param num_shots: number of pedestal-subtracted dark shots to retreive
+        :param num_shots: number of calibrated dark shots to retreive
         :param det_shape: boolean, if True reassemble panels into detector's shape
         :param dark_idx: index of dark run; if None, a run number will be chosen randomly
-        :param mask_neg: boolean, if True mask any negative-valued pixels
+        :param mask_neg: boolean, if True set negative-valued pixels to zero
         :return dark_data: array of calibrated dark shots with shape 
-           (n_shots, det_x, det_y) if det_shape is True 
-           (n_shots, n_panels, panel_x, panel_y) if det_shape is False
+           (num_shots, det_x, det_y) if det_shape is True 
+           (num_shots, n_panels, panel_x, panel_y) if det_shape is False
            None if pedestals and/or XTC files for a dark run are unavailable
         """
         if six.PY3:
