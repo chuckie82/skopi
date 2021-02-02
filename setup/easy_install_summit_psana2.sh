@@ -9,6 +9,12 @@ cd "$root_dir"
 cat > env.sh <<EOF
 module load gcc/7.4.0
 module load cuda/10.2.89
+export CC=gcc
+export CXX=g++
+
+# compilers for mpi4py
+export MPI4PY_CC=\$OMPI_CC
+export MPI4PY_MPICC=mpicc
 
 export PYVER=3.8
 export CUDA_HOME=\$OLCF_CUDA_ROOT
@@ -27,7 +33,7 @@ export PS_PARALLEL=none
 if [[ -d \$CONDA_PREFIX ]]; then
     source \$CONDA_PREFIX/etc/profile.d/conda.sh
     # This change $CONDA_PREFIX
-    conda activate mypysingfel
+    conda activate myenv
     export PATH=\$CONDA_PREFIX/bin:\$PATH
     export LD_LIBRARY_PATH=\$CONDA_PREFIX/lib:\$LD_LIBRARY_PATH
 fi
@@ -47,13 +53,17 @@ rm Miniconda3-latest-Linux-ppc64le.sh
 source $CONDA_PREFIX/etc/profile.d/conda.sh
 
 PACKAGE_LIST=(
-    # LCLS2 requirements:
     python=$PYVER
-    cmake
-    numpy
-    cython
     matplotlib
-    pytest=4.6
+    numpy
+    scipy
+    pytest
+    h5py
+
+    # lcls2
+    setuptools=46.4.0  # temp need specific version
+    cmake
+    cython
     mongodb
     pymongo
     curl
@@ -61,8 +71,6 @@ PACKAGE_LIST=(
     ipython
     requests
     mypy
-    h5py
-    setuptools=46.4.0
     prometheus_client
 
     # cupy requirements:
@@ -70,33 +78,35 @@ PACKAGE_LIST=(
 
     # pysingfel requirements:
     numba
-    scipy
-    llvmlite
     scikit-learn
+
+    # convenience
+    tqdm  
 )
 
-conda create -y -n mypysingfel "${PACKAGE_LIST[@]}" -c defaults -c anaconda
-conda activate mypysingfel
+conda create -y -n myenv "${PACKAGE_LIST[@]}" -c defaults -c anaconda
+conda activate myenv
 conda install -y amityping -c lcls-ii
-conda install -y bitstruct -c conda-forge
-conda install -y krtc -c conda-forge
+conda install -y bitstruct krtc -c conda-forge
 
 # Build mpi4py
 CC=$OMPI_CC MPICC=mpicc pip install -v --no-binary mpi4py mpi4py
 
-# Install Psana
-git clone https://github.com/slac-lcls/lcls2.git $LCLS2_DIR
-pushd $LCLS2_DIR
-CC=/sw/summit/gcc/7.4.0/bin/gcc CXX=/sw/summit/gcc/7.4.0/bin/g++ ./build_all.sh -d
-popd
+
+CC=$MPI4PY_CC MPICC=$MPI4PY_MPICC pip install -v --no-binary mpi4py mpi4py
+
 
 # Install cupy
 git clone https://github.com/cupy/cupy.git $CUPY_DIR
 pushd $CUPY_DIR
 git submodule update --init
-#pip install --no-cache-dir .
-# Need to specify CC/CXX since psana keeps changing
-CC=/sw/summit/gcc/7.4.0/bin/gcc CXX=/sw/summit/gcc/7.4.0/bin/g++ pip install --no-cache-dir . 
+pip install --no-cache-dir .
+popd
+
+# Install Psana
+git clone https://github.com/slac-lcls/lcls2.git $LCLS2_DIR
+pushd $LCLS2_DIR
+./build_all.sh -d
 popd
 
 # Install pysingfel
