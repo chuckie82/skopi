@@ -9,34 +9,29 @@ from .base import Experiment
 
 
 class HOLOExperiment(Experiment):
-    def __init__(self, det, beam, reference, particles, n_ref_per_shot, n_part_per_shot, ref_ratios=None, part_ratios=None):
+    """
+    Class for holography experiment.
+    """
+
+    def __init__(self, det, beam, reference, particles, ref_position=None, ref_orientation=None, part_positions=None, part_orientations=None):
+        """
+        Initialize a holography experiment.
+        
+        :param det: The detector object.
+        :param beam: The beam object.
+        :param reference: The reference particle object.
+        :param particles: The sample particle objects.
+        :param ref_position: The position of the reference particle object.
+        :param ref_orientation: The orientation of the reference particle object.
+        :param part_positions: The positions of the sample particle objects.
+        :param part_orientations: The orientations of the sample particle objects.
+        """
         super(HOLOExperiment, self).__init__(det, beam, particles)
-        self.n_ref_per_shot = n_ref_per_shot
-        self.n_part_per_shot = n_part_per_shot
         self.reference = reference
-        self.particles = particles
-        self.n_reference_kinds = len(reference)
-
-        if ref_ratios is None:
-            ref_ratios = np.ones(len(reference))
-        ref_ratios = np.array(ref_ratios)
-        if np.any(ref_ratios < 0):
-            raise ValueError("Ratios need to be positive.")
-        if len(ref_ratios) != self.n_reference_kinds:
-            raise ValueError("Need as many ratios as reference cluster.")
-        ref_ratios /= ref_ratios.sum()  # Normalize to 1
-        self.ref_ratios = ref_ratios
-
-        if part_ratios is None:
-            part_ratios = np.ones(len(particles))
-        part_ratios = np.array(part_ratios)
-        if np.any(part_ratios < 0):
-            raise ValueError("Ratios need to be positive.")
-        if len(part_ratios) != self.n_particle_kinds:
-            raise ValueError("Need as many ratios as particles.")
-        part_ratios /= part_ratios.sum()  # Normalize to 1
-        self.part_ratios = part_ratios
-
+        self.set_ref_position(ref_position)
+        self.set_ref_orientation(ref_orientation)
+        self.set_part_positions(part_positions)        
+        self.set_part_orientations(part_orientations)
 
     def generate_new_sample_state(self):
         """
@@ -47,51 +42,83 @@ class HOLOExperiment(Experiment):
         per particle in the sample at this state.
         """
         particle_groups = []
-        if self.n_ref_per_shot >= self.n_part_per_shot:
-            # reference cluster
-            reference_distribution = np.random.multinomial(
-                self.n_ref_per_shot, self.ref_ratios)
-            ref_dict = {self.reference[i]: n_reference for i, n_reference in enumerate(reference_distribution)}
-            ref_states, ref_positions = distribute_particles(ref_dict, self.beam.get_focus()[0]/2, jet_radius=1e-4, gamma=1.)
-            ref_states = np.array(ref_states)
-            for i in range(self.n_reference_kinds):
-                n_reference = reference_distribution[i]
-                ref_orientations = psg.get_random_quat(n_reference)
-                ref_positions = ref_positions[ref_states == self.reference[i]]
-            # particle cluster
-            particle_distribution = np.random.multinomial(
-                self.n_part_per_shot, self.part_ratios)
-            part_dict = {self.particles[i]: n_particles for i, n_particles in enumerate(particle_distribution)}
-            part_states, part_positions = distribute_particles(ref_dict, self.beam.get_focus()[0]/2, jet_radius=1e-4, gamma=1.)
-            part_positions[:,1] = ref_positions[:part_positions.shape[0],1]
-            part_states = np.array(part_states)
-            for i in range(self.n_particle_kinds):
-                n_particles = particle_distribution[i]
-                part_orientations = psg.get_random_quat(n_particles)
-                part_positions = part_positions[part_states == self.particles[i]]
-        else:
-            # particle cluster
-            particle_distribution = np.random.multinomial(
-                self.n_part_per_shot, self.part_ratios)
-            part_dict = {self.particles[i]: n_particles for i, n_particles in enumerate(particle_distribution)}
-            part_states, part_positions = distribute_particles(ref_dict, self.beam.get_focus()[0]/2, jet_radius=1e-4, gamma=1.)
-            part_states = np.array(part_states)
-            for i in range(self.n_particle_kinds):
-                n_particles = particle_distribution[i]
-                part_orientations = psg.get_random_quat(n_particles)
-                part_positions = part_positions[part_states == self.particles[i]]
-            # reference cluster
-            reference_distribution = np.random.multinomial(
-                self.n_ref_per_shot, self.ref_ratios)
-            ref_dict = {self.reference[i]: n_reference for i, n_reference in enumerate(reference_distribution)}
-            ref_states, reference_positions = distribute_particles(ref_dict, self.beam.get_focus()[0]/2, jet_radius=1e-4, gamma=1.)
-            ref_positions[:,1] = part_positions[:ref_positions.shape[0],1]
-            ref_states = np.array(reference_states)
-            for i in range(self.n_reference_kinds):
-                n_reference = reference_distribution[i]
-                ref_orientations = psg.get_random_quat(n_reference)
-                ref_positions = ref_positions[ref_states == self.reference[i]]
-        positions = np.concatenate((ref_positions,part_positions), axis=0)
-        orientations = np.concatenate((ref_orientations,part_orientations), axis=0)
+        part_orientations = self.get_next_part_orientation()
+        part_positions = self.get_next_part_position()
+        ref_orientation = self.get_ref_orientation()
+        ref_position = self.get_ref_position()
+        positions = np.concatenate((ref_position,part_positions), axis=0)
+        orientations = np.concatenate((ref_orientation,part_orientations), axis=0)
         particle_groups.append((positions, orientations))
         return particle_groups
+
+    def get_ref_orientation(self):
+        """
+        Return the orientation.
+        """
+        if self._ref_orientation is None:
+            return psg.get_random_quat(1)
+
+        ref_orientation = self._ref_orientation
+
+        return ref_orientation
+
+    def set_ref_orientation(self, ref_orientation):
+        self._ref_orientation = ref_orientation
+
+    def get_ref_position(self):
+        """
+        Return the position.
+        """
+        if self._ref_position is None:
+            return None
+
+        ref_position = self._ref_position
+
+        return ref_position
+
+    def set_ref_position(self, ref_position):
+        self._ref_position = ref_position
+
+    def get_next_part_orientation(self):
+        """
+        Return the next orientation.
+        """
+        if self._part_orientations is None:
+            return psg.get_random_quat(1)
+
+        if self._i_part_orientations >= len(self._part_orientations):
+            raise StopIteration("No more orientation available.")
+
+        if self.multi_particle_hit:
+            part_orientation = self._part_orientations[self._i_part_orientations]
+        else:
+            part_orientation = self._part_orientations[self._i_part_orientations, None]
+
+        self._i_part_orientations += 1
+        return part_orientation
+
+    def set_part_orientations(self, part_orientations):
+        self._part_orientations = part_orientations
+        self._i_part_orientations = 0
+
+    def get_next_part_position(self):
+        """
+        Return the next position.
+        """
+        if self._part_positions is None:
+            return np.array([[0., 0., 0.]])
+
+        if self._i_part_positions >= len(self._part_positions):
+            raise StopIteration("No more position available.")
+
+        if self.multi_particle_hit:
+            part_position = self._part_positions[self._i_part_positions]
+        else:
+            part_position = self._part_positions[self._i_part_positions, None]
+
+        self._i_part_positions += 1
+        return part_position
+
+    def set_part_positions(self, part_positions):
+        self._part_positions = part_positions
+        self._i_part_positions = 0

@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-########## LCLS-II Autoranging Detector ###############
-# In this notebook, we demonstrate the LCLS-II autoranging detector effect by varying the characteristics of the beam, the type of the detector and its camera configuration.
+########## SPI Experiment ###############
+# In this notebook, we demonstrate how to simulate an SPI experiment, where a diffraction volume of the particle is computed in the reciprocal space, and the diffraction patterns are sliced from the diffraction volume under random orientations.
+# Input parameters including (1) beam, (2) detector, (3) particle(s) are needed for the SPI Experiment class.
 
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
-from pysingfel import *
+import h5py as h5
+import time
 import pysingfel as ps
-from pysingfel.util import asnumpy, xp
-from pysingfel.build_autoranging_frames import BuildAutoRangeFrames
 
 # Input files
 input_dir='../input'
@@ -20,50 +20,33 @@ pdbfile=input_dir+'/pdb/3iyf.pdb'
 
 # Load beam
 beam = ps.Beam(beamfile)
-increase_factor = 1e5
+increase_factor = 1e2
 print('BEFORE: # of photons per pulse = {}'.format(beam.get_photons_per_pulse()))
 print('>>> Increasing the number of photons per pulse by a factor {}'.format(increase_factor))
 beam.set_photons_per_pulse(increase_factor*beam.get_photons_per_pulse())
 print('AFTER : # of photons per pulse = {}'.format(beam.get_photons_per_pulse()))
-#beam._n_phot = 1e14 # detector normal
-#beam._n_phot = 1e17 # detector saturates
-#beam._n_phot = 1e20 # detector gets fried
+print('photon energy = {} eV'.format(beam.photon_energy))
 
 # Load and initialize the detector
-det = ps.Epix10kDetector(geom=geom, run_num=0, beam=beam, cameraConfig='fixedMedium')
+det = ps.PnccdDetector(geom=geom, beam=beam)
 increase_factor = 0.5
 print('BEFORE: detector distance = {} m'.format(np.abs(det.distance)))
 print('>>> Increasing the detector distance by a factor of {}'.format(increase_factor))
 det.distance = increase_factor*np.abs(det.distance)
 print('AFTER : detector distance = {} m'.format(det.distance))
-#det.distance = 0.25 # reset detector distance for desired resolution
+#det.distance = 0.3 # reset detector distance for desired resolution
+# Note: psana geometry used to be in psana coordinates and got changed to lab coordinates, add absolute value to make sure the detector distance is positive
 
 # Create particle object(s)
 particle = ps.Particle()
 particle.read_pdb(pdbfile, ff='WK')
 
-# Perform SPI experiment
+# Perform SPI calculation
 tic = time.time()
-
 experiment = ps.SPIExperiment(det, beam, particle)
-dp_photons = experiment.generate_image_stack() # generate diffraction field
-
-tau = beam.get_photon_energy()/1000.
-dp_keV = dp_photons * tau # convert photons to keV
-
-I0width = 0.03
-I0min = 0
-I0max = 150000
-bauf = BuildAutoRangeFrames(det, I0width, I0min, I0max, dp_keV)
-bauf.makeFrame()
-calib_photons = bauf.frame / tau # convert keV to photons
-
+img = experiment.generate_image()
 toc = time.time()
 print(">>> It took {:.2f} seconds to finish SPI calculation.".format(toc-tic))
-
-# Visualization
 viz = ps.Visualizer(experiment, diffraction_rings="auto", log_scale=True)
-fig = plt.figure()
-img = experiment.det.assemble_image_stack(calib_photons)
 viz.imshow(img)
 plt.show()

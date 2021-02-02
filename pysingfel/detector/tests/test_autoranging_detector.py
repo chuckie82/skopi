@@ -70,6 +70,7 @@ class TestAutorangingDetector(object):
         pattern = self.det.add_phase_shift(self.pattern_0, self.part_coord_1)
         assert np.allclose(pattern, self.pattern_1)
 
+    @pytest.mark.skipif(six.PY3, reason="Calibration constants require psana2")
     def test_pedestal_nonzero(self):
         """Test existence of pedestals."""
         assert np.sum(abs(self.det.pedestals[:])) > np.finfo(float).eps

@@ -8,8 +8,16 @@ from .base import Beam
 class SASEBeam(Beam):
     def __init__(self, mu=None, sigma=None, n_spikes=0,
                  *args, **kargs):
+        """Initialize the SASE beam object.
+
+        :param mu: The mean photon energy of the SASE beam
+        :param sigma: The standard deviation of the SASE beam photon energy
+        :param n_spikes: The number of SASE spikes
+        :return: None
+        """
+
         super(SASEBeam, self).__init__(**kargs)
-        self.mu = mu
+        self.photon_energy = mu
         self.sigma = sigma
         self.n_spikes = n_spikes
 
@@ -18,7 +26,7 @@ class SASEBeam(Beam):
         For variable/polychromatic beam to return highest wavenumber.
         """
         return Beam(
-            wavenumber=self.wavenumber*1.01, # Gaussian truncates after 4-5 sigmas
+            wavenumber=self.wavenumber*(1+(5*self.sigma/(self.photon_energy-5*self.sigma))), # Gaussian truncates after 4-5 sigmas
             focus_x=self._focus_xFWHM,
             focus_y=self._focus_yFWHM,
             focus_shape=self._focus_shape,
@@ -32,13 +40,13 @@ class SASEBeam(Beam):
         # If simple Beam, return itself.
         # Variable beams should return simple one.
         n_samples = 100000
-        samples = np.random.normal(self.mu, self.sigma, self.n_spikes*n_samples)
+        samples = np.random.normal(self.photon_energy, self.sigma, self.n_spikes*n_samples)
 
         gkde = stats.gaussian_kde(samples)
 
         gkde.set_bandwidth(bw_method=0.25)
 
-        xs = np.linspace(self.mu-self.sigma*5, self.mu+self.sigma*5, self.n_spikes+1)
+        xs = np.linspace(self.photon_energy-self.sigma*5, self.photon_energy+self.sigma*5, self.n_spikes+1)
 
         density, bins, patches = plt.hist(samples, bins=xs, histtype=u'step', density=True)
 
@@ -46,7 +54,7 @@ class SASEBeam(Beam):
         density[ind[0][0]] *= 1.5
         density_renorm = density / density.sum()
 
-        photon_energy = np.linspace(self.mu-self.sigma*5, self.mu+self.sigma*5, self.n_spikes+1).tolist()
+        photon_energy = np.linspace(self.photon_energy-self.sigma*5, self.photon_energy+self.sigma*5, self.n_spikes+1).tolist()
         fluences = (self.get_photons_per_pulse()*density_renorm/density_renorm.sum())
 
         return [
