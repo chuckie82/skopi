@@ -6,10 +6,9 @@ from pysingfel.reciprocal_detector import ReciprocalDetector
 class Experiment(object):
     mesh_size = 151
     
-    def __init__(self, det, beam, jet_radius, particles):
+    def __init__(self, det, beam, particles):
         self.det = det
         self.beam = beam
-        self.jet_radius = jet_radius
         self.n_particle_kinds = len(particles)
 
         # Create mesh
