@@ -11,9 +11,10 @@ from pysingfel import *
 import pysingfel as ps
 from pysingfel.util import asnumpy, xp
 from pysingfel.build_autoranging_frames import BuildAutoRangeFrames
+import time, os
 
 # Input files
-input_dir='../input'
+input_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../input')
 beamfile=input_dir+'/beam/amo86615.beam'
 geom=input_dir+'/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data'
 pdbfile=input_dir+'/pdb/3iyf.pdb'
@@ -32,11 +33,10 @@ print('AFTER : # of photons per pulse = {}'.format(beam.get_photons_per_pulse())
 # Load and initialize the detector
 det = ps.Epix10kDetector(geom=geom, run_num=0, beam=beam, cameraConfig='fixedMedium')
 increase_factor = 0.5
-print('BEFORE: detector distance = {} m'.format(np.abs(det.distance)))
+print('BEFORE: detector distance = {} m'.format(det.distance))
 print('>>> Increasing the detector distance by a factor of {}'.format(increase_factor))
-det.distance = increase_factor*np.abs(det.distance)
+det.distance = increase_factor*det.distance
 print('AFTER : detector distance = {} m'.format(det.distance))
-#det.distance = 0.25 # reset detector distance for desired resolution
 
 # Create particle object(s)
 particle = ps.Particle()

@@ -9,11 +9,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 import h5py as h5
-import time
+import time, os
 import pysingfel as ps
 
 # Input files
-input_dir='../input'
+input_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../input')
 beamfile=input_dir+'/beam/amo86615.beam'
 geom=input_dir+'/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data'
 pdbfile=input_dir+'/pdb/3iyf.pdb'
@@ -30,12 +30,10 @@ print('photon energy = {} eV'.format(beam.photon_energy))
 # Load and initialize the detector
 det = ps.PnccdDetector(geom=geom, beam=beam)
 increase_factor = 0.5
-print('BEFORE: detector distance = {} m'.format(np.abs(det.distance)))
+print('BEFORE: detector distance = {} m'.format(det.distance))
 print('>>> Increasing the detector distance by a factor of {}'.format(increase_factor))
-det.distance = increase_factor*np.abs(det.distance)
+det.distance = increase_factor*det.distance
 print('AFTER : detector distance = {} m'.format(det.distance))
-#det.distance = 0.3 # reset detector distance for desired resolution
-# Note: psana geometry used to be in psana coordinates and got changed to lab coordinates, add absolute value to make sure the detector distance is positive
 
 # Create particle object(s)
 particle = ps.Particle()

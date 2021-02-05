@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import h5py as h5
-import time
+import time, os
 import pysingfel as ps
 
 # Parameters
@@ -19,7 +19,7 @@ numCl = 1
 num = 2
 
 # Input files
-input_dir='../input'
+input_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../input')
 beamfile=input_dir+'/beam/amo86615.beam'
 geom=input_dir+'/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data'
 pdbfile1=input_dir+'/pdb/3iyf.pdb'
@@ -36,11 +36,10 @@ print('AFTER : # of photons per pulse = {}'.format(beam.get_photons_per_pulse())
 # Load and initialize the detector
 det = ps.PnccdDetector(geom=geom, beam=beam)
 increase_factor = 0.5
-print('BEFORE: detector distance = {} m'.format(np.abs(det.distance)))
+print('BEFORE: detector distance = {} m'.format(det.distance))
 print('>>> Increasing the detector distance by a factor of {}'.format(increase_factor))
-det.distance = increase_factor*np.abs(det.distance)
+det.distance = increase_factor*det.distance
 print('AFTER : detector distance = {} m'.format(det.distance))
-#det.distance = 0.25 # reset detector distance for desired resolution
 
 # Create particle object(s)
 particleOp = ps.Particle()
@@ -54,7 +53,7 @@ tic = time.time()
 experiment = ps.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particleOp], n_part_per_shot=numOp, gamma=0.5)
 patternOp = experiment.generate_image_stack()
 toc = time.time()
-print(">>> It took {:.2f} seconds to finish SPI calculation.".format(toc-tic))
+print(">>> It took {:.2f} seconds to finish FXS calculation.".format(toc-tic))
 
 # Perform FXS experiment with one particle type
 experiment = ps.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particleCl], n_part_per_shot=numCl, gamma=0.5)

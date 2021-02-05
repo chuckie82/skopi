@@ -9,7 +9,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import pysingfel as ps
 from pysingfel.particlePlacement import *
-import time
+import time, os
 
 def drawSphere(xCenter, yCenter, zCenter, r):
     u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
@@ -25,7 +25,7 @@ def drawSphere(xCenter, yCenter, zCenter, r):
 num = 5
 
 # Input files
-input_dir='../input'
+input_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../input')
 beamfile=input_dir+'/beam/amo86615.beam'
 geom=input_dir+'/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data'
 pdbfile=input_dir+'/pdb/3iyf.pdb'
@@ -46,12 +46,10 @@ print('focus area = {}'.format(beam._focus_area))
 # Load and initialize the detector
 det = ps.PnccdDetector(geom=geom, beam=beam)
 increase_factor = 0.5
-print('BEFORE: detector distance = {} m'.format(np.abs(det.distance)))
+print('BEFORE: detector distance = {} m'.format(det.distance))
 print('>>> Increasing the detector distance by a factor of {}'.format(increase_factor))
-det.distance = increase_factor*np.abs(det.distance)
+det.distance = increase_factor*det.distance
 print('AFTER : detector distance = {} m'.format(det.distance))
-#det.distance = 0.3 # reset detector distance for desired resolution
-# Note: psana geometry used to be in psana coordinates and got changed to lab coordinates, add absolute value to make sure the detector distance is positive
 
 # Create particle object(s)
 particle = ps.Particle()
@@ -67,7 +65,7 @@ viz = ps.Visualizer(experiment, diffraction_rings="auto", log_scale=True)
 viz.imshow(img)
 plt.show()
 
-# Visalize particle sticking
+# Visualize particle sticking
 particle_group = experiment.generate_new_sample_state()
 part_positions = particle_group[0][0]
 radius = max_radius({particle: num})
@@ -86,7 +84,11 @@ r = np.ones(num)*radius
 
 fig = plt.figure()
 ax = fig.gca(projection='3d')
-ax.set_aspect('equal')
+try: 
+    ax.set_aspect('equal') # not implemented for all matplotlib versions
+except:
+    ax.set_aspect('auto')
+
 for (xi,yi,zi,ri) in zip(x,y,z,r):
     (xs,ys,zs) = drawSphere(xi,yi,zi,ri)
     ax.plot_wireframe(xs, ys, zs)

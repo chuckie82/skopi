@@ -70,7 +70,7 @@ class HOLOExperiment(Experiment):
         Return the position.
         """
         if self._ref_position is None:
-            return None
+            return np.array([[0.,0.,0.]])
 
         ref_position = self._ref_position
 
