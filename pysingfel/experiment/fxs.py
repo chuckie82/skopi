@@ -9,10 +9,28 @@ from .base import Experiment
 
 
 class FXSExperiment(Experiment):
-    def __init__(self, det, beam, particles, n_part_per_shot, ratios=None):
+    """
+    Class for FXS experiment.
+    """
+
+    def __init__(self, det, beam, jet_radius, particles, n_part_per_shot, gamma, ratios=None):
+        """
+        Initialize a FXS experiment.
+        
+        :param det: The detector object.
+        :param beam: The beam object.
+        :param jet_radius: The radius of the liquid jet.
+        :param particles: The particle objects.
+        :param n_part_per_shot: The number of photons per pulse/shot.
+        ;param gamma: The coefficient gamma (ranging between 0 and 1) represents the degree of attraction between particles and is used to determine the        interaction range between particle pairs.
+        :param ratios: The ratios of the particles.
+        """
         super(FXSExperiment, self).__init__(det, beam, particles)
-        self.n_part_per_shot = n_part_per_shot
+        self.jet_radius = jet_radius
         self.particles = particles
+        self.n_part_per_shot = n_part_per_shot
+        self.gamma = gamma
+
         if ratios is None:
             ratios = np.ones(len(particles))
         ratios = np.array(ratios)
@@ -35,8 +53,7 @@ class FXSExperiment(Experiment):
         particle_distribution = np.random.multinomial(
             self.n_part_per_shot, self.ratios)
         particle_dict = {self.particles[i]: n_particles for i, n_particles in enumerate(particle_distribution)}
-        print("particle_dict =", particle_dict)
-        part_states, part_positions = distribute_particles(particle_dict, self.beam.get_focus()[0]/2, jet_radius=1e-4, gamma=0.5)
+        part_states, part_positions = distribute_particles(particle_dict, self.beam.get_focus()[0]/2, self.jet_radius, self.gamma)
         part_states = np.array(part_states)
         for i in range(self.n_particle_kinds):
             n_particles = particle_distribution[i]
