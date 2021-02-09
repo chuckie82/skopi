@@ -6,6 +6,8 @@
 # Input parameters including (1) beam, (2) detector, (3) particle(s) are needed for the SPI Experiment class.
 
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 import h5py as h5

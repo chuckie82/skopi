@@ -8,6 +8,8 @@
 
 import numpy as np
 from scipy import stats
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 import h5py as h5

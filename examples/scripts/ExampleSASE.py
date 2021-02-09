@@ -6,6 +6,8 @@
 # To fix the particle orientation, set a random seed in get_random_quat in pysingfel/geometry/generate.py
 
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 import h5py as h5

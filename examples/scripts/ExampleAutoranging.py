@@ -5,6 +5,8 @@
 # In this notebook, we demonstrate the LCLS-II autoranging detector effect by varying the characteristics of the beam, the type of the detector and its camera configuration.
 
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 from pysingfel import *

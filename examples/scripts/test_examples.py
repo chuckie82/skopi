@@ -33,8 +33,8 @@ def test_example():
                 'Autoranging', 'Aggregate', 'Hydration']
 
     for exp in exp_list:
-        assert os.path.exists(os.path.join(ex_dir_, f'Example{exp}.py'))
-        command = ['python', os.path.join(ex_dir_, f'Example{exp}.py')]
+        assert os.path.exists(os.path.join(ex_dir_, 'Example%s.py' %exp))
+        command = ['python', os.path.join(ex_dir_, 'Example%s.py' %exp)]
         out, err, exitcode = capture(command)
         assert exitcode == 0
 

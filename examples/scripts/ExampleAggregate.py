@@ -5,6 +5,8 @@
 # In this example script, we demonstrate particle sticking/aggregation by introducing the variable attraction coefficient (gamma) into FXS experiment class. The interaction range between particle pairs is determined by this user-defined attraction coefficient (gamma), which ranges between 0 and 1. When gamma=1, particles stick together to form a large cluster.
 
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import pysingfel as ps

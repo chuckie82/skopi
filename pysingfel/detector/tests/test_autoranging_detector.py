@@ -7,13 +7,19 @@ import pysingfel.gpu as pg
 import pysingfel.constants as cst
 from pysingfel.build_autoranging_frames import BuildAutoRangeFrames
 
-import six
-if six.PY2:
-    PSCalib = pytest.importorskip("PSCalib")
-if six.PY3:
-    psana = pytest.importorskip("psana")
+global psana_version
+try:
+    from PSCalib.GeometryAccess import GeometryAccess
+    psana_version=1
+except Exception:
+    try:
+        from psana.pscalib.geometry.GeometryAccess import GeometryAccess
+        psana_version=2
+    except:
+        # psana unavailable; skip all AutorangingDetector tests
+        psana_version=0
 
-
+@pytest.mark.skipif(psana_version==0, reason='Autoranging detector requires psana')
 class TestAutorangingDetector(object):
     """Test autoranging detector functions."""
     @classmethod
@@ -70,7 +76,7 @@ class TestAutorangingDetector(object):
         pattern = self.det.add_phase_shift(self.pattern_0, self.part_coord_1)
         assert np.allclose(pattern, self.pattern_1)
 
-    @pytest.mark.skipif(six.PY3, reason="Calibration constants require psana2")
+    @pytest.mark.skipif(psana_version!=1, reason="Calibration constants require psana1")
     def test_pedestal_nonzero(self):
         """Test existence of pedestals."""
         assert np.sum(abs(self.det.pedestals[:])) > np.finfo(float).eps

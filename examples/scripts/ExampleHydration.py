@@ -5,6 +5,8 @@
 # In this notebook, we demonstrate the water surrounding effect by varying the thickness of the hydration layers with the orientation of the particle fixed.
 
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
