@@ -8,7 +8,7 @@ from pysingfel.util import xp
 
 def test_get_weight_and_index_center_odd():
     """Test get_weight_and_index centering for odd-sized meshes."""
-    pixel_position = xp.zeros((1,3), dtype=np.float)
+    pixel_position = xp.zeros((1,3), dtype=float)
     voxel_length = 1.
     voxel_num_1d = 5
     index, weight = mapping.get_weight_and_index(
@@ -20,7 +20,7 @@ def test_get_weight_and_index_center_odd():
 
 def test_get_weight_and_index_center_even():
     """Test get_weight_and_index centering for even-sized meshes."""
-    pixel_position = xp.zeros((1,3), dtype=xp.float)
+    pixel_position = xp.zeros((1,3), dtype=float)
     voxel_length = 1.
     voxel_num_1d = 4
     index, weight = mapping.get_weight_and_index(

@@ -46,6 +46,8 @@ class HOLOExperiment(Experiment):
         part_positions = self.get_next_part_position()
         ref_orientation = self.get_ref_orientation()
         ref_position = self.get_ref_position()
+        if ref_position is None or ref_orientation is None:
+            raise TypeError("Missing reference particle orientation or position")
         positions = np.concatenate((ref_position,part_positions), axis=0)
         orientations = np.concatenate((ref_orientation,part_orientations), axis=0)
         particle_groups.append((positions, orientations))
@@ -70,7 +72,7 @@ class HOLOExperiment(Experiment):
         Return the position.
         """
         if self._ref_position is None:
-            return None
+            return np.array([[0.,0.,0.]])
 
         ref_position = self._ref_position
 

@@ -3,18 +3,20 @@ import os
 import six
 import sys
 
-# support LCLSI-py2 and LCLSII-py3
-# currently LCLSI-py3 is not supported
+# support LCLSI-py2, LCLSI-py3, and LCLSII-py3
+global psana_version
 try:
-    if six.PY2:
-        from PSCalib.GenericCalibPars import GenericCalibPars
-        from PSCalib.GeometryAccess import GeometryAccess
-    else:
+    from PSCalib.GenericCalibPars import GenericCalibPars
+    from PSCalib.GeometryAccess import GeometryAccess
+    psana_version=1
+except Exception:
+    try:
         from psana.pscalib.geometry.GeometryAccess import GeometryAccess
         from psana.pscalib.calib.MDBWebUtils import calib_constants
-        
-except:
-    print("Psana functionality is not available.")
+        psana_version=2
+    except:
+        print("Psana functionality is not available.")
+        psana_version=0
 
 import pysingfel.geometry as pg
 import pysingfel.util as pu
@@ -141,7 +143,7 @@ class LCLSDetector(DetectorBase):
         self._pixel_status = None
         self._pixel_gain = None
 
-        if six.PY2:
+        if psana_version==1:
             try:
                 cbase = self._get_cbase()
                 self.calibdir = '/'.join(parsed_path[:-4])
@@ -186,7 +188,7 @@ class LCLSDetector(DetectorBase):
     def _get_calib_constants(self, name):
         _name = "_" + name
         attribute = getattr(self, _name)
-        if six.PY3 and attribute is None and self.det is not None:
+        if psana_version==2 and attribute is None and self.det is not None:
             # We haven't tried to get the calib_constant yet.
             attribute = calib_constants(
                 self.det, exp=self.exp, ctype=name,
@@ -256,7 +258,7 @@ class LCLSDetector(DetectorBase):
 
         self.run_num = run_num
         
-        if six.PY2:
+        if psana_version==1:
             try:
                 pbits = 255
                 gcp = GenericCalibPars(self._get_cbase(), self.calibdir, self.group, 
@@ -391,8 +393,8 @@ class LCLSDetector(DetectorBase):
            (num_shots, n_panels, panel_x, panel_y) if det_shape is False
            None if pedestals and/or XTC files for a dark run are unavailable
         """
-        if six.PY3:
-            raise NotImplementedError('Currently only implemented for psana2/python3.')
+        if psana_version==2:
+            raise NotImplementedError('Currently only implemented for psana2.')
             return
 
         # grab index of random dark run and reset calibration attributes to match

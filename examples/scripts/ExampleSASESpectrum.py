@@ -8,10 +8,12 @@
 
 import numpy as np
 from scipy import stats
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 import h5py as h5
-import time
+import time, os
 import pysingfel as ps
 
 def wavelength_to_photon_energy(wavelength):
@@ -23,7 +25,7 @@ def wavelength_to_photon_energy(wavelength):
     return 1.2398e-06 / wavelength
 
 # Input files
-input_dir='../input'
+input_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../input')
 beamfile=input_dir+'/beam/amo86615.beam'
 
 # Load SASE spectra, with the mean photon energy = 7120eV
