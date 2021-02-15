@@ -76,7 +76,7 @@ PACKAGE_LIST=(
     # cupy requirements:
     fastrlock
 
-    # pysingfel requirements:
+    # skopi requirements:
     numba
     scikit-learn
 
@@ -109,7 +109,7 @@ pushd $LCLS2_DIR
 ./build_all.sh -d
 popd
 
-# Install pysingfel
+# Install skopi
 pushd ..
 pip install -e .
 popd

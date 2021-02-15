@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pysingfel documentation build configuration file, created by
+# skopi documentation build configuration file, created by
 # sphinx-quickstart on Tue Feb 20 23:16:42 2018.
 #
 # This file is execfile()d with the current directory set to its
@@ -54,7 +54,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'pysingfel'
+project = u'skopi'
 copyright = u'2018, Haoyuan Li, Zhaoyou Wang'
 author = u'Haoyuan Li, Zhaoyou Wang, Chun Hong Yoon'
 
@@ -126,7 +126,7 @@ html_sidebars = {
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'pysingfeldoc'
+htmlhelp_basename = 'skopidoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -153,7 +153,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'pysingfel.tex', u'pysingfel Documentation',
+    (master_doc, 'skopi.tex', u'skopi Documentation',
      u'Haoyuan Li, Zhaoyou Wang, Chun Hong Yoon', 'manual'),
 ]
 
@@ -163,7 +163,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'pysingfel', u'pysingfel Documentation',
+    (master_doc, 'skopi', u'skopi Documentation',
      [author], 1)
 ]
 
@@ -174,8 +174,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'pysingfel', u'pysingfel Documentation',
-     author, 'pysingfel', 'One line description of project.',
+    (master_doc, 'skopi', u'skopi Documentation',
+     author, 'skopi', 'One line description of project.',
      'Miscellaneous'),
 ]
 

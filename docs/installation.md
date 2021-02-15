@@ -23,11 +23,11 @@ prody          >1.10 (Required for conformations)
 
 To install the LCLS2 code base, which includes psana2, refer to README.md on the webpage: https://github.com/slac-lcls/lcls2
 
-## Installing pysingfel
+## Installing skopi
 
-To install pysingfel, run
+To install skopi, run
 ```
-python -m pip install -e pysingfel
+python -m pip install -e skopi
 ```
 or
 ```
@@ -37,7 +37,7 @@ in the root directory.
 
 ## Installing and using CuPy
 
-pysingfel uses GPU acceleration when computing the diffraction volumes using numba.cuda.
+skopi uses GPU acceleration when computing the diffraction volumes using numba.cuda.
 The slicing of these volumes into 2D diffraction patterns is then used on the CPU via NumPy.
 These operations can be offloaded to the GPU as well using CuPy: https://cupy.chainer.org/.
 
@@ -54,19 +54,19 @@ Alternatively, you can try
 pip install cupy --no-cache-dir
 ```
 
-Using CuPy changes the behavior of pysingfel in that it returns a CuPy array when you would be expecting a NumPy one, which other libraries might not be able to use.
+Using CuPy changes the behavior of skopi in that it returns a CuPy array when you would be expecting a NumPy one, which other libraries might not be able to use.
 You can also not use NumPy functions on CuPy arrays.
-However, you can access NumPy/CuPy (whichever pysingfel uses) by using `xp` from the module `util`.
+However, you can access NumPy/CuPy (whichever skopi uses) by using `xp` from the module `util`.
 You can then write NumPy/CuPy compatible code using functions as `xp.abs(numpy_or_cupy_array)`.
 Sometimes, you need to actually have a NumPy array. To cast either arrays into a NumPy one, use `asnumpy` from the same module: `asnumpy(numpy_or_cupy_array)`.
 The reverse operation (turning a NumPy array into a NumPy/CuPy one) can be performed using `xp.asarray`.
 To know which one you are using, type `xp.__name__`.
 Get `xp` and `asnumpy` with:
 ```
-from pysingfel.util import xp, asnumpy
+from skopi.util import xp, asnumpy
 ```
 
-Since CuPy can be difficult to use for untrained users, it is deactivated by default. pysingfel will only use CuPy if CuPy is installed and the environment variable USE_CUPY is set to 1 (before loading pysingfel).
+Since CuPy can be difficult to use for untrained users, it is deactivated by default. skopi will only use CuPy if CuPy is installed and the environment variable USE_CUPY is set to 1 (before loading skopi).
 To set the environment variable, type
 ```
 export USE_CUPY=1
@@ -87,7 +87,7 @@ conda env create -f environment.yml
 
 ## Quick-install on Summit
 
-To quickly install a standalone version of pysingfel with psana2 on Summit, run
+To quickly install a standalone version of skopi with psana2 on Summit, run
 ```
 ./setup/easy_install_summit_psana2.sh
 ```
@@ -95,9 +95,9 @@ from the root of the package.
 
 This will:
   - downloads a fresh copy of Conda;
-  - creates an environment with Python 3 and all the required packages for psana and pysingfel;
+  - creates an environment with Python 3 and all the required packages for psana and skopi;
   - downloads and installs psana2; and
-  - installs pysingfel.
+  - installs skopi.
 
 To recover the environment, run `source setup/env.sh`.
 

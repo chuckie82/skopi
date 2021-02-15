@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import h5py as h5
 import time, os
 
-import pysingfel as ps
-from pysingfel.particlePlacement import position_in_3d
+import skopi as sk
+from skopi.particlePlacement import position_in_3d
 
 numCyclohexane = 500
 numDinitro = 500
@@ -13,22 +13,22 @@ numPyrene = 1000
 pwd = os.path.dirname(__file__)
 
 # Create a particle object
-particleC = ps.Particle()
+particleC = sk.Particle()
 particleC.read_pdb(os.path.join(pwd,'../input/pdb/cyclohexane.pdb'), ff='WK')
 
-particleD = ps.Particle()
+particleD = sk.Particle()
 particleD.read_pdb(os.path.join(pwd,'../input/pdb/dinitro.pdb'), ff='WK')
 
-particleP = ps.Particle()
+particleP = sk.Particle()
 particleP.read_pdb(os.path.join(pwd,'../input/pdb/pyrene.pdb'), ff='WK')
 
 # Load beam
-beam = ps.Beam(os.path.join(pwd,'../input/beam/temp.beam'))
+beam = sk.Beam(os.path.join(pwd,'../input/beam/temp.beam'))
 
 geom = os.path.join(pwd,'../input/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data')
 
 # Load and initialize the detector
-det = ps.PnccdDetector(geom=geom, beam = beam)
+det = sk.PnccdDetector(geom=geom, beam = beam)
 
 tic = time.time()
 patternC = det.get_photons(device='gpu', particle=particleC)

@@ -13,13 +13,13 @@ source lcls2/setup_env.sh
 export PYTHONPATH=<YOUR_PYSINGFEL_PATH>:$PYTHONPATH
 ```
 
-To turn on cupy in pysingfel:  
+To turn on cupy in skopi:  
 ```
 export USE_CUPY=1
 ```
 
 ## Contributing jupyter notebooks
-Add notebooks to pysingfel/examples/notebooks and add a description in pysingfel/docs/tutorials.md
+Add notebooks to skopi/examples/notebooks and add a description in skopi/docs/tutorials.md
 
 ## Contributing code
 
@@ -29,7 +29,7 @@ Test code with Flake8 and Pytest before pull request
 
 With your environment loaded, run the unit tests with
 ```
-cd pysingfel
+cd skopi
 # stop the build if there are Python syntax errors or undefined names
 flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
@@ -37,8 +37,8 @@ flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statist
 # unit test
 pytest
 ```
-from the root directory of this repository or from the pysingfel subdirectory.
-If pysingfel is not installed in the environment and pytest cannot find it, add it to Python path by running
+from the root directory of this repository or from the skopi subdirectory.
+If skopi is not installed in the environment and pytest cannot find it, add it to Python path by running
 ```
 export PYTHONPATH=$PWD:$PYTHONPATH
 ```

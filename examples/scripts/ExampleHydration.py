@@ -12,7 +12,7 @@ from matplotlib.colors import LogNorm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import h5py as h5
 import time, os
-import pysingfel as ps
+import skopi as sk
 
 # Input files
 input_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../input')
@@ -21,7 +21,7 @@ geom=input_dir+'/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data
 pdbfile=input_dir+'/pdb/3iyf.pdb'
 
 # Load beam
-beam = ps.Beam(beamfile)
+beam = sk.Beam(beamfile)
 increase_factor = 1e2
 print('BEFORE: # of photons per pulse = {}'.format(beam.get_photons_per_pulse()))
 print('>>> Increasing the number of photons per pulse by a factor {}'.format(increase_factor))
@@ -30,7 +30,7 @@ print('AFTER : # of photons per pulse = {}'.format(beam.get_photons_per_pulse())
 print('photon energy = {} eV'.format(beam.photon_energy))
 
 # Load and initialize the detector
-det = ps.PnccdDetector(geom=geom, beam=beam)
+det = sk.PnccdDetector(geom=geom, beam=beam)
 increase_factor = 0.5
 print('BEFORE: detector distance = {} m'.format(det.distance))
 print('>>> Increasing the detector distance by a factor of {}'.format(increase_factor))
@@ -38,7 +38,7 @@ det.distance = increase_factor*det.distance
 print('AFTER : detector distance = {} m'.format(det.distance))
 
 # Create particle object(s)
-particle = ps.Particle()
+particle = sk.Particle()
 particle.read_pdb(pdbfile, ff='WK')
 print('Number of atoms in particle: {}'.format(particle.get_num_atoms()))
 
@@ -51,7 +51,7 @@ for i in range(len(thickness)):
     mesh_voxel_size = 2.0*1e-10
     particle.set_hydration_layer_thickness(hydration_layer_thickness)
     particle.create_masks()
-    experiment = ps.SPIExperiment(det, beam, particle, orientations=orientation)
+    experiment = sk.SPIExperiment(det, beam, particle, orientations=orientation)
     imgs[i] = experiment.generate_image()
 
 # Visualization

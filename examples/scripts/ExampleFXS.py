@@ -13,7 +13,7 @@ from matplotlib.colors import LogNorm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import h5py as h5
 import time, os
-import pysingfel as ps
+import skopi as sk
 
 # Parameters
 numOp = 1
@@ -28,7 +28,7 @@ pdbfile1=input_dir+'/pdb/3iyf.pdb'
 pdbfile2=input_dir+'/pdb/3j03.pdb'
 
 # Load beam
-beam = ps.Beam(beamfile)
+beam = sk.Beam(beamfile)
 increase_factor = 1e2
 print('BEFORE: # of photons per pulse = {}'.format(beam.get_photons_per_pulse()))
 print('>>> Increasing the number of photons per pulse by a factor {}'.format(increase_factor))
@@ -36,7 +36,7 @@ beam.set_photons_per_pulse(increase_factor*beam.get_photons_per_pulse())
 print('AFTER : # of photons per pulse = {}'.format(beam.get_photons_per_pulse()))
 
 # Load and initialize the detector
-det = ps.PnccdDetector(geom=geom, beam=beam)
+det = sk.PnccdDetector(geom=geom, beam=beam)
 increase_factor = 0.5
 print('BEFORE: detector distance = {} m'.format(det.distance))
 print('>>> Increasing the detector distance by a factor of {}'.format(increase_factor))
@@ -44,27 +44,27 @@ det.distance = increase_factor*det.distance
 print('AFTER : detector distance = {} m'.format(det.distance))
 
 # Create particle object(s)
-particleOp = ps.Particle()
+particleOp = sk.Particle()
 particleOp.read_pdb(pdbfile1, ff='WK')
 
-particleCl = ps.Particle()
+particleCl = sk.Particle()
 particleCl.read_pdb(pdbfile2, ff='WK')
 
 # Perform FXS experiment with one particle type
 tic = time.time()
-experiment = ps.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particleOp], n_part_per_shot=numOp, gamma=0.5)
+experiment = sk.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particleOp], n_part_per_shot=numOp, gamma=0.5)
 patternOp = experiment.generate_image_stack()
 toc = time.time()
 print(">>> It took {:.2f} seconds to finish FXS calculation.".format(toc-tic))
 
 # Perform FXS experiment with one particle type
-experiment = ps.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particleCl], n_part_per_shot=numCl, gamma=0.5)
+experiment = sk.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particleCl], n_part_per_shot=numCl, gamma=0.5)
 patternCl = experiment.generate_image_stack()
 
 # Perform FXS experiment with two particle types
 # calculate 1 diffraction pattern from 2 particles, where each particle has 50% chance of being Open or Closed
 # (end up in 25% with two Open, 25% with two Closed, and 50% with one of each)
-experiment = ps.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particleOp, particleCl], n_part_per_shot=num, gamma=0.5)
+experiment = sk.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particleOp, particleCl], n_part_per_shot=num, gamma=0.5)
 pattern = experiment.generate_image_stack()
 
 # Remove polarization

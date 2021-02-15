@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 import h5py as h5
 import time, os
-import pysingfel as ps
+import skopi as sk
 
 def wavelength_to_photon_energy(wavelength):
     """
@@ -39,7 +39,7 @@ flux_7120eV_ebeam2 = LS49_SASE_7120eV['flux_ebeam2']
 mu = 7120. # mean photon energy
 sigma = 10. # standard deviation
 n_spikes = 100 # number of spikes in a SASE pulse
-sase_beam = ps.SASEBeam(mu, sigma, n_spikes, fname=beamfile)
+sase_beam = sk.SASEBeam(mu, sigma, n_spikes, fname=beamfile)
 spikes = sase_beam.generate_new_state()
 print('mean photon energy of the SASE beam = {} eV'.format(sase_beam.photon_energy))
 print('photon energy of individual spikes = {} eV'.format([sp.photon_energy for sp in spikes]))

@@ -9,8 +9,8 @@ import matplotlib
 matplotlib.use('Agg')
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
-import pysingfel as ps
-from pysingfel.particlePlacement import *
+import skopi as sk
+from skopi.particlePlacement import *
 import time, os
 
 def drawSphere(xCenter, yCenter, zCenter, r):
@@ -34,7 +34,7 @@ pdbfile=input_dir+'/pdb/3iyf.pdb'
 #pdbfile=input_dir+'/pdb/1uf2.pdb' # Note: Virus particles tend to stick together, but it takes much longer to simulate compared to proteins.
 
 # Load beam
-beam = ps.Beam(beamfile)
+beam = sk.Beam(beamfile)
 increase_factor = 1e2
 print('BEFORE: # of photons per pulse = {}'.format(beam.get_photons_per_pulse()))
 print('>>> Increasing the number of photons per pulse by a factor {}'.format(increase_factor))
@@ -46,7 +46,7 @@ print('beam radius = {}'.format(beam._focus_xFWHM/2))
 print('focus area = {}'.format(beam._focus_area))
 
 # Load and initialize the detector
-det = ps.PnccdDetector(geom=geom, beam=beam)
+det = sk.PnccdDetector(geom=geom, beam=beam)
 increase_factor = 0.5
 print('BEFORE: detector distance = {} m'.format(det.distance))
 print('>>> Increasing the detector distance by a factor of {}'.format(increase_factor))
@@ -54,16 +54,16 @@ det.distance = increase_factor*det.distance
 print('AFTER : detector distance = {} m'.format(det.distance))
 
 # Create particle object(s)
-particle = ps.Particle()
+particle = sk.Particle()
 particle.read_pdb(pdbfile, ff='WK')
 
 # Perform FXS experiment calculation with particles sticking together to form a large cluster (set gamma = 1.)
 tic = time.time()
-experiment = ps.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particle], n_part_per_shot=num, gamma=1.)
+experiment = sk.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particle], n_part_per_shot=num, gamma=1.)
 img = experiment.generate_image()
 toc = time.time()
 print(">>> It took {:.2f} seconds to finish FXS calculation.".format(toc-tic))
-viz = ps.Visualizer(experiment, diffraction_rings="auto", log_scale=True)
+viz = sk.Visualizer(experiment, diffraction_rings="auto", log_scale=True)
 viz.imshow(img)
 plt.show()
 

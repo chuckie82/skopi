@@ -1,27 +1,26 @@
 import sys
-sys.path.append("/reg/neh/home/yoon82/Software/pysingfel/")
-
 import numpy as np
 import matplotlib.pyplot as plt
 import h5py as h5
-import pysingfel as ps
-import time
+import skopi as sk
+import time, os
 
 # Create a particle object
-particleOp = ps.Particle()
-particleOp.read_pdb('../input/3iyf.pdb', ff='WK')
+input_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../input')
+particleOp = sk.Particle()
+particleOp.read_pdb(input_dir+'/3iyf.pdb', ff='WK')
 #particleOp.rotate_randomly()
 
 #exit()
 
-particleCl = ps.Particle()
-particleCl.read_pdb('../input/3j03.pdb', ff='WK')
+particleCl = sk.Particle()
+particleCl.read_pdb(input_dir+'/3j03.pdb', ff='WK')
 
 # Load beam
-beam = ps.Beam('../input/exp_chuck.beam') 
+beam = sk.Beam(input_dir+'/beam/amo86615.beam') 
 
 # Load and initialize the detector
-det = ps.PnccdDetector(geom = '../../lcls_detectors/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data', 
+det = sk.PnccdDetector(geom = input_dir+'/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data', 
                        beam = beam)
 
 tic = time.time()

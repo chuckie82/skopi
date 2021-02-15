@@ -1,7 +1,7 @@
 import sys,os
 import numpy as np
 sys.path.append("../..")
-import pysingfel as ps
+import skopi as sk
 import scipy
 import argparse
 import matplotlib.pyplot as plt
@@ -22,7 +22,7 @@ def main():
 
   
     
-    particles = ps.particle.Particle()
+    particles = sk.particle.Particle()
     particles.read_pdb(pdb,'CM')
 
     elements = np.unique(particles.get_atom_type()).astype(np.int32)
@@ -33,7 +33,7 @@ def main():
 
     excl_vol = np.zeros((len(elements),1),dtype=np.float64)
 
-    ft = ps.solvent_form_factor.form_factor_table.FormFactorTable(ff_table_file,min_q,max_q,delta_q)
+    ft = sk.solvent_form_factor.form_factor_table.FormFactorTable(ff_table_file,min_q,max_q,delta_q)
 
 
     
@@ -73,16 +73,16 @@ def main():
     start = time.time()
 
 
-    s = ps.solvent_form_factor.solvent_accessible_surface.SolventAccessibleSurface()
+    s = sk.solvent_form_factor.solvent_accessible_surface.SolventAccessibleSurface()
     surface_area,fraction,sas = s.calculate_asa(xyz_plus_radius,1.4,960)
     end = time.time()
     print 'Calculated %d particle surface areas in %f seconds.' % (len(xyz_plus_radius),end-start)
     
     np.savetxt("sas.txt",fraction) 
     start = time.time()
-    model_profile = ps.solvent_form_factor.saxs_profile.Profile(min_q,max_q,delta_q)
+    model_profile = sk.solvent_form_factor.saxs_profile.Profile(min_q,max_q,delta_q)
 
-    intensity  = ps.solvent_form_factor.saxs_profile.calculate_profile_partial(model_profile,particles,fraction,ft,vacuum_ff,dummy_ff,c1,c2)
+    intensity  = sk.solvent_form_factor.saxs_profile.calculate_profile_partial(model_profile,particles,fraction,ft,vacuum_ff,dummy_ff,c1,c2)
     model_profile.write_SAXS_file('SAXS_intensities.txt')
     model_profile.write_partial_profiles('SAXS_partial_profiles.txt')
 

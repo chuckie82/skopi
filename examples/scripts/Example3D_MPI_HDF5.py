@@ -1,8 +1,8 @@
 import os, sys
 import h5py as h5
 import time
-import pysingfel as ps
-import pysingfel.gpu as pg
+import skopi as sk
+import skopi.gpu as sg
 from mpi4py import MPI
 import numpy as np
 import argparse
@@ -39,23 +39,23 @@ def main():
        t_start = MPI.Wtime()
          
        orientations = np.zeros((2*number,4))
-       particle = ps.Particle()
+       particle = sk.Particle()
 
     if rank==0:
        if orient== 1:
-          orientations = ps.geometry.get_uniform_quat(num_pts=number).astype(np.float64)
+          orientations = sk.geometry.get_uniform_quat(num_pts=number).astype(np.float64)
        elif orient== 0:
-          orientations = ps.geometry.get_random_quat(num_pts=number).astype(np.float64)
+          orientations = sk.geometry.get_random_quat(num_pts=number).astype(np.float64)
        print "O=",orientations.shape
        print "ODtype=", orientations.dtype
        #sys.exit(0)
        print("Reading PDB file...")
        particle.read_pdb(pdb, ff='WK')
        # reading beam and detector files
-       beam= ps.Beam(beam)
+       beam= sk.Beam(beam)
        #beam.set_wavelength(1.0e-10)
        print beam.get_wavelength()
-       det = ps.PnccdDetector(geom=geom, beam=beam)
+       det = sk.PnccdDetector(geom=geom, beam=beam)
        print("Broadcasting input to processes...")
     
        data = {'particle': particle, 'orientations': orientations, 'detector': det}
@@ -106,11 +106,11 @@ def main():
         mesh,voxel_length = det.get_reciprocal_mesh(voxel_number_1d=mesh_length)
         print "MeshDtype=",mesh.dtype
         
-        intensVol = pg.diffraction.calculate_diffraction_pattern_gpu(mesh, particle, return_type='intensity')
+        intensVol = sg.diffraction.calculate_diffraction_pattern_gpu(mesh, particle, return_type='intensity')
         # lft out mesh.astype(np.float32)
         for i in range((rank-1),number,sz-1):
            # transform quaternion (set of orientations) into 3D rotation  
-           rotmat = ps.geometry.quaternion2rot3d(ori[i,:])
+           rotmat = sk.geometry.quaternion2rot3d(ori[i,:])
            
            intensSlice = slave_calc_intensity(rot3d = rotmat,
                                          pixel_momentum = pixel_momentum,
@@ -171,17 +171,17 @@ def slave_calc_intensity(rot3d, pixel_momentum, pattern_shape, volume, voxel_len
     rotated_pixel_position = np.zeros((1,)+pattern_shape+(3,))
 
     # new pixel position in reciprocal space
-    rotated_pixel_position = ps.geometry.rotate_pixels_in_reciprocal_space(rot3d, pixel_momentum)
+    rotated_pixel_position = sk.geometry.rotate_pixels_in_reciprocal_space(rot3d, pixel_momentum)
 
     # generate indices and weights
-    index, weight = ps.geometry.get_weight_and_index(pixel_position=rotated_pixel_position,
+    index, weight = sk.geometry.get_weight_and_index(pixel_position=rotated_pixel_position,
                                              voxel_length=voxel_length,
                                              voxel_num_1d=volume.shape[0])
-    intensSlice = ps.geometry.extract_slice(local_index = index,
+    intensSlice = sk.geometry.extract_slice(local_index = index,
                                           local_weight = weight, 
                                           volume = volume)
     
-    #intensSliceWCorrection = ps.detector.add_linear_correction(intensSlice)
+    #intensSliceWCorrection = sk.detector.add_linear_correction(intensSlice)
      
     return intensSlice
 # local index, weight int32, float32

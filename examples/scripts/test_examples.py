@@ -1,4 +1,4 @@
-import pysingfel as ps
+import skopi as sk
 import os, subprocess
 import numpy as np
 

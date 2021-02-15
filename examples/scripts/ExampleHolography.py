@@ -10,7 +10,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
-import pysingfel as ps
+import skopi as sk
 import time, os
 
 # Input files
@@ -21,7 +21,7 @@ pdbfile=input_dir+'/pdb/3iyf.pdb'
 pdbfile2=input_dir+'/pdb/3j03.pdb'
 
 # Load beam
-beam = ps.Beam(beamfile)
+beam = sk.Beam(beamfile)
 increase_factor = 1e2
 print('BEFORE: # of photons per pulse = {}'.format(beam.get_photons_per_pulse()))
 print('>>> Increasing the number of photons per pulse by a factor {}'.format(increase_factor))
@@ -29,7 +29,7 @@ beam.set_photons_per_pulse(increase_factor*beam.get_photons_per_pulse())
 print('AFTER : # of photons per pulse = {}'.format(beam.get_photons_per_pulse()))
 
 # Load and initialize the detector
-det = ps.PnccdDetector(geom=geom, beam=beam)
+det = sk.PnccdDetector(geom=geom, beam=beam)
 increase_factor = 0.5
 print('BEFORE: detector distance = {} m'.format(det.distance))
 print('>>> Increasing the detector distance by a factor of {}'.format(increase_factor))
@@ -37,19 +37,19 @@ det.distance = increase_factor*det.distance
 print('AFTER : detector distance = {} m'.format(det.distance))
 
 # Create particle object(s)
-particle = ps.Particle()
+particle = sk.Particle()
 particle.read_pdb(pdbfile, ff='WK')
-particle_2 = ps.Particle()
+particle_2 = sk.Particle()
 particle_2.read_pdb(pdbfile2, ff='WK')
 
 # Perform Holography experiment
 tic = time.time()
-experiment = ps.HOLOExperiment(det, beam, [particle], [particle_2])
+experiment = sk.HOLOExperiment(det, beam, [particle], [particle_2])
 toc = time.time()
 print(">>> It took {:.2f} seconds to finish Holography calculation.".format(toc-tic))
 
 # Visualization
-viz = ps.Visualizer(experiment, diffraction_rings="auto", log_scale=True)
+viz = sk.Visualizer(experiment, diffraction_rings="auto", log_scale=True)
 img = experiment.generate_image()
 viz.imshow(img)
 plt.show()

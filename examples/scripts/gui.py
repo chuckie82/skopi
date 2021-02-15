@@ -22,8 +22,8 @@ from matplotlib.figure import Figure
 from matplotlib.colors import LogNorm
 from mpl_toolkits.mplot3d import Axes3D
 
-import pysingfel as ps
-import pysingfel.gpu as pg
+import skopi as sk
+import skopi.gpu as sg
 
 
 # Set default matplotlib parameters
@@ -38,14 +38,14 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.debug = debug
 
         # Create a particle object
-        self.particle = ps.Particle()
+        self.particle = sk.Particle()
         self.particle.read_pdb(pdb_file, ff='WK')
 
         # Load beam
-        beam = ps.Beam('../input/beam/amo86615.beam') 
+        beam = sk.Beam('../input/beam/amo86615.beam') 
 
         # Load and initialize the detector
-        self.det = ps.PnccdDetector(
+        self.det = sk.PnccdDetector(
             geom='../input/lcls/amo86615/PNCCD::CalibV1/'
                  'Camp.0:pnCCD.1/geometry/0-end.data', 
             beam=beam)
@@ -54,7 +54,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         mesh, self.voxel_length = self.det.get_reciprocal_mesh(
             voxel_number_1d=mesh_length)
 
-        self.volume = pg.calculate_diffraction_pattern_gpu(
+        self.volume = sg.calculate_diffraction_pattern_gpu(
             mesh, self.particle, return_type='intensity')
 
         self.pixel_momentum = self.det.pixel_position_reciprocal
@@ -135,8 +135,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         axis_azim = np.array([1., 0., 0.])
         axis_elev = np.array([0., 1., 0.])
-        rot_azim = ps.geometry.angle_axis_to_rot3d(axis_azim, -azim)
-        rot_elev = ps.geometry.angle_axis_to_rot3d(axis_elev, elev)
+        rot_azim = sk.geometry.angle_axis_to_rot3d(axis_azim, -azim)
+        rot_elev = sk.geometry.angle_axis_to_rot3d(axis_elev, elev)
         rot = np.matmul(rot_elev, rot_azim)
 
         if self.debug:
@@ -155,8 +155,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
             self._real2d_ax.set_ylabel('X')
             self._real2d_ax.figure.canvas.draw()
 
-        quat = ps.geometry.rotmat_to_quaternion(rot)
-        slice_ = ps.geometry.take_slice(
+        quat = sk.geometry.rotmat_to_quaternion(rot)
+        slice_ = sk.geometry.take_slice(
             self.volume, self.voxel_length,
             self.pixel_momentum, quat, inverse=True)
         img = self.det.assemble_image_stack(slice_)
@@ -171,7 +171,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Minimal GUI for pysingfel.')
+        description='Minimal GUI for skopi.')
     parser.add_argument(
         'pdb_file', type=str, nargs='?',
         default='../input/pdb/3iyf.pdb',

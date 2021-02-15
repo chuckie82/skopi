@@ -68,8 +68,8 @@ from tqdm import tqdm
 from PIL import Image
 import h5py as h5
 
-import pysingfel as ps
-from pysingfel.util import asnumpy, xp
+import skopi as sk
+from skopi.util import asnumpy, xp
 
 
 def main():
@@ -123,14 +123,14 @@ def main():
     photons_max = np.iinfo(photons_dtype).max
 
     # Load beam parameters
-    beam = ps.Beam(beam_file)
+    beam = sk.Beam(beam_file)
 
     # Increase the beam fluence
     if not np.isclose(beam_fluence_increase_factor, 1.0):
         beam.set_photons_per_pulse(beam_fluence_increase_factor * beam.get_photons_per_pulse())
 
     # Load geometry of detector
-    det = ps.PnccdDetector(geom=geom_file, beam=beam)
+    det = sk.PnccdDetector(geom=geom_file, beam=beam)
 
     # Get the shape of the diffraction pattern
     diffraction_pattern_height = det.detector_pixel_num_x.item()
@@ -143,7 +143,7 @@ def main():
     # Generate uniform orientations
     if given_orientations and RANK == MASTER_RANK:
         print("(Master) Generate {} uniform orientations".format(dataset_size))
-        orientations = ps.get_uniform_quat(dataset_size, True)
+        orientations = sk.get_uniform_quat(dataset_size, True)
 
     sys.stdout.flush()
 
@@ -152,15 +152,15 @@ def main():
         
         # Load PDB
         print("(GPU 0) Reading PDB file: {}".format(pdb_file))
-        particle = ps.Particle()
+        particle = sk.Particle()
         particle.read_pdb(pdb_file, ff='WK')
 
         # Calculate diffraction volume
         print("(GPU 0) Calculating diffraction volume")
-        experiment = ps.SPIExperiment(det, beam, particle)
+        experiment = sk.SPIExperiment(det, beam, particle)
 
     else:
-        experiment = ps.SPIExperiment(det, beam, None)
+        experiment = sk.SPIExperiment(det, beam, None)
 
     sys.stdout.flush()
 

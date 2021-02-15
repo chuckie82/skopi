@@ -1,6 +1,6 @@
 ## Tutorials
 
-Tutorials are available as Jupyter notebooks [here](https://github.com/chuckie82/pysingfel/tree/master/examples/notebooks)
+Tutorials are available as Jupyter notebooks [here](https://github.com/chuckie82/skopi/tree/master/examples/notebooks)
 
 Topics available: :+1:
 

@@ -7,10 +7,10 @@ import h5py as h5
 from mpi4py import MPI # module required to use MPI
 import argparse
 
-import pysingfel as ps
-import pysingfel.gpu as pg
-from pysingfel.reciprocal_detector import ReciprocalDetector
-from pysingfel.util import asnumpy, xp
+import skopi as sk
+import skopi.gpu as sg
+from skopi.reciprocal_detector import ReciprocalDetector
+from skopi.util import asnumpy, xp
 
 ROOT_DIR=os.environ["PYSINGFEL_DIR"]
 
@@ -38,18 +38,18 @@ def main():
 		t_start = MPI.Wtime()
 
 		# load beam
-		beam = ps.Beam(beam)
+		beam = sk.Beam(beam)
 
 		# load and initialize the detector
-		det = ps.PnccdDetector(geom=geom, beam=beam)
+		det = sk.PnccdDetector(geom=geom, beam=beam)
 		highest_k_beam = beam.get_highest_wavenumber_beam()
 		recidet = ReciprocalDetector(det, highest_k_beam)
 
 		# create particle object(s)
-		particle = ps.Particle()
+		particle = sk.Particle()
 		particle.read_pdb(pdb, ff='WK')
 
-		experiment = ps.SPIExperiment(det, beam, particle)
+		experiment = sk.SPIExperiment(det, beam, particle)
 
 		f = h5.File(os.path.join(outDir,"SPI_MPI.h5"),"w")
 		f.attrs['numParticles'] = 1
@@ -87,7 +87,7 @@ def main():
 		beam = dct['beam']
 		particle = dct['particle']
 
-		experiment = ps.SPIExperiment(det, beam, particle)
+		experiment = sk.SPIExperiment(det, beam, particle)
 		for i in range((rank-1),numPatterns,size-1):
 			img_slice = experiment.generate_image_stack(return_intensities=True, return_orientation=True, always_tuple=True)
 			img_slice_intensity = img_slice[0]

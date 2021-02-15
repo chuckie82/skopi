@@ -1,9 +1,9 @@
 ## Getting Started for LCLS simulations
 
-Start by downloading a copy of pysingfel package and LCLS calibration
+Start by downloading a copy of skopi package and LCLS calibration
 ```
-git clone https://github.com/chuckie82/pysingfel.git
-cd pysingfel/examples/input && source download.sh
+git clone https://github.com/chuckie82/skopi.git
+cd skopi/examples/input && source download.sh
 tar -xvf lcls.tar.gz
 ```
 
@@ -11,6 +11,6 @@ tar -xvf lcls.tar.gz
 
 Simulate open and closed states of chaperones on an LCLS pnCCD detector
 ```
-cd pysingfel/examples/scripts
+cd skopi/examples/scripts
 python ExampleMultipleChaperones.py
 ```

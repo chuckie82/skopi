@@ -1,9 +1,9 @@
-.. pysingfel documentation master file, created by
+.. skopi documentation master file, created by
    sphinx-quickstart on Tue Feb 20 23:16:42 2018.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to pysingfel's documentation!
+Welcome to skopi's documentation!
 =====================================
 This is a python implementation of singfel.
 
