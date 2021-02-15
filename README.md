@@ -2,9 +2,10 @@
 
 <div class="row">
   <div class="column">
-    <img src="https://user-images.githubusercontent.com/1917664/107893806-2063ae80-6ee2-11eb-9cc4-c95a884f9c55.png" alt="skopi" style="width:75%">
+    <p align="center"><img src="https://user-images.githubusercontent.com/1917664/107893806-2063ae80-6ee2-11eb-9cc4-c95a884f9c55.png" alt="skopi" width="650px" height=auto style="width:100%"></p>
   </div>
 </div>
+
 <div class="row">
   <div class="column">
     <p align="center">Single particle imaging simulation package</p>
