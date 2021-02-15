@@ -13,13 +13,13 @@
 <br />
 <br />
 
-<p align="center"><a href="https://github.com/chuckie82/pysingfel/blob/master/docs/quick_start.md"><img src="https://user-images.githubusercontent.com/1917664/107894591-f364cb00-6ee4-11eb-94be-72aa926cf069.png" alt="Quickstart" height="64px" style="float:left"></a><strong><a href="https://github.com/chuckie82/pysingfel/blob/master/docs/quick_start.md">Quick start</a></strong></p>
+<p align="center"><a href="https://github.com/chuckie82/skopi/blob/master/docs/quick_start.md"><img src="https://user-images.githubusercontent.com/1917664/107894591-f364cb00-6ee4-11eb-94be-72aa926cf069.png" alt="Quickstart" height="64px" style="float:left" class="center"></a><strong><a href="https://github.com/chuckie82/skopi/blob/master/docs/quick_start.md">. Quick start</a></strong></p>
 
-<p align="center"><a href="https://github.com/chuckie82/pysingfel/blob/master/docs/installation.md"><img src="https://user-images.githubusercontent.com/1917664/107894615-05df0480-6ee5-11eb-95c3-c99dfc55b8a6.png" alt="Installation" height="64px" style="float:left"></a><strong><a href="https://github.com/chuckie82/pysingfel/blob/master/docs/installation.md">Installation</a></strong></p>
+<p align="center"><a href="https://github.com/chuckie82/skopi/blob/master/docs/installation.md"><img src="https://user-images.githubusercontent.com/1917664/107894615-05df0480-6ee5-11eb-95c3-c99dfc55b8a6.png" alt="Installation" height="64px" style="float:left" class="center"></a><strong><a href="https://github.com/chuckie82/skopi/blob/master/docs/installation.md">Installation</a></strong></p>
 
-<p align="center"><a href="https://github.com/chuckie82/pysingfel/blob/master/docs/tutorials.md"><img src="https://user-images.githubusercontent.com/1917664/107894692-43439200-6ee5-11eb-8699-77e772186191.png" alt="Tutorials" height="64px" style="float:left"></a><strong><a href="https://github.com/chuckie82/pysingfel/blob/master/docs/tutorials.md">Tutorials</a></strong></p>
+<p align="center"><a href="https://github.com/chuckie82/skopi/blob/master/docs/tutorials.md"><img src="https://user-images.githubusercontent.com/1917664/107894692-43439200-6ee5-11eb-8699-77e772186191.png" alt="Tutorials" height="64px" style="float:left" class="center"></a><strong><a href="https://github.com/chuckie82/skopi/blob/master/docs/tutorials.md">   Tutorials</a></strong></p>
 
-<p align="center"><a href="https://github.com/chuckie82/pysingfel/blob/master/docs/developers.md"><img src="https://user-images.githubusercontent.com/1917664/107894730-6e2de600-6ee5-11eb-96eb-3a7876b58574.png" alt="Developer" height="64px" style="float:left"></a><strong><a href="https://github.com/chuckie82/pysingfel/blob/master/docs/developers.md">Developer</a></strong></p>
+<p align="center"><a href="https://github.com/chuckie82/skopi/blob/master/docs/developers.md"><img src="https://user-images.githubusercontent.com/1917664/107894730-6e2de600-6ee5-11eb-96eb-3a7876b58574.png" alt="Developer" height="64px" style="float:left" class="center"></a><strong><a href="https://github.com/chuckie82/skopi/blob/master/docs/developers.md">   Developer</a></strong></p>
 <br /><br /><br />
 
 
