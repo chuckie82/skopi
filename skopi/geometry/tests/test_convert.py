@@ -2,8 +2,8 @@ import itertools
 import numpy as np
 import pytest
 
-from pysingfel.geometry import convert, generate
-import pysingfel.constants as cst
+from skopi.geometry import convert, generate
+import skopi.constants as cst
 
 
 def test_angle_axis_to_rot3d_x():

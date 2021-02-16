@@ -14,14 +14,14 @@ from PIL import Image
 
 import h5py as h5
 
-import pysingfel as ps
+import skopi as sk
 
 
 """
 
 Deeban Ramalingam (deebanr@slac.stanford.edu)
 
-This script generates a synthetic dataset of diffraction patterns and their associated orientations for computational Single Particle Imaging (cSPI). This script uses Pysingfel to simulate an SPI Experiment.
+This script generates a synthetic dataset of diffraction patterns and their associated orientations for computational Single Particle Imaging (cSPI). This script uses Skopi to simulate an SPI Experiment.
 
 How to run this script:
 
@@ -35,7 +35,7 @@ Examples on how to run this script:
 
 Tips on using this script:
 
-1. For an example config file, look at: pysingfel/examples/scripts/cspi_generate_synthetic_dataset_config.json
+1. For an example config file, look at: skopi/examples/scripts/cspi_generate_synthetic_dataset_config.json
 
 2. Use the previously defined datasets in this file to add or modify an existing experiment of your choice.
 
@@ -82,13 +82,13 @@ def main():
     
     # PDB
     print("Load PDB: {}".format(pdb_file))
-    particle = ps.Particle()
+    particle = sk.Particle()
     particle.read_pdb(pdb_file, ff='WK')
     atomic_coordinates = particle.atom_pos
     
     # Beam parameters
     print("Load beam parameters: {}".format(pdb_file))
-    beam = ps.Beam(beam_file)
+    beam = sk.Beam(beam_file)
 
     # Increase the beam fluence
     if not np.isclose(beam_fluence_increase_factor, 1.0):
@@ -99,7 +99,7 @@ def main():
 
     # Geometry of detector
     print("Load detector geometry: {}".format(geom_file))
-    det = ps.PnccdDetector(geom=geom_file, beam=beam)
+    det = sk.PnccdDetector(geom=geom_file, beam=beam)
 
     
     # Simulate the SPI Experiment
@@ -107,7 +107,7 @@ def main():
     
     tic = time.time()
     
-    experiment = ps.SPIExperiment(det, beam, particle)
+    experiment = sk.SPIExperiment(det, beam, particle)
     
     toc = time.time()
 
@@ -115,7 +115,7 @@ def main():
 
     # Generate random orientations
     print("Generating random orientations as uniform quaternions")
-    orientations = ps.get_uniform_quat(dataset_size, True)
+    orientations = sk.get_uniform_quat(dataset_size, True)
     
     # Get diffraction pattern shape
     diffraction_pattern_height = det.detector_pixel_num_x.item()

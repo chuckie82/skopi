@@ -5,10 +5,10 @@ import h5py as h5
 import time
 import pytest
 
-import pysingfel as ps
-import pysingfel.constants as cst
-from pysingfel.geometry import slice_
-from pysingfel.util import xp
+import skopi as sk
+import skopi.constants as cst
+from skopi.geometry import slice_
+from skopi.util import xp
 
 
 class TestSlice(object):
@@ -31,49 +31,49 @@ class TestSlice(object):
         """Test take_slice on center value."""
         orientation = cst.quat1
         pixel_momentum = xp.array([[[[0., 0., 0.]]]])
-        slice_ = ps.take_slice(self.volume, self.voxel_length,
+        slice_ = sk.take_slice(self.volume, self.voxel_length,
                                pixel_momentum, orientation)
         assert xp.isclose(slice_[0, 0, 0], self.volume.mean())
 
     def test_take_slice_default_orientation(self):
         """Test take_slice with the default orientation."""
         orientation = cst.quat1
-        slice_ = ps.take_slice(self.volume, self.voxel_length,
+        slice_ = sk.take_slice(self.volume, self.voxel_length,
                                self.pixel_momentum, orientation)
         assert xp.allclose(slice_, self.volume)
 
     def test_take_slice_x_orientation(self):
         """Test take_slice with 180 degrees x rotation."""
         orientation = cst.quatx
-        slice_ = ps.take_slice(self.volume, self.voxel_length,
+        slice_ = sk.take_slice(self.volume, self.voxel_length,
                                self.pixel_momentum, orientation)
         assert xp.allclose(slice_[:, ::-1, ::-1], self.volume)
 
     def test_take_slice_y_orientation(self):
         """Test take_slice with 180 degrees y rotation."""
         orientation = cst.quaty
-        slice_ = ps.take_slice(self.volume, self.voxel_length,
+        slice_ = sk.take_slice(self.volume, self.voxel_length,
                                self.pixel_momentum, orientation)
         assert xp.allclose(slice_[::-1, :, ::-1], self.volume)
 
     def test_take_slice_z_orientation(self):
         """Test take_slice with 180 degrees z rotation."""
         orientation = cst.quatz
-        slice_ = ps.take_slice(self.volume, self.voxel_length,
+        slice_ = sk.take_slice(self.volume, self.voxel_length,
                                self.pixel_momentum, orientation)
         assert xp.allclose(slice_[::-1, ::-1, :], self.volume)
 
     def test_take_slice_x90_orientation(self):
         """Test take_slice with 90 degrees x rotation."""
         orientation = cst.quatx90
-        slice_ = ps.take_slice(self.volume, self.voxel_length,
+        slice_ = sk.take_slice(self.volume, self.voxel_length,
                                self.pixel_momentum, orientation)
         assert xp.allclose(slice_[:, :, ::-1].swapaxes(1, 2), self.volume)
 
     def test_take_slice_x270_orientation(self):
         """Test take_slice with 270 degrees x rotation."""
         orientation = cst.quatx270
-        slice_ = ps.take_slice(self.volume, self.voxel_length,
+        slice_ = sk.take_slice(self.volume, self.voxel_length,
                                self.pixel_momentum, orientation)
         assert xp.allclose(slice_[:, ::-1, :].swapaxes(1, 2), self.volume)
 
@@ -82,7 +82,7 @@ class TestSlice(object):
         # Slices
         orientations = np.vstack(
             [cst.quaty90, cst.quaty270, cst.quatz90, cst.quatz270])
-        slices = ps.take_n_slices(self.volume, self.voxel_length,
+        slices = sk.take_n_slices(self.volume, self.voxel_length,
                                   self.pixel_momentum, orientations)
         assert xp.allclose(slices[0, ::-1, :, :].swapaxes(0, 2), self.volume)
         assert xp.allclose(slices[1, :, :, ::-1].swapaxes(0, 2), self.volume)

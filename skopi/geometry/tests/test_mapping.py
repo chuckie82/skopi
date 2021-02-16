@@ -2,8 +2,8 @@ import itertools
 import numpy as np
 import pytest
 
-from pysingfel.geometry import mapping
-from pysingfel.util import xp
+from skopi.geometry import mapping
+from skopi.util import xp
 
 
 def test_get_weight_and_index_center_odd():

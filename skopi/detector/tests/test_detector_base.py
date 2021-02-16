@@ -2,10 +2,10 @@ import numpy as np
 import os
 import pytest
 
-import pysingfel as ps
-import pysingfel.gpu as pg
-import pysingfel.constants as cst
-from pysingfel.util import xp
+import skopi as sk
+import skopi.gpu as sg
+import skopi.constants as cst
+from skopi.util import xp
 
 import six
 if six.PY2:
@@ -21,10 +21,10 @@ class TestDetectorBase(object):
         ex_dir_ = os.path.dirname(__file__) + '/../../../examples'
 
         # Load beam
-        beam = ps.Beam(ex_dir_+'/input/beam/amo86615.beam')
+        beam = sk.Beam(ex_dir_+'/input/beam/amo86615.beam')
 
         # Load and initialize the detector
-        det = ps.PnccdDetector(
+        det = sk.PnccdDetector(
             geom=ex_dir_+'/input/lcls/amo86615/'
                  'PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data',
             beam=beam)
@@ -33,25 +33,25 @@ class TestDetectorBase(object):
         cls.pos_recip = det.pixel_position_reciprocal
 
         # Ref Particle
-        cls.particle_0 = ps.Particle()
+        cls.particle_0 = sk.Particle()
         cls.particle_0.create_from_atoms([  # Angstrom
             ("O", cst.vecx),
             ("O", 2*cst.vecy),
             ("O", 3*cst.vecz),
         ])
-        cls.pattern_0 = pg.calculate_diffraction_pattern_gpu(
+        cls.pattern_0 = sg.calculate_diffraction_pattern_gpu(
             cls.pos_recip, cls.particle_0, return_type="complex_field")
 
         # Second Particle
         cls.part_coord_1 = np.array((0.5, 0.2, 0.1))  # Angstrom
-        cls.particle_1 = ps.Particle()
+        cls.particle_1 = sk.Particle()
         cls.particle_1.create_from_atoms([  # Angstrom
             ("O", cst.vecx + cls.part_coord_1),
             ("O", 2*cst.vecy + cls.part_coord_1),
             ("O", 3*cst.vecz + cls.part_coord_1),
         ])
         cls.part_coord_1 *= 1e-10  # Angstrom -> meter
-        cls.pattern_1 = pg.calculate_diffraction_pattern_gpu(
+        cls.pattern_1 = sg.calculate_diffraction_pattern_gpu(
             cls.pos_recip, cls.particle_1, return_type="complex_field")
 
     def test_add_phase_shift(self):
@@ -66,7 +66,7 @@ class TestDetectorBase(object):
 
 def test_distance_change():
     """Test distance property change."""
-    det = ps.SimpleSquareDetector(
+    det = sk.SimpleSquareDetector(
         N_pixel=1024, det_size=0.1, det_distance=0.2)
     distance_1 = det.distance
     pixel_position_1 = det.pixel_position.copy()

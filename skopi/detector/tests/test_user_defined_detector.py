@@ -2,10 +2,10 @@ import numpy as np
 import os
 import pytest
 
-import pysingfel as ps
-import pysingfel.gpu as pg
-import pysingfel.constants as cst
-from pysingfel.util import xp
+import skopi as sk
+import skopi.gpu as sg
+import skopi.constants as cst
+from skopi.util import xp
 
 
 class TestUserDefinedDetector(object):
@@ -44,7 +44,7 @@ class TestUserDefinedDetector(object):
             'pixel map': p_map,
         }
 
-        cls.det = ps.UserDefinedDetector(geom=det_dict)
+        cls.det = sk.UserDefinedDetector(geom=det_dict)
 
     def test_shape(self):
         assert self.det.shape == self.det_shape

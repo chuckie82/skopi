@@ -13,7 +13,7 @@ mpiexec -n 16 python cspi_generate_synthetic_dataset_mpi_hybrid.py --config cspi
 
 Tips on using this script:
 
-1. For an example config file, look at: pysingfel/examples/scripts/cspi_generate_synthetic_dataset_config.json
+1. For an example config file, look at: skopi/examples/scripts/cspi_generate_synthetic_dataset_config.json
 
 2. Use the previously defined datasets in this file to add or modify an existing dataset of your choice.
 
