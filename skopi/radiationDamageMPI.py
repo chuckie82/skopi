@@ -3,7 +3,7 @@ import argparse, os
 from mpi4py import MPI
 
 from skopi.radiationDamage import *
-import skopi.util as pu
+import skopi.util as su
 
 
 def main():
@@ -55,7 +55,7 @@ def master_diffract(comm, parameters):
         output_name = parameters['outputDir'] + '/diffr_out_0000001.h5'
         if os.path.exists(output_name):
             os.remove(output_name)
-        pu.prep_h5(output_name)
+        su.prep_h5(output_name)
         for ntask in range(ntasks):
             make_one_diffr(my_quaternion, ntask, parameters, output_name)
     else:
@@ -93,7 +93,7 @@ def slave_diffract(comm, parameters):
     output_name = parameters['outputDir'] + '/diffr_out_' + '{0:07}'.format(comm.Get_rank()) + '.h5'
     if os.path.exists(output_name):
         os.remove(output_name)
-    pu.prep_h5(output_name)
+    su.prep_h5(output_name)
 
     # Init a local counter
     counter = 0

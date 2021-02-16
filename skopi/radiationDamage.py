@@ -3,7 +3,7 @@ from skopi.particle import Particle
 import h5py
 from skopi.detector import *
 from skopi.beam import *
-import skopi.util as pu
+import skopi.util as su
 from skopi.diffraction import calculate_compton
 
 
@@ -202,15 +202,8 @@ def make_one_diffr(myquaternions, counter, parameters, output_name):
 
     done = False
     time_slice = 0
-<<<<<<< HEAD
-    detector_intensity = np.zeros((py, px))
-||||||| 2e00b2e
-    total_phot = 0
-    detector_intensity = np.zeros((py, px))
-=======
     total_phot = 0
     detector_intensity = np.zeros((1, py, px))
->>>>>>> 6fe3923708e13a92a39187d546e8e026b25f8983
     while not done:
         # set time slice to calculate diffraction pattern
         if time_slice + slice_interval >= num_slices:
@@ -239,7 +232,7 @@ def make_one_diffr(myquaternions, counter, parameters, output_name):
                            det.polarization_correction) * det.Thomson_factor
 
     detector_counts = np.random.poisson(detector_intensity)
-    pu.save_as_diffr_outfile(output_name, input_name, counter,
+    su.save_as_diffr_outfile(output_name, input_name, counter,
                              detector_counts, detector_intensity,
                              quaternion, det, beam)
 
@@ -262,6 +255,6 @@ def diffract(parameters):
     output_name = parameters['outputDir'] + '/diffr_out_0000001.h5'
     if os.path.exists(output_name):
         os.remove(output_name)
-    pu.prep_h5(output_name)
+    su.prep_h5(output_name)
     for ntask in range(ntasks):
         make_one_diffr(myquaternions, ntask, parameters, output_name)
