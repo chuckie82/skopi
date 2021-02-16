@@ -14,15 +14,15 @@ requirements = [
     'setuptools'
 ]
 
-setuptools.setup(name='pysingfel',
+setuptools.setup(name='skopi',
       maintainer='Chunhong Yoon',
-      version='0.4.0',
+      version='0.5.0',
       maintainer_email='yoon82@stanford.edu',
-      description='Python version of singfel.',
+      description='Single particle imaging simulation package',
       long_description=open('README.md', encoding='utf8').read(),
-      url='https://github.com/chuckie82/pysingfel.git',
+      long_description_content_type="text/markdown",
+      url='https://github.com/chuckie82/skopi.git',
       packages=setuptools.find_packages(),
-      scripts=['bin/radiationDamageMPI'],
       install_requires=requirements,
       classifiers=[
           "Programming Language :: Python :: 3",

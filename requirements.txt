@@ -1,11 +1,11 @@
 numpy >1.10
-numba >0.46
 six >1.2
-scikit-learn >0.19
 pytest >4.5
 matplotlib >2.1
 setuptools >=44.0
 h5py >2.6
-scipy >1.1
-mpi4py >=2.0
+scipy
+scikit-learn
+mpi4py 
+numba
 prody>1.10
