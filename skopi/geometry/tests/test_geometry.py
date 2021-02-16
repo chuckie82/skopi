@@ -2,8 +2,8 @@ import itertools
 import numpy as np
 import pytest
 
-from pysingfel import geometry
-import pysingfel.constants as cst
+from skopi import geometry
+import skopi.constants as cst
 
 
 def test_get_reciprocal_mesh_shape_even():

@@ -3,8 +3,8 @@ import numpy as np
 import scipy as sp
 import pytest
 
-from pysingfel.geometry import generate, convert
-import pysingfel.constants as cst
+from skopi.geometry import generate, convert
+import skopi.constants as cst
 
 
 def test_points_on_1sphere_4y():
