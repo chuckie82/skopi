@@ -14,7 +14,7 @@ from PIL import Image
 
 import h5py as h5
 
-import skopi as sp
+import skopi as sk
 
 
 """
@@ -82,13 +82,13 @@ def main():
     
     # PDB
     print("Load PDB: {}".format(pdb_file))
-    particle = sp.Particle()
+    particle = sk.Particle()
     particle.read_pdb(pdb_file, ff='WK')
     atomic_coordinates = particle.atom_pos
     
     # Beam parameters
     print("Load beam parameters: {}".format(pdb_file))
-    beam = sp.Beam(beam_file)
+    beam = sk.Beam(beam_file)
 
     # Increase the beam fluence
     if not np.isclose(beam_fluence_increase_factor, 1.0):
@@ -99,7 +99,7 @@ def main():
 
     # Geometry of detector
     print("Load detector geometry: {}".format(geom_file))
-    det = sp.PnccdDetector(geom=geom_file, beam=beam)
+    det = sk.PnccdDetector(geom=geom_file, beam=beam)
 
     
     # Simulate the SPI Experiment
@@ -107,7 +107,7 @@ def main():
     
     tic = time.time()
     
-    experiment = sp.SPIExperiment(det, beam, particle)
+    experiment = sk.SPIExperiment(det, beam, particle)
     
     toc = time.time()
 
@@ -115,7 +115,7 @@ def main():
 
     # Generate random orientations
     print("Generating random orientations as uniform quaternions")
-    orientations = sp.get_uniform_quat(dataset_size, True)
+    orientations = sk.get_uniform_quat(dataset_size, True)
     
     # Get diffraction pattern shape
     diffraction_pattern_height = det.detector_pixel_num_x.item()

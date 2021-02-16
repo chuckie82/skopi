@@ -2,7 +2,7 @@ import numpy as np
 import os
 import pytest
 
-import skopi as sp
+import skopi as sk
 import skopi.gpu as sg
 import skopi.constants as cst
 from skopi.build_autoranging_frames import BuildAutoRangeFrames
@@ -27,11 +27,11 @@ class TestAutorangingDetector(object):
         ex_dir_ = os.path.dirname(__file__) + '/../../../examples'
 
         # Load beam
-        beam = sp.Beam(ex_dir_+'/input/beam/amo86615.beam')
+        beam = sk.Beam(ex_dir_+'/input/beam/amo86615.beam')
 
         # Load and initialize the detector
         np.random.seed(0)
-        det = sp.Epix10kDetector(
+        det = sk.Epix10kDetector(
             geom=ex_dir_+'/input/lcls/xcsx35617/'
                  'Epix10ka2M::CalibV1/XcsEndstation.0:Epix10ka2M.0/geometry/0-end.data',
             run_num=0,
@@ -42,7 +42,7 @@ class TestAutorangingDetector(object):
         cls.pos_recip = det.pixel_position_reciprocal
 
         # Ref Particle
-        cls.particle_0 = sp.Particle()
+        cls.particle_0 = sk.Particle()
         cls.particle_0.create_from_atoms([  # Angstrom
             ("O", cst.vecx),
             ("O", 2*cst.vecy),
@@ -53,7 +53,7 @@ class TestAutorangingDetector(object):
 
         # Second Particle
         cls.part_coord_1 = np.array((0.5, 0.2, 0.1))  # Angstrom
-        cls.particle_1 = sp.Particle()
+        cls.particle_1 = sk.Particle()
         cls.particle_1.create_from_atoms([  # Angstrom
             ("O", cst.vecx + cls.part_coord_1),
             ("O", 2*cst.vecy + cls.part_coord_1),

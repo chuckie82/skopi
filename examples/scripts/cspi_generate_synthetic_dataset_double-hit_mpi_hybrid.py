@@ -68,7 +68,7 @@ from tqdm import tqdm
 from PIL import Image
 import h5py as h5
 
-import skopi as sp
+import skopi as sk
 from skopi.util import asnumpy, xp
 
 
@@ -124,14 +124,14 @@ def main():
     photons_max = np.iinfo(photons_dtype).max
 
     # Load beam parameters
-    beam = sp.Beam(beam_file)
+    beam = sk.Beam(beam_file)
 
     # Increase the beam fluence
     if not np.isclose(beam_fluence_increase_factor, 1.0):
         beam.set_photons_per_pulse(beam_fluence_increase_factor * beam.get_photons_per_pulse())
 
     # Load geometry of detector
-    det = sp.PnccdDetector(geom=geom_file, beam=beam)
+    det = sk.PnccdDetector(geom=geom_file, beam=beam)
 
     # Get the shape of the diffraction pattern
     diffraction_pattern_height = det.detector_pixel_num_x.item()
@@ -146,10 +146,10 @@ def main():
         print("(Master) Generate {} orientations".format(dataset_size))
 
         # Generate orientations for the first particle
-        first_particle_orientations = sp.get_uniform_quat(dataset_size, True)
+        first_particle_orientations = sk.get_uniform_quat(dataset_size, True)
 
         # Generate orientations for the second particle
-        second_particle_orientations = sp.get_random_quat(dataset_size)
+        second_particle_orientations = sk.get_random_quat(dataset_size)
 
         # Assemble the orientations for both particles
         first_particle_orientations_ = first_particle_orientations[np.newaxis]
@@ -180,15 +180,15 @@ def main():
 
         # Load PDB
         print("(GPU 0) Reading PDB file: {}".format(pdb_file))
-        particle = sp.Particle()
+        particle = sk.Particle()
         particle.read_pdb(pdb_file, ff='WK')
 
         # Calculate diffraction volume
         print("(GPU 0) Calculating diffraction volume")
-        experiment = sp.SPIExperiment(det, beam, particle)
+        experiment = sk.SPIExperiment(det, beam, particle)
 
     else:
-        experiment = sp.SPIExperiment(det, beam, None)
+        experiment = sk.SPIExperiment(det, beam, None)
 
     # Soon obsolete way to handle multiple particles in the beamline
     experiment.set_multi_particle_hit(True)
