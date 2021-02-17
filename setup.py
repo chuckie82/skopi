@@ -16,7 +16,7 @@ requirements = [
 
 setuptools.setup(name='skopi',
       maintainer='Chunhong Yoon',
-      version='0.5.0',
+      version='0.5.1',
       maintainer_email='yoon82@stanford.edu',
       description='Single particle imaging simulation package',
       long_description=open('README.md', encoding='utf8').read(),
