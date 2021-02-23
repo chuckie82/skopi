@@ -24,12 +24,12 @@ class SAXS():
         stack = gpu.calculate_diffraction_pattern_gpu(self.hkl, 
                                                       self.particle, 
                                                       return_type="intensity")
-        dist = np.linalg.norm(self.hkl, axis=-1)
-        bins = np.rint(dist/1e7).astype(np.int)
-        saxs_weights = np.bincount(bins)
-        saxs_acc = np.bincount(bins, weights=stack)
+        dist = xp.linalg.norm(self.hkl, axis=-1)
+        bins = xp.rint(dist/1e7).astype(xp.int)
+        saxs_weights = xp.bincount(bins)
+        saxs_acc = xp.bincount(bins, weights=stack)
         saxs = saxs_acc / saxs_weights
-        qaccs = np.bincount(bins, weights=dist)
+        qaccs = xp.bincount(bins, weights=dist)
         qs = qaccs / saxs_weights
         return qs, saxs
     
