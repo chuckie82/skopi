@@ -42,8 +42,8 @@ class Visualizer(object):
             self._norm = None
 
     def imshow(self, img):
-        img = asnumpy(img)
-        plt.imshow(img, norm=self._norm)
+        img = np.ma.masked_where(img==0,img)
+        plt.imshow(img, norm=self._norm, interpolation='none')
         plt.colorbar()
         plt.xlabel('Y')
         plt.ylabel('X')
@@ -80,4 +80,3 @@ class Visualizer(object):
         i_max = steps[-1]
         for i in steps:
             self.add_diffraction_ring(i*q_start/i_max)
-
