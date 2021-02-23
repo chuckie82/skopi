@@ -23,16 +23,11 @@ def max_radius(particles):
     return radius_max
 
 
-def distribute_particles(particles, beam_focus_radius, jet_radius, gamma=0): #beam_focus_radius = 10e-6 #jet_radius = 1e-4
+def distribute_particles(particles, beam_focus_radius, jet_radius, sticking=False): #beam_focus_radius = 10e-6 #jet_radius = 1e-4
     """
-    Randomly distribute particles within the focus region. 
-    Depending on the degree of attraction gamma ranging between 0 and 1, 
-    the interactionn range between particles varies.
-    If the distance between the particle pairs is less than the interaction range, 
-    the particle pairs stick to each other, otherwise stay still.
-    Remove particles that overlap each other after performing the sticking feature,
-    and add particle cluster using the bpca() class so that the overall number of particles in the system remain equal to the user input.
-    """ 
+    Randomly distribute particles within the focus region.
+    If sticking is turned on, particles are forced to aggregate into a single cluster.
+    """
     state = []
     for particle in particles:
         for count in range(particles[particle]):
@@ -40,47 +35,31 @@ def distribute_particles(particles, beam_focus_radius, jet_radius, gamma=0): #be
     radius_max = max_radius(particles)
     N = sum(particles.values()) # total number of particles
     coords = np.zeros((N,3)) # initialize N*3 array
-    # generate N*3 random positions inside the volume illuminated by the beam (cylinder)
-    for i in range(N):
-        coords[i,0] = beam_focus_radius*np.sqrt(np.random.uniform(0,1))*np.cos(np.random.uniform(0,2*np.pi))
-        coords[i,1] = beam_focus_radius*np.sqrt(np.random.uniform(0,1))*np.sin(np.random.uniform(0,2*np.pi))
-        coords[i,2] = jet_radius*np.random.uniform(-1, 1)
-    # calculate N*N distance matrix
-    dist_matrix = distance.cdist(coords, coords, 'euclidean')
-    # collision detection check (<2 maxRadius)
-    collision = dist_matrix < 2*radius_max
-    checkList = [collision[i][j] for i in range(N) for j in range(N) if j > i]
-    if any(item == True for item in checkList):
-        distribute_particles(particles, beam_focus_radius, jet_radius)
-    # calculate interaction range
-    R_interaction = 2*np.sqrt(beam_focus_radius**2+jet_radius**2)*gamma
-    for i in range(N-1):
-        for j in range(i+1,N):
-                if dist_matrix[i][j] < R_interaction:
-                    dist_matrix[i][j] = 2*radius_max
-                    direction = (coords[j]-coords[i])
-                    direction = direction/np.linalg.norm(direction)
-                    hit = coords[i]+direction*radius_max
-                    coords[j] = hit+(hit-coords[i])
-    dist_matrix = distance.cdist(coords, coords, 'euclidean')
-    overlap = dist_matrix < 2*radius_max
-    removeList = []
-    for i in range(N-1):
-        for j in range(i+1,N):
-            if overlap[i][j] == True:
-                removeList.extend([i,j])
-    num_removed = len(set(removeList))
-    if len(set(removeList)) != 0:
-        agg = build_bpca(num_pcles=num_removed, radius=radius_max)
-        for i in range(num_removed):
-            coords[sorted(set(removeList))[i],0] = agg.pos[i,0]+coords[sorted(set(removeList))[0],0]
-            coords[sorted(set(removeList))[i],1] = agg.pos[i,1]+coords[sorted(set(removeList))[0],1]
-            coords[sorted(set(removeList))[i],2] = agg.pos[i,2]+coords[sorted(set(removeList))[0],2]
-    dist_matrix = distance.cdist(coords, coords, 'euclidean')
-    collision = dist_matrix < 2*radius_max
-    checkList = [collision[i][j] for i in range(N) for j in range(N) if j > i]
-    if any(item == True for item in checkList):
-        distribute_particles(particles, beam_focus_radius, jet_radius, gamma)
+    if sticking is True:
+        # generate a particle cluster
+        agg = build_bpca(num_pcles=N, radius=radius_max)
+        # set the center of the particle cluster to a 1*3 random position inside the volume illuminated by the beam (cylinder)
+        agg_center = np.zeros((1,3))
+        agg_center[0] = beam_focus_radius*np.sqrt(np.random.uniform(0,1))*np.cos(np.random.uniform(0,2*np.pi))
+        agg_center[1] = beam_focus_radius*np.sqrt(np.random.uniform(0,1))*np.sin(np.random.uniform(0,2*np.pi))
+        agg_center[2] = jet_radius*np.random.uniform(-1, 1)
+        for i in range(N):
+            coords[i,0] = agg_center[0]+agg.pos[i,0]
+            coords[i,1] = agg_center[1]+agg.pos[i,1]
+            coords[i,2] = agg_center[2]+agg.pos[i,2]
+    else:
+        # generate N*3 random positions inside the volume illuminated by the beam (cylinder)
+        for i in range(N):
+            coords[i,0] = beam_focus_radius*np.sqrt(np.random.uniform(0,1))*np.cos(np.random.uniform(0,2*np.pi))
+            coords[i,1] = beam_focus_radius*np.sqrt(np.random.uniform(0,1))*np.sin(np.random.uniform(0,2*np.pi))
+            coords[i,2] = jet_radius*np.random.uniform(-1, 1)
+        # calculate N*N distance matrix
+        dist_matrix = distance.cdist(coords, coords, 'euclidean')
+        # collision detection check (<2 maxRadius)
+        collision = dist_matrix < 2*radius_max
+        checkList = [collision[i][j] for i in range(N) for j in range(N) if j > i]
+        if any(item == True for item in checkList):
+            distribute_particles(particles, beam_focus_radius, jet_radius)
     return state, coords
 
 
