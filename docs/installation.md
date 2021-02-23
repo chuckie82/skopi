@@ -80,8 +80,9 @@ in a cell.
 
 ## Installing prody
 
+In order to be able to use `ProDy`, do the following within your Python environment (i.e. after activating it):
 ```
-conda env create -f environment.yml
+pip install prody
 ```
 
 
