@@ -1,6 +1,5 @@
-import numpy as np
 import matplotlib.pyplot as plt
-import skopi as ps
+from skopi.util import xp
 
 class SAXS():
     def __init__(self, particle, N, resmax):
@@ -11,20 +10,20 @@ class SAXS():
         self.qs, self.saxs = self.compute()
     
     def define_hkl(self):
-        phi = np.arccos(1-2*np.random.rand(self.N))
-        theta = np.random.rand(self.N) * 2 * np.pi
-        q = np.random.rand(self.N) * self.qmax
-        h = q * np.cos(theta) * np.sin(phi)
-        k = q * np.sin(theta) * np.sin(phi)
-        l = q * np.cos(phi)
-        hkl = np.stack((h, k, l), axis=-1)
+        phi = xp.arccos(1-2*xp.random.rand(self.N))
+        theta = xp.random.rand(self.N) * 2 * xp.pi
+        q = xp.random.rand(self.N) * self.qmax
+        h = q * xp.cos(theta) * xp.sin(phi)
+        k = q * xp.sin(theta) * xp.sin(phi)
+        l = q * xp.cos(phi)
+        hkl = xp.stack((h, k, l), axis=-1)
         return hkl
     
     def compute(self):
         import skopi.gpu as gpu
         stack = gpu.calculate_diffraction_pattern_gpu(self.hkl, 
-                                                         self.particle, 
-                                                         return_type="intensity")
+                                                      self.particle, 
+                                                      return_type="intensity")
         dist = np.linalg.norm(self.hkl, axis=-1)
         bins = np.rint(dist/1e7).astype(np.int)
         saxs_weights = np.bincount(bins)
