@@ -21,11 +21,23 @@ class Visualizer(object):
 
         recidet = ReciprocalDetector(self.experiment.det,
                                      self.experiment.beam)
-        self.q_max = asnumpy(np.min((  # Max inscribed radius
-            xp.max(recidet.pixel_position_reciprocal[..., 1]),
-            -xp.min(recidet.pixel_position_reciprocal[..., 1]),
-            xp.max(recidet.pixel_position_reciprocal[..., 0]),
-            -xp.min(recidet.pixel_position_reciprocal[..., 0]))))
+
+        # the following if test is not elegant,
+        # but using the more elegant asnumpy method in skopi.util
+        # results in
+        # TypeError: Implicit conversion to a NumPy array is not allowed. Please use `.get()` to construct a NumPy array explicitly.
+        if xp is np:
+            self.q_max = np.min((  # Max inscribed radius
+                xp.max(recidet.pixel_position_reciprocal[..., 1]),
+                -xp.min(recidet.pixel_position_reciprocal[..., 1]),
+                xp.max(recidet.pixel_position_reciprocal[..., 0]),
+                -xp.min(recidet.pixel_position_reciprocal[..., 0])))
+        else:
+            self.q_max = np.min((  # Max inscribed radius
+                xp.max(recidet.pixel_position_reciprocal[..., 1]).get(),
+                -xp.min(recidet.pixel_position_reciprocal[..., 1]).get(),
+                xp.max(recidet.pixel_position_reciprocal[..., 0]).get(),
+                -xp.min(recidet.pixel_position_reciprocal[..., 0]).get()))
 
         self._auto_rings = False
         if diffraction_rings is not None:
@@ -42,8 +54,12 @@ class Visualizer(object):
             self._norm = None
 
     def imshow(self, img):
-        img = asnumpy(img)
-        plt.imshow(img, norm=self._norm)
+        if xp is np:
+            img_cpu = img
+        else:
+            img_cpu = img.get()
+        img = np.ma.masked_where(img_cpu==0,img_cpu)
+        plt.imshow(img, norm=self._norm, interpolation='none')
         plt.colorbar()
         plt.xlabel('Y')
         plt.ylabel('X')
@@ -80,4 +96,3 @@ class Visualizer(object):
         i_max = steps[-1]
         for i in steps:
             self.add_diffraction_ring(i*q_start/i_max)
-
