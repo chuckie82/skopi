@@ -177,7 +177,7 @@ class Particle(object):
         self.other_mask_name = other_mask_name
 
     def set_other_mask_probe_scale(self, other_mask_probe_scale):
-        self.other_mask_probe_scale = other_mask_prob_scale
+        self.other_mask_probe_scale = other_mask_probe_scale
 
     def set_num_normal_modes(self, num_normal_modes):
         self.num_normal_modes = num_normal_modes
