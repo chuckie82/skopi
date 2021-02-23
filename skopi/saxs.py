@@ -31,7 +31,10 @@ class SAXS():
         saxs = saxs_acc / saxs_weights
         qaccs = xp.bincount(bins, weights=dist)
         qs = qaccs / saxs_weights
-        return qs, saxs
+	if xp is np:
+        	return qs, saxs
+	else:
+		return qs.get(), saxs.get()
     
     def plot(self):
         plt.yscale('log')
