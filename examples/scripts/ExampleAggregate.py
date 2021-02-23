@@ -2,7 +2,7 @@
 # coding: utf-8
 
 ########## Particle Aggregation ###############
-# In this example script, we demonstrate particle sticking/aggregation by introducing the variable attraction coefficient (gamma) into FXS experiment class. The interaction range between particle pairs is determined by this user-defined attraction coefficient (gamma), which ranges between 0 and 1. When gamma=1, particles stick together to form a large cluster.
+# In this example script, we demonstrate particle sticking/aggregation by introducing the variable sticking into FXS experiment class. When sticking is turned on, i.e. sticking=True, particles stick together to form a single cluster.
 
 import numpy as np
 import matplotlib
@@ -57,9 +57,9 @@ print('AFTER : detector distance = {} m'.format(det.distance))
 particle = sk.Particle()
 particle.read_pdb(pdbfile, ff='WK')
 
-# Perform FXS experiment calculation with particles sticking together to form a large cluster (set gamma = 1.)
+# Perform FXS experiment calculation with particles sticking together to form a single cluster (set sticking = True)
 tic = time.time()
-experiment = sk.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particle], n_part_per_shot=num, gamma=1.)
+experiment = sk.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particle], n_part_per_shot=num, sticking=True)
 img = experiment.generate_image()
 toc = time.time()
 print(">>> It took {:.2f} seconds to finish FXS calculation.".format(toc-tic))
