@@ -1,3 +1,4 @@
+import numpy as np
 import matplotlib.pyplot as plt
 from skopi.util import xp
 
@@ -31,10 +32,10 @@ class SAXS():
         saxs = saxs_acc / saxs_weights
         qaccs = xp.bincount(bins, weights=dist)
         qs = qaccs / saxs_weights
-	if xp is np:
-        	return qs, saxs
-	else:
-		return qs.get(), saxs.get()
+        if xp is np:
+          return qs, saxs
+        else:
+          return qs.get(), saxs.get()
     
     def plot(self):
         plt.yscale('log')
