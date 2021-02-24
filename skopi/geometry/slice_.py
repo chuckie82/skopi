@@ -31,7 +31,7 @@ def extract_slice(local_index, local_weight, volume):
     :param local_index: The index containing values to take.
     :param local_weight: The weight for each index.
     :param volume: The volume to slice from.
-    :return: The slice.
+    :return: The slice or an array of zeros is if dimensions are incompatible.
     """
     local_index = xp.asarray(local_index)
     local_weight = xp.asarray(local_weight)
@@ -52,7 +52,11 @@ def extract_slice(local_index, local_weight, volume):
     weight_2d = xp.reshape(local_weight, [pixel_num, 8])
 
     # Expand the data to merge
-    data_to_merge = volume_1d[index_2d]
+    try:
+        data_to_merge = volume_1d[index_2d]
+    except IndexError:
+        print("Requested slice and diffraction volume have incompatible dimensions")
+        return np.zeros(pattern_shape)
 
     # Merge the data
     data_merged = xp.sum(xp.multiply(weight_2d, data_to_merge), axis=-1)

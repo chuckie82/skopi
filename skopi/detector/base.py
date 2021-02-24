@@ -39,6 +39,7 @@ class DetectorBase(object):
         self.center_y = 0  # center of detector in y
         self.orientation = xp.array([0, 0, 1])
         self.pixel_position = None  # (m)
+        self.pixel_position_ideal = None #(m)
 
         # pixel information in reciprocal space
         self.pixel_position_reciprocal = None  # (m^-1)
@@ -229,11 +230,42 @@ class DetectorBase(object):
         """
         return pattern + xp.random.uniform(0, 2 * xp.sqrt(3 * self.pixel_rms))
 
+    def reset_beam_center(self):
+        """
+        Reset pixel positions by returning beam to center of detector.
+        """
+        if self.pixel_position_ideal is not None:
+            self.pixel_position = self.pixel_position_ideal
+        return
+
+    def add_beam_jitter(self, sigma):
+        """
+        Add beam jitter to the pixel positions, assuming independent
+        Gaussian diplacements along x and y from the beam center.
+        :param sigma: standard deviation of Gaussian in pixels
+        :return disp: (x,y) displacements in pixels from ideal center
+        """
+        self.ensure_beam()
+
+        # track or reset to ideal pixel positions, without jitter
+        if self.pixel_position_ideal is None:
+            self.pixel_position_ideal = self.pixel_position.copy()
+        else:
+            self.pixel_position = self.pixel_position_ideal.copy()
+
+        # offset pixel positions by reinitializing beam
+        scale = np.mean(self.pixel_width)
+        xdisp, ydisp = scale * np.random.normal(loc=0, scale=sigma, size=2)
+        self.pixel_position += np.array([xdisp, ydisp, 0])
+        self.initialize_pixels_with_beam(beam=self._beam)
+
+        return (xdisp / scale, ydisp / scale)
+
     def add_solid_angle_correction(self, pattern):
         """
         Add solid angle corrections to the image stack.
         :param pattern: Pattern stack
-        :return:
+        :return: Pattern stack with solid angle correction
         """
         self.ensure_beam()
         return xp.multiply(pattern, self.solid_angle_per_pixel)
@@ -242,7 +274,7 @@ class DetectorBase(object):
         """
         Add polarization correction to the image stack
         :param pattern: image stack
-        :return:
+        :return: image stack with polarization correction applied
         """
         self.ensure_beam()
         return xp.multiply(pattern, self.polarization_correction)
@@ -251,7 +283,7 @@ class DetectorBase(object):
         """
         Add linear correction to the image stack
         :param pattern: The image stack
-        :return:
+        :return: image stack with linear correction applied
         """
         self.ensure_beam()
         return xp.multiply(pattern, self.linear_correction)
@@ -260,7 +292,7 @@ class DetectorBase(object):
         """
         Apply quantization to the image stack
         :param pattern: The image stack
-        :return:
+        :return: quantized image stack
         """
         return xp.random.poisson(pattern)
 
@@ -268,7 +300,7 @@ class DetectorBase(object):
         """
         Add corrections to image stack and apply quantization to the image stack
         :param pattern: The image stack.
-        :return:
+        :return: images with linear correction applied and quantized
         """
         self.ensure_beam()
         return xp.random.poisson(xp.multiply(pattern, self.linear_correction))
@@ -301,8 +333,10 @@ class DetectorBase(object):
 
     def remove_polarization(self, img, res=None):
         """
-        img: assembled (2D) or unassembled (3D) diffraction image
-        res: diffraction resolution in Angstroms
+        Account for the effects of polarization.
+        :param img: assembled (2D) or unassembled (3D) diffraction image
+        :param res: diffraction resolution in Angstroms
+        :return img_corr: image corrected for the effects of polarization to given resolution
         """
         self.ensure_beam()
         if res is not None:
@@ -439,3 +473,43 @@ class DetectorBase(object):
             image[:, idx_map_1, idx_map_2] = image_stack_batch[:, l]
 
         return image
+
+    def disassemble_image_stack(self, image):
+        """
+        Diassemble the 2D diffraction pattern into its consituent panels. For the base
+        object with 1 panel, this merely reshapes the image by adding an axis.
+
+        :param image: image of shape [detector_pixel_num_x, detector_pixel_num_y]
+        :return image_stack: stack of shape [panel_num, panel_pixel_num_x, panel_pixel_num_y]
+        """
+        if self.pixel_index_map is None:
+            raise RuntimeError("This detector does not have pixel mapping information.")
+    
+        image_stack = np.zeros((self.panel_num, self.pixel_index_map.shape[1], self.pixel_index_map.shape[2]))
+    
+        for panel in range(self.panel_num):
+            idx_map_1 = self.pixel_index_map[panel, :, :, 0]
+            idx_map_2 = self.pixel_index_map[panel, :, :, 1]
+            image_stack[panel] = image[idx_map_1,idx_map_2]
+        
+        return image_stack
+
+    def disassemble_image_stack_batch(self, image):
+        """
+        Diassemble a series of 2D diffraction patterns into their consituent panels. 
+
+        :param image: images of shape [stack_num, detector_pixel_num_x, detector_pixel_num_y]
+        :return image_stack_batch: array of shape [stack_num, panel_num, panel_pixel_num_x, panel_pixel_num_y]
+        """
+        if self.pixel_index_map is None:
+            raise RuntimeError("This detector does not have pixel mapping information.")
+ 
+        image_stack_batch = np.zeros((image.shape[0], self.panel_num, 
+                                      self.pixel_index_map.shape[1], self.pixel_index_map.shape[2]))
+    
+        for panel in range(self.panel_num):
+            idx_map_1 = self.pixel_index_map[panel, :, :, 0]
+            idx_map_2 = self.pixel_index_map[panel, :, :, 1]
+            image_stack_batch[:,panel] = image[:,idx_map_1,idx_map_2]
+        
+        return image_stack_batch
