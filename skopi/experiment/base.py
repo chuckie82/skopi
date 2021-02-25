@@ -9,6 +9,7 @@ class Experiment(object):
     def __init__(self, det, beam, particles):
         self.det = det
         self.beam = beam
+        self.particles = particles
         self.n_particle_kinds = len(particles)
 
         # Create mesh
@@ -27,6 +28,9 @@ class Experiment(object):
             self.volumes.append(
                 pg.calculate_diffraction_pattern_gpu(mesh, particle, return_type='complex_field'))
 
+        # set up list to track diplacements from beam center
+        self.beam_displacements = list()
+
     def generate_image(self, return_orientation=False):
         if return_orientation:
             img_stack, orientation = self.generate_image_stack(return_orientation=return_orientation)
@@ -39,7 +43,7 @@ class Experiment(object):
                              return_intensities=False,
                              return_positions=False,
                              return_orientations=False,
-                             always_tuple=False):
+                             always_tuple=False, noise={}):
         """
         Generate and return a snapshot of the experiment.
 
@@ -53,6 +57,9 @@ class Experiment(object):
         arrays instead of the array itself.
         To return a tuple even if only one array is requested, set
         always_tuple to True.
+
+        Noise is introduced based on contents of noise parameter. Dark
+        noise, beam jitter, and static noise are currently implemented.
         """
         if return_photons is None and return_intensities is False:
             return_photons = True
@@ -66,18 +73,39 @@ class Experiment(object):
 
         intensities_stack = 0.
 
+        orientations = sample_state[0][1]
+
+        if ('jitter' in noise.keys()) and (noise['jitter']!=0):
+            displacement = self.det.add_beam_jitter(noise['jitter'])
+            self.beam_displacements.append(displacement)
+
         for spike in beam_spectrum:
             recidet = ReciprocalDetector(self.det, spike)
 
             group_complex_pattern = 0.
             for i, particle_group in enumerate(sample_state):
-                group_complex_pattern += self._generate_group_complex_pattern(
+                next_pattern = self._generate_group_complex_pattern(
                     recidet, i, particle_group)
+                if np.sum(next_pattern) == 0:
+                    print("Using direct calculation instead")
+                    next_pattern = self._direct_calculate(recidet, particle_group)
+                group_complex_pattern += next_pattern
 
             group_pattern = np.abs(group_complex_pattern)**2
 
-            group_intensities = recidet.add_correction(group_pattern)
+            # corrections are based on miscentered beam if there's jitter
+            group_intensities = self.det.add_correction(group_pattern) 
             intensities_stack += group_intensities
+
+        # add static noise to sum of all spikes and particles
+        if 'static' in noise.keys() and noise['static'] is True:
+            intensities_stack = self.det.add_static_noise(intensities_stack)
+
+        # add sloped background incoherently
+        if 'sloped' in noise.keys():
+            if noise['sloped'].shape != self.det.shape:
+                noise['sloped'] = self.det.disassemble_image_stack(noise['sloped'])
+            intensities_stack += noise['sloped']
 
         # We are summing up intensities then converting to photons as opposed to converting to photons then summing up.
         # Note: We may want to revisit the correctness of this procedure.
@@ -121,6 +149,31 @@ class Experiment(object):
 
         return slices.sum(axis=0)
 
+    def _direct_calculate(self, recidet, particle_group):
+        """
+        Compute patterns using the Detector class, so directly at reciprocal
+        space positions of interest.
+    
+        :param recidet: ReciprocalDetector object
+        :param particle_group: list of positions and orientations per particle
+        :return pattern: complex field for particle group
+        """
+        positions, orientations = particle_group
+        pattern = 0
+    
+        for j in range(len(orientations)):
+            self.particles[j].rotate(orientations[j])
+            next_slice = recidet.get_pattern_without_corrections(self.particles[j], return_type='complex_field')
+            pattern += recidet.add_phase_shift(next_slice, positions[j])
+
+            # unrotate particle
+            rot_mat = psg.convert.quaternion2rot3d(orientations[j])
+            rot_mat_inv = np.linalg.inv(rot_mat)
+            quat_inv = psg.convert.rotmat_to_quaternion(rot_mat_inv)
+            self.particles[j].rotate(quat_inv)
+        
+        return pattern
+
     def generate_new_sample_state(self):
         """
         Return a list of "particle group"
@@ -136,6 +189,6 @@ class Experiment(object):
         Return fluence_jitter
 
         The fluence jitters from run to run as the focus size
-        and position changes with photo energy and bandwidth.
+        and particle positions change with photon energy and bandwidth.
         """
         raise NotImplementedError
