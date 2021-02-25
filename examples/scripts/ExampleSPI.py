@@ -2,8 +2,9 @@
 # coding: utf-8
 
 ########## SPI Experiment ###############
-# In this notebook, we demonstrate how to simulate an SPI experiment, where a diffraction volume of the particle is computed in the reciprocal space, and the diffraction patterns are sliced from the diffraction volume under random orientations.
-# Input parameters including (1) beam, (2) detector, (3) particle(s) are needed for the SPI Experiment class.
+# In this notebook, we demonstrate how to simulate an SPI experiment, where a diffraction volume of the particle is computed in the reciprocal space, and the diffraction patterns are sliced from the diffraction volume in random orientations.
+# Input parameters including (1) beam, (2) detector, (3) gas jet radius, (4) particle(s), (5) number of particle per shot, (6) sticking=Ture or False are needed for the SPI Experiment class.
+# sticking=True is used to simulate multiple-particle hit (which we must veto before reconstruction), where particles are forced to form a single cluster.
 
 import numpy as np
 import matplotlib
@@ -13,6 +14,9 @@ from matplotlib.colors import LogNorm
 import h5py as h5
 import time, os
 import skopi as sk
+
+# Parameter(s)
+num = 1
 
 # Input files
 input_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../input')
@@ -43,7 +47,7 @@ particle.read_pdb(pdbfile, ff='WK')
 
 # Perform SPI calculation
 tic = time.time()
-experiment = sk.SPIExperiment(det, beam, particle)
+experiment = sk.SPIExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particle], n_part_per_shot=num, sticking=False)
 img = experiment.generate_image()
 toc = time.time()
 print(">>> It took {:.2f} seconds to finish SPI calculation.".format(toc-tic))
