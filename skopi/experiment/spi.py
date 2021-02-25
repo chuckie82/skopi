@@ -62,7 +62,7 @@ class SPIExperiment(Experiment):
             particle_groups.append((positions, orientations))
         return particle_groups
 
-    def set_fluence_jitter(self):
+    def add_fluence_jitter(self):
         """
         Return fluence_jitter
 
