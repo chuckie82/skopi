@@ -3,7 +3,8 @@
 
 ########## FXS Experiment ###############
 # In this notebook, we demonstrate how to simulate a FXS experiment by introducing the capability to place multiple particles (with user-defined ratio) at the interaction point. Interference can sometimes be observed in the diffraction pattern.
-# Input parameters including (1) beam, (2) detector, (3) particle(s) are needed for the FXS Experiment class.
+# Input parameters including (1) beam, (2) detector, (3) liquid jet radius, (4) particle(s), (5) number of particle per shot, (6) sticking=Ture or False are needed for the FXS Experiment class.
+# Note that FXS experiments require random distribution of particles (i.e. not stuck together), but there's no guarantee particles don't stick in FXS liquid jets.
 
 import numpy as np
 import matplotlib
@@ -15,7 +16,7 @@ import h5py as h5
 import time, os
 import skopi as sk
 
-# Parameters
+# Parameter(s)
 numOp = 1
 numCl = 1
 num = 2
@@ -110,3 +111,5 @@ divider = make_axes_locatable(ax2)
 cax = divider.append_axes("right", size="5%", pad=0.05)
 plt.colorbar(im2, cax=cax)
 plt.show()
+
+
