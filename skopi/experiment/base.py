@@ -61,7 +61,7 @@ class Experiment(object):
         positions = sample_state[0][0]
         orientations = sample_state[0][1]
        
-        self.beam.set_photons_per_pulse(self.set_fluence_jitter()*self.beam.get_photons_per_pulse())
+        self.beam.set_photons_per_pulse(self.add_fluence_jitter()*self.beam.get_photons_per_pulse())
         beam_spectrum = self.beam.generate_new_state()
 
         intensities_stack = 0.
@@ -131,7 +131,7 @@ class Experiment(object):
         """
         raise NotImplementedError
 
-    def set_fluence_jitter(self):
+    def add_fluence_jitter(self):
         """
         Return fluence_jitter
 
