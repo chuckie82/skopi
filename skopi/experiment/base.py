@@ -27,9 +27,6 @@ class Experiment(object):
             self.volumes.append(
                 pg.calculate_diffraction_pattern_gpu(mesh, particle, return_type='complex_field'))
 
-        # soon obsolete flag to handle multi particle hit
-        self.multi_particle_hit = False
-
     def generate_image(self, return_orientation=False):
         if return_orientation:
             img_stack, orientation = self.generate_image_stack(return_orientation=return_orientation)
@@ -40,7 +37,8 @@ class Experiment(object):
 
     def generate_image_stack(self, return_photons=None,
                              return_intensities=False,
-                             return_orientation=False,
+                             return_positions=False,
+                             return_orientations=False,
                              always_tuple=False):
         """
         Generate and return a snapshot of the experiment.
@@ -59,13 +57,14 @@ class Experiment(object):
         if return_photons is None and return_intensities is False:
             return_photons = True
 
+        sample_state = self.generate_new_sample_state()
+        positions = sample_state[0][0]
+        orientations = sample_state[0][1]
+       
+        self.beam.set_photons_per_pulse(self.set_fluence_jitter()*self.beam.get_photons_per_pulse())
         beam_spectrum = self.beam.generate_new_state()
 
-        sample_state = self.generate_new_sample_state()
-
         intensities_stack = 0.
-
-        orientations = sample_state[0][1]
 
         for spike in beam_spectrum:
             recidet = ReciprocalDetector(self.det, spike)
@@ -90,7 +89,15 @@ class Experiment(object):
         if return_intensities:
             ret.append(intensities_stack)
 
-        if return_orientation:
+        if return_positions and return_orientations:
+            if len(ret) == 1:
+                return ret[0], positions, orientations
+            return tuple(ret), positions, orientations
+        elif return_positions:
+            if len(ret) == 1:
+                return ret[0], positions
+            return tuple(ret), positions
+        elif return_orientations:
             if len(ret) == 1:
                 return ret[0], orientations
             return tuple(ret), orientations
@@ -124,5 +131,11 @@ class Experiment(object):
         """
         raise NotImplementedError
 
-    def set_multi_particle_hit(self, multi_particle_hit):
-        self.multi_particle_hit = multi_particle_hit
+    def set_fluence_jitter(self):
+        """
+        Return fluence_jitter
+
+        The fluence jitters from run to run as the focus size
+        and position changes with photo energy and bandwidth.
+        """
+        raise NotImplementedError
