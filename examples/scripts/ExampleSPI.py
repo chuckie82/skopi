@@ -4,7 +4,7 @@
 ########## SPI Experiment ###############
 # In this notebook, we demonstrate how to simulate an SPI experiment, where a diffraction volume of the particle is computed in the reciprocal space, and the diffraction patterns are sliced from the diffraction volume in random orientations.
 # Input parameters including (1) beam, (2) detector, (3) gas jet radius, (4) particle(s), (5) number of particle per shot, (6) sticking=Ture or False are needed for the SPI Experiment class.
-# sticking=True is used to simulate multiple-particle hit (which we must veto before reconstruction), where particles are forced to form a single cluster.
+# sticking=True is used to simulate multiple-particle hit (which we must veto before reconstruction), where particles are forced to form a single cluster, as demonstrated in ExampleAggregate.py.
 
 import numpy as np
 import matplotlib
