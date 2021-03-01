@@ -2,7 +2,7 @@ import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import skopi as sk
-from skopi.particlePlacement import max_radius, distribute_particles, position_in_3d
+from skopi.particlePlacement import max_radius, distribute_particles
 import os
 
 numOpen = 50
@@ -25,7 +25,8 @@ geom = os.path.join(pwd,'../input/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/ge
 # Load and initialize the detector
 det = sk.PnccdDetector(geom=geom, beam=beam)
 
-x, y, z = position_in_3d(particles={particleOp:numOpen,particleCl:numClosed}, beam_focus_radius=beam._focus_xFWHM/2, jet_radius=1e-4)
+states, coords = distribute_particles(particles={particleOp:numOpen,particleCl:numClosed}, beam_focus_radius=beam._focus_xFWHM/2, jet_radius=1e-4)
+x, y, z = coords[:,0], coords[:,1], coords[:,2]
 
 fig = plt.figure(figsize=(10, 8))
 ax = fig.add_subplot(111, projection='3d')
