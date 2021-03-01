@@ -238,7 +238,7 @@ class DetectorBase(object):
             self.pixel_position = self.pixel_position_ideal
         return
 
-    def add_beam_jitter(self, sigma):
+    def offset_beam_center(self, sigma):
         """
         Add beam jitter to the pixel positions, assuming independent
         Gaussian diplacements along x and y from the beam center.

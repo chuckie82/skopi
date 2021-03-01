@@ -28,8 +28,9 @@ class Experiment(object):
             self.volumes.append(
                 pg.calculate_diffraction_pattern_gpu(mesh, particle, return_type='complex_field'))
 
-        # set up list to track diplacements from beam center
+        # set up lists to track diplacements from beam center and variations in fluence
         self.beam_displacements = list()
+        self.fluences = list()
 
     def generate_image(self, return_orientation=False):
         if return_orientation:
@@ -58,8 +59,13 @@ class Experiment(object):
         To return a tuple even if only one array is requested, set
         always_tuple to True.
 
-        Noise is introduced based on contents of noise parameter. Dark
-        noise, beam jitter, and static noise are currently implemented.
+        Noise is introduced based on contents of noise parameter. Currently:
+        dark noise -  'dark_noise': True/False
+        miscentered beam - 'beam_offset': sigma in pixels
+        fluence jitter - 'fluence_jitter': sigma as fraction of ideal fluence
+        static background noise - 'static': True/False
+        sloped background - 'sloped': array of shape detector
+        are implemented using the above keys:values in the noise dictionary.
         """
         if return_photons is None and return_intensities is False:
             return_photons = True
@@ -68,15 +74,18 @@ class Experiment(object):
         positions = sample_state[0][0]
         orientations = sample_state[0][1]
        
-        self.beam.set_photons_per_pulse(self.add_fluence_jitter()*self.beam.get_photons_per_pulse())
+        # generate beam spectrum, optionally varying fluence from ideal value
+        if ('fluence_jitter' in noise.keys()) and (noise['fluence_jitter']!=0):
+            fluence = beam.add_fluence_jitter(sigma=noise['fluence_jitter'])
+            self.fluences.append(fluence)
         beam_spectrum = self.beam.generate_new_state()
 
         intensities_stack = 0.
 
         orientations = sample_state[0][1]
 
-        if ('jitter' in noise.keys()) and (noise['jitter']!=0):
-            displacement = self.det.add_beam_jitter(noise['jitter'])
+        if ('beam_offset' in noise.keys()) and (noise['beam_offset']!=0):
+            displacement = self.det.offset_beam_center(noise['beam_offset'])
             self.beam_displacements.append(displacement)
 
         for spike in beam_spectrum:
@@ -184,11 +193,3 @@ class Experiment(object):
         """
         raise NotImplementedError
 
-    def add_fluence_jitter(self):
-        """
-        Return fluence_jitter
-
-        The fluence jitters from run to run as the focus size
-        and particle positions change with photon energy and bandwidth.
-        """
-        raise NotImplementedError

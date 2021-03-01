@@ -13,7 +13,7 @@ class SPIExperiment(Experiment):
     Class for SPI experiment.
     """
 
-    def __init__(self, det, beam, jet_radius, particles, n_part_per_shot, sticking, ratios=None):
+    def __init__(self, det, beam, jet_radius, particles, n_part_per_shot, sticking=True, ratios=None):
         """
         Initialize a SPI experiment.
         
@@ -22,7 +22,7 @@ class SPIExperiment(Experiment):
         :param jet_radius: The radius of the gas jet.
         :param particles: The particle objects.
         :param n_part_per_shot: The number of photons per pulse/shot.
-        :param sticking: The sticking feature of the particles.
+        :param sticking: If multiple particles, whether aggregated (default) or disperse.
         :param ratios: The ratios of the particles.
         """
         super(SPIExperiment, self).__init__(det, beam, particles)
