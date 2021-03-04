@@ -126,7 +126,7 @@ class ReciprocalDetector(object):
         """
         pattern = xp.asarray(pattern)
         displ = xp.asarray(displ)
-        return pattern * xp.exp(1j * xp.dot(self.pixel_position_reciprocal, displ))
+        return pattern * xp.exp(1j * xp.dot(2*np.pi*self.pixel_position_reciprocal, displ))
 
     def add_solid_angle_correction(self, pattern):
         """
