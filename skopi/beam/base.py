@@ -167,9 +167,9 @@ class Beam(object):
         """
         Get the wave vector. Notice that here, the wavevector is defined as
         [0, 0, 1 / wavelength]
-        :return:
+        :return: wavevector
         """
-        return np.array([0, 0, 2 * np.pi / self.wavelength])
+        return np.array([0, 0, 1.0 / self.wavelength])
 
     def get_focus(self):
         """
