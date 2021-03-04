@@ -53,19 +53,19 @@ particleCl.read_pdb(pdbfile2, ff='WK')
 
 # Perform FXS experiment with one particle type
 tic = time.time()
-experiment = sk.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particleOp], n_part_per_shot=numOp, sticking=False)
+experiment = sk.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particleOp], n_part_per_shot=numOp)
 patternOp = experiment.generate_image_stack()
 toc = time.time()
 print(">>> It took {:.2f} seconds to finish FXS calculation.".format(toc-tic))
 
 # Perform FXS experiment with one particle type
-experiment = sk.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particleCl], n_part_per_shot=numCl, sticking=False)
+experiment = sk.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particleCl], n_part_per_shot=numCl)
 patternCl = experiment.generate_image_stack()
 
 # Perform FXS experiment with two particle types
 # calculate 1 diffraction pattern from 2 particles, where each particle has 50% chance of being Open or Closed
 # (end up in 25% with two Open, 25% with two Closed, and 50% with one of each)
-experiment = sk.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particleOp, particleCl], n_part_per_shot=num, sticking=False)
+experiment = sk.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particleOp, particleCl], n_part_per_shot=num)
 pattern = experiment.generate_image_stack()
 
 # Remove polarization

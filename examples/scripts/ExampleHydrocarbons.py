@@ -5,7 +5,6 @@ import h5py as h5
 import time, os
 
 import skopi as sk
-from skopi.particlePlacement import position_in_3d
 
 numCyclohexane = 500
 numDinitro = 500

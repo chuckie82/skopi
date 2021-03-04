@@ -22,6 +22,9 @@ class Beam(object):
         # Default polarization angle, requires input from user or file in the future
         self.Polarization = np.array([1, 0, 0])
 
+        # variable to track original fluence if adding jitter
+        self._n_phot_ideal = None
+
     def init_from_arg_dict(self, arg_dict):
         self.set_wave_parameters_from_arg_dict(arg_dict)
         self.set_focus_from_arg_dict(arg_dict)
@@ -236,6 +239,23 @@ class Beam(object):
         # If simple Beam, return itself.
         # Variable beams should return simple one.
         return [self]
+
+    def add_fluence_jitter(self, sigma):
+        """
+        Add fluence jitter to beam, assuming variation is Gaussian.
+        :param sigma: standard deviation of Gaussian in pixels
+        :return fluence: adjusted fluence due to jitter
+        """
+        # track or reset to ideal fluence (self._n_phot, before jitter)
+        if self._n_phot_ideal is None:
+            self._n_phot_ideal = self._n_phot
+        else:
+            self._n_phot = self._n_phot_ideal
+
+        # add fluence jitter
+        fluence = np.random.normal(loc=self._n_phot, scale=sigma*self._n_phot, size=1)[0]
+        self.set_photons_per_pulse(fluence)
+        return fluence
 
     ####
     # Old-style setters and getters, for compatibility
