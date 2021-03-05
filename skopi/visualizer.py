@@ -9,14 +9,12 @@ from skopi.util import xp, asnumpy
 class Visualizer(object):
     def __init__(self, experiment, diffraction_rings=None, log_scale=False):
         self.experiment = experiment
-        self.center = self.experiment.det.geometry.point_coord_indexes((0, 0))
+        #self.center = self.experiment.det.geometry.point_coord_indexes((0, 0))
         # ! Wavenumber definition != beam's.
         self.wavenumber = np.linalg.norm(self.experiment.beam.get_wavevector())
         self.distance = self.experiment.det.distance
-
-        pixel_width = asnumpy(self.experiment.det.pixel_width)
-        # Cupy doesn't have median yet.
-        self.pix_width = np.median(pixel_width)
+        self.center = None
+        self.pix_width = np.median(asnumpy(self.experiment.det.pixel_width))
 
         # the following if test is not elegant,
         # but using the more elegant asnumpy method in skopi.util
@@ -60,6 +58,7 @@ class Visualizer(object):
         plt.xlabel('Y')
         plt.ylabel('X')
 
+        self.center = np.array(img.shape) / 2
         if self._auto_rings:
             self.add_diffraction_rings()
 
