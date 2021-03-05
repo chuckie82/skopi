@@ -157,9 +157,7 @@ class DetectorBase(object):
 
     def ensure_beam(self):
         if not self._has_beam:
-            raise RuntimeError(
-                "This Detector hasn't been initialized with a beam. "
-                "Use this function from a ReciprocalDetector instead.")
+            raise RuntimeError("This Detector hasn't been initialized with a beam.")
 
     ###############################################################################################
     # Calculate diffraction patterns
@@ -220,7 +218,7 @@ class DetectorBase(object):
         self.ensure_beam()
         pattern = xp.asarray(pattern)
         displ = xp.asarray(displ)
-        return pattern * xp.exp(1j * xp.dot(self.pixel_position_reciprocal, displ))
+        return pattern * xp.exp(1j * xp.dot(2*np.pi*self.pixel_position_reciprocal, displ))
 
     def add_static_noise(self, pattern):
         """
@@ -379,7 +377,7 @@ class DetectorBase(object):
         return pc.add_cross_talk_effect_panel(db_path=path, photons=raw_photon)
 
     ###############################################################################################
-    # For 3D slicing.
+    # For 3D slicing: computing full diffraction volume and slicing to compute pixels' intensities.
     ###############################################################################################
 
     def preferred_voxel_length(self, wave_vector):
@@ -397,7 +395,6 @@ class DetectorBase(object):
         voxel_length /= self.distance * xp.min(self.pixel_width, self.pixel_height)
 
         return voxel_length
-
 
     def preferred_reciprocal_mesh_number(self, wave_vector):
         """
@@ -419,7 +416,6 @@ class DetectorBase(object):
         voxel_num_1d = int(2 * voxel_half_num_1d + 1)
         return voxel_num_1d
 
-
     def get_reciprocal_mesh(self, voxel_number_1d):
         """
         Get the proper reciprocal mesh.
@@ -430,6 +426,10 @@ class DetectorBase(object):
         self.ensure_beam()
         dist_max = xp.max(self.pixel_distance_reciprocal)
         return pg.get_reciprocal_mesh(voxel_number_1d, dist_max)
+
+    ###############################################################################################
+    # For (dis)assembly of detector image from constituent panels and back.
+    ###############################################################################################
 
     def assemble_image_stack(self, image_stack):
         """

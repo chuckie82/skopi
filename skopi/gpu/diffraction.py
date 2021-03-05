@@ -13,7 +13,7 @@ def calculate_pattern_gpu_back_engine(form_factor, pixel_position, atom_position
     Calculate the scattering field with the provided information.
 
     :param form_factor: The form factor for each atom.
-    :param pixel_position: The position of each pixel.
+    :param pixel_position: The position of each pixel in q-space, where q=2*pi*s
     :param atom_position: The position of each atom
     :param pattern_cos: Holder for the real part of the scattering field
     :param pattern_sin: Holder for the imaginary part of the scattering field.
@@ -37,6 +37,16 @@ def calculate_pattern_gpu_back_engine(form_factor, pixel_position, atom_position
 def calculate_solvent_pattern_gpu_back_engine(pixel_position, water_position, pattern_cos,
                                               pattern_sin, water_prefactor, water_num, pixel_num):
     """
+    Calculate the scattering field for the ordered solvent contribution.
+
+    :param pixel_position: The position of each pixel in q-space, where q=2*pi*s
+    :param atom_position: The position of each atom
+    :param pattern_cos: Holder for the real part of the scattering field
+    :param pattern_sin: Holder for the imaginary part of the scattering field.
+    :param water_prefactor: The form factor equivalent for water.
+    :param water_num: The number of ordered water molecules
+    :param pixel_num: The number of pixels to calculate.
+    :return: None
     """
     row = cuda.grid(1)
     for water_iter in range(water_num):
@@ -53,7 +63,7 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
     """
     Calculate the diffraction field of the specified reciprocal space.
 
-    :param reciprocal_space: The reciprocal space over which to calculate the diffraction field.
+    :param reciprocal_space: The reciprocal space over which to calculate the diffraction field as s-vectors, where q=2*pi*s
     :param particle: The particle object to calculate the diffraction field.
     :param return_type: 'intensity' to return the intensity field. 'complex_field' to return the full diffraction field.
     :return: The diffraction field.
@@ -65,8 +75,9 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
     pixel_number = int(np.prod(shape[:-1]))
     reciprocal_space_1d = xp.reshape(reciprocal_space, [pixel_number, 3])
     reciprocal_norm_1d = xp.sqrt(xp.sum(xp.square(reciprocal_space_1d), axis=-1))
+    qvectors_1d = 2*np.pi*reciprocal_space_1d
 
-    # Calculate atom form factor for the reciprocal space
+    # Calculate atom form factor for the reciprocal space, passing in sin(theta)/lambda in per Angstrom
     form_factor = pd.calculate_atomic_factor(particle=particle,
                                              q_space=reciprocal_norm_1d * (1e-10 / 2.),  # For unit compatibility
                                              pixel_num=pixel_number)
@@ -84,7 +95,7 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
 
     cuda_split_index = cuda.to_device(split_index)
     cuda_atom_position = cuda.to_device(atom_position)
-    cuda_reciprocal_position = cuda.to_device(reciprocal_space_1d)
+    cuda_reciprocal_position = cuda.to_device(qvectors_1d)
     cuda_form_factor = cuda.to_device(form_factor)
 
     # Calculate the pattern
