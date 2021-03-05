@@ -1,6 +1,5 @@
 import numpy as np
 import skopi.geometry as psg
-from skopi.reciprocal_detector import ReciprocalDetector
 
 
 class Experiment(object):

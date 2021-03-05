@@ -9,7 +9,6 @@ import argparse
 
 import skopi as sk
 import skopi.gpu as sg
-from skopi.reciprocal_detector import ReciprocalDetector
 from skopi.util import asnumpy, xp
 
 ROOT_DIR=os.environ["PYSINGFEL_DIR"]

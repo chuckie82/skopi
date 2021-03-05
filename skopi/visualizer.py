@@ -3,7 +3,6 @@ import numpy as np
 from matplotlib.patches import Circle
 from matplotlib.colors import LogNorm
 
-from skopi import ReciprocalDetector
 from skopi.util import xp, asnumpy
 
 
