@@ -14,8 +14,7 @@ class Experiment(object):
 
         # Create mesh
         highest_k_beam = self.beam.get_highest_wavenumber_beam()
-        recidet = ReciprocalDetector(self.det, highest_k_beam)
-        mesh, self.voxel_length = recidet.get_reciprocal_mesh(
+        mesh, self.voxel_length = det.get_reciprocal_mesh(
             voxel_number_1d=self.mesh_size)
 
         # Create volumes
@@ -35,6 +34,10 @@ class Experiment(object):
         self.beam_displacements = list()
 
     def generate_image(self, return_orientation=False):
+        """
+        Assemble images from detector panels and (optionally) 
+        return particle orientations.
+        """
         if return_orientation:
             img_stack, orientation = self.generate_image_stack(return_orientation=return_orientation)
             return self.det.assemble_image_stack(img_stack), orientation
@@ -79,15 +82,14 @@ class Experiment(object):
             self.beam_displacements.append(displacement)
 
         for spike in beam_spectrum:
-            recidet = ReciprocalDetector(self.det, spike)
+            self.det.initialize_pixels_with_beam(beam=spike)
 
             group_complex_pattern = 0.
             for i, particle_group in enumerate(sample_state):
-                next_pattern = self._generate_group_complex_pattern(
-                    recidet, i, particle_group)
+                next_pattern = self._generate_group_complex_pattern(i, particle_group)
                 if np.sum(next_pattern) == 0:
                     print("Using direct calculation instead")
-                    next_pattern = self._direct_calculate(recidet, particle_group)
+                    next_pattern = self._direct_calculate(particle_group)
                 group_complex_pattern += next_pattern
 
             group_pattern = np.abs(group_complex_pattern)**2
@@ -108,7 +110,7 @@ class Experiment(object):
 
         # We are summing up intensities then converting to photons as opposed to converting to photons then summing up.
         # Note: We may want to revisit the correctness of this procedure.
-        photons_stack = recidet.add_quantization(intensities_stack)
+        photons_stack = self.det.add_quantization(intensities_stack)
 
         ret = []
         if return_photons:
@@ -125,27 +127,32 @@ class Experiment(object):
                 return ret[0]
             return tuple(ret)
 
-    def _generate_group_complex_pattern(self, recidet, i, particle_group):
+    def _generate_group_complex_pattern(self, i, particle_group):
+        """
+        Compute the complex-valued diffraction pattern for the positions
+        and orientations in particle_group.
+        """
         positions, orientations = particle_group
 
         slices = psg.take_n_slices(
             volume=self.volumes[i],
             voxel_length=self.voxel_length,
-            pixel_momentum=recidet.pixel_position_reciprocal,
+            pixel_momentum=self.det.pixel_position_reciprocal,
             orientations=orientations,
             inverse=True)
 
         for j, position in enumerate(positions):
-            slices[j] = recidet.add_phase_shift(slices[j], position)
+            slices[j] = self.det.add_phase_shift(slices[j], position)
 
         return slices.sum(axis=0)
 
-    def _direct_calculate(self, recidet, particle_group):
+    def _direct_calculate(self, particle_group):
         """
         Compute patterns using the Detector class, so directly at reciprocal
-        space positions of interest.
+        space positions of interest. This is useful when offseting the beam 
+        centers results in the edge detector pixels falling outside the pre-
+        computed diffraction volume.
     
-        :param recidet: ReciprocalDetector object
         :param particle_group: list of positions and orientations per particle
         :return pattern: complex field for particle group
         """
@@ -154,8 +161,8 @@ class Experiment(object):
     
         for j in range(len(orientations)):
             self.particles[j].rotate(orientations[j])
-            next_slice = recidet.get_pattern_without_corrections(self.particles[j], return_type='complex_field')
-            pattern += recidet.add_phase_shift(next_slice, positions[j])
+            next_slice = self.det.get_pattern_without_corrections(self.particles[j], return_type='complex_field')
+            pattern += self.det.add_phase_shift(next_slice, positions[j])
 
             # unrotate particle
             rot_mat = psg.convert.quaternion2rot3d(orientations[j])

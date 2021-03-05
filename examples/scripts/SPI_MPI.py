@@ -43,7 +43,6 @@ def main():
 		# load and initialize the detector
 		det = sk.PnccdDetector(geom=geom, beam=beam)
 		highest_k_beam = beam.get_highest_wavenumber_beam()
-		recidet = ReciprocalDetector(det, highest_k_beam)
 
 		# create particle object(s)
 		particle = sk.Particle()
@@ -79,7 +78,7 @@ def main():
 			i = status1.Get_source()
 			print ("Rank 0: Received image %d from rank %d" % (ind,i))
 			dset_intensities[ind,:,:,:] = np.asarray(img_slice_intensity)
-			dset_photons[ind,:,:,:] = recidet.add_quantization(img_slice_intensity)
+			dset_photons[ind,:,:,:] = det.add_quantization(img_slice_intensity)
 			dset_orientations[ind,:,:] = np.asarray(img_slice_orientation)
 			n += 1
 	else:

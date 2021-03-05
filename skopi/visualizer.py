@@ -19,25 +19,22 @@ class Visualizer(object):
         # Cupy doesn't have median yet.
         self.pix_width = np.median(pixel_width)
 
-        recidet = ReciprocalDetector(self.experiment.det,
-                                     self.experiment.beam)
-
         # the following if test is not elegant,
         # but using the more elegant asnumpy method in skopi.util
         # results in
         # TypeError: Implicit conversion to a NumPy array is not allowed. Please use `.get()` to construct a NumPy array explicitly.
         if xp is np:
             self.q_max = np.min((  # Max inscribed radius
-                xp.max(recidet.pixel_position_reciprocal[..., 1]),
-                -xp.min(recidet.pixel_position_reciprocal[..., 1]),
-                xp.max(recidet.pixel_position_reciprocal[..., 0]),
-                -xp.min(recidet.pixel_position_reciprocal[..., 0])))
+                xp.max(self.experiment.det.pixel_position_reciprocal[..., 1]),
+                -xp.min(self.experiment.det.pixel_position_reciprocal[..., 1]),
+                xp.max(self.experiment.det.pixel_position_reciprocal[..., 0]),
+                -xp.min(self.experiment.det.pixel_position_reciprocal[..., 0])))
         else:
             self.q_max = np.min((  # Max inscribed radius
-                xp.max(recidet.pixel_position_reciprocal[..., 1]).get(),
-                -xp.min(recidet.pixel_position_reciprocal[..., 1]).get(),
-                xp.max(recidet.pixel_position_reciprocal[..., 0]).get(),
-                -xp.min(recidet.pixel_position_reciprocal[..., 0]).get()))
+                xp.max(self.experiment.det.pixel_position_reciprocal[..., 1]).get(),
+                -xp.min(self.experiment.det.pixel_position_reciprocal[..., 1]).get(),
+                xp.max(self.experiment.det.pixel_position_reciprocal[..., 0]).get(),
+                -xp.min(self.experiment.det.pixel_position_reciprocal[..., 0]).get()))
 
         self._auto_rings = False
         if diffraction_rings is not None:
