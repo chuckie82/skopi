@@ -42,8 +42,8 @@ class Experiment(object):
             img_stack = self.generate_image_stack()
             return self.det.assemble_image_stack(img_stack)
 
-    def generate_image_stack(self, return_photons=None,
-                             return_intensities=False,
+    def generate_image_stack(self, return_photon=None,
+                             return_intensity=False,
                              return_positions=False,
                              return_orientations=False,
                              always_tuple=False, noise={}):
@@ -52,8 +52,8 @@ class Experiment(object):
 
         By default, return a photon snapshot.
         That behavior can be changed by setting:
-          - return_photons
-          - return_intensities
+          - return_photon
+          - return_intensity
         to True or False.
 
         If more than one is requested, the function returns a tuple of
@@ -69,8 +69,8 @@ class Experiment(object):
         sloped background - 'sloped': array of shape detector
         are implemented using the above keys:values in the noise dictionary.
         """
-        if return_photons is None and return_intensities is False:
-            return_photons = True
+        if return_photon is None and return_intensity is False:
+            return_photon = True
 
         sample_state = self.generate_new_sample_state()
         positions = sample_state[0][0]
@@ -82,7 +82,7 @@ class Experiment(object):
             self.fluences.append(fluence)
         beam_spectrum = self.beam.generate_new_state()
 
-        intensities_stack = 0.
+        intensity_stack = 0.
 
         orientations = sample_state[0][1]
 
@@ -104,28 +104,28 @@ class Experiment(object):
             group_pattern = np.abs(group_complex_pattern)**2
 
             # corrections are based on miscentered beam if there's jitter
-            group_intensities = self.det.add_correction(group_pattern) 
-            intensities_stack += group_intensities
+            group_intensity = self.det.add_correction(group_pattern) 
+            intensity_stack += group_intensity
 
         # add static noise to sum of all spikes and particles
         if 'static' in noise.keys() and noise['static'] is True:
-            intensities_stack = self.det.add_static_noise(intensities_stack)
+            intensity_stack = self.det.add_static_noise(intensity_stack)
 
         # add sloped background incoherently
         if 'sloped' in noise.keys():
             if noise['sloped'].shape != self.det.shape:
                 noise['sloped'] = self.det.disassemble_image_stack(noise['sloped'])
-            intensities_stack += noise['sloped']
+            intensity_stack += noise['sloped']
 
         # We are summing up intensities then converting to photons as opposed to converting to photons then summing up.
         # Note: We may want to revisit the correctness of this procedure.
-        photons_stack = self.det.add_quantization(intensities_stack)
+        photon_stack = self.det.add_quantization(intensity_stack)
 
         ret = []
-        if return_photons:
-            ret.append(photons_stack)
-        if return_intensities:
-            ret.append(intensities_stack)
+        if return_photon:
+            ret.append(photon_stack)
+        if return_intensity:
+            ret.append(intensity_stack)
 
         if return_positions and return_orientations:
             if len(ret) == 1:
