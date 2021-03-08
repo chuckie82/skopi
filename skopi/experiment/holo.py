@@ -91,10 +91,7 @@ class HOLOExperiment(Experiment):
         if self._i_part_orientations >= len(self._part_orientations):
             raise StopIteration("No more orientation available.")
 
-        if self.multi_particle_hit:
-            part_orientation = self._part_orientations[self._i_part_orientations]
-        else:
-            part_orientation = self._part_orientations[self._i_part_orientations, None]
+        part_orientation = self._part_orientations[self._i_part_orientations]
 
         self._i_part_orientations += 1
         return part_orientation
@@ -113,10 +110,7 @@ class HOLOExperiment(Experiment):
         if self._i_part_positions >= len(self._part_positions):
             raise StopIteration("No more position available.")
 
-        if self.multi_particle_hit:
-            part_position = self._part_positions[self._i_part_positions]
-        else:
-            part_position = self._part_positions[self._i_part_positions, None]
+        part_position = self._part_positions[self._i_part_positions]
 
         self._i_part_positions += 1
         return part_position
