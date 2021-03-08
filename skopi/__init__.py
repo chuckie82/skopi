@@ -1,6 +1,5 @@
 from skopi.diffraction import *
 from skopi.detector import *
-from skopi.reciprocal_detector import *
 from skopi.beam import *
 from skopi.geometry import *
 from skopi.particle import *

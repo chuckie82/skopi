@@ -3,24 +3,18 @@ import numpy as np
 from matplotlib.patches import Circle
 from matplotlib.colors import LogNorm
 
-from skopi import ReciprocalDetector
 from skopi.util import xp, asnumpy
 
 
 class Visualizer(object):
     def __init__(self, experiment, diffraction_rings=None, log_scale=False):
         self.experiment = experiment
-        self.center = self.experiment.det.geometry.point_coord_indexes((0, 0))
+        #self.center = self.experiment.det.geometry.point_coord_indexes((0, 0))
         # ! Wavenumber definition != beam's.
         self.wavenumber = np.linalg.norm(self.experiment.beam.get_wavevector())
         self.distance = self.experiment.det.distance
-
-        pixel_width = asnumpy(self.experiment.det.pixel_width)
-        # Cupy doesn't have median yet.
-        self.pix_width = np.median(pixel_width)
-
-        recidet = ReciprocalDetector(self.experiment.det,
-                                     self.experiment.beam)
+        self.center = None
+        self.pix_width = np.median(asnumpy(self.experiment.det.pixel_width))
 
         # the following if test is not elegant,
         # but using the more elegant asnumpy method in skopi.util
@@ -28,16 +22,16 @@ class Visualizer(object):
         # TypeError: Implicit conversion to a NumPy array is not allowed. Please use `.get()` to construct a NumPy array explicitly.
         if xp is np:
             self.q_max = np.min((  # Max inscribed radius
-                xp.max(recidet.pixel_position_reciprocal[..., 1]),
-                -xp.min(recidet.pixel_position_reciprocal[..., 1]),
-                xp.max(recidet.pixel_position_reciprocal[..., 0]),
-                -xp.min(recidet.pixel_position_reciprocal[..., 0])))
+                xp.max(self.experiment.det.pixel_position_reciprocal[..., 1]),
+                -xp.min(self.experiment.det.pixel_position_reciprocal[..., 1]),
+                xp.max(self.experiment.det.pixel_position_reciprocal[..., 0]),
+                -xp.min(self.experiment.det.pixel_position_reciprocal[..., 0])))
         else:
             self.q_max = np.min((  # Max inscribed radius
-                xp.max(recidet.pixel_position_reciprocal[..., 1]).get(),
-                -xp.min(recidet.pixel_position_reciprocal[..., 1]).get(),
-                xp.max(recidet.pixel_position_reciprocal[..., 0]).get(),
-                -xp.min(recidet.pixel_position_reciprocal[..., 0]).get()))
+                xp.max(self.experiment.det.pixel_position_reciprocal[..., 1]).get(),
+                -xp.min(self.experiment.det.pixel_position_reciprocal[..., 1]).get(),
+                xp.max(self.experiment.det.pixel_position_reciprocal[..., 0]).get(),
+                -xp.min(self.experiment.det.pixel_position_reciprocal[..., 0]).get()))
 
         self._auto_rings = False
         if diffraction_rings is not None:
@@ -64,6 +58,7 @@ class Visualizer(object):
         plt.xlabel('Y')
         plt.ylabel('X')
 
+        self.center = np.array(img.shape) / 2
         if self._auto_rings:
             self.add_diffraction_rings()
 
