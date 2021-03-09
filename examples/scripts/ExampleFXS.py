@@ -3,7 +3,8 @@
 
 ########## FXS Experiment ###############
 # In this notebook, we demonstrate how to simulate a FXS experiment by introducing the capability to place multiple particles (with user-defined ratio) at the interaction point. Interference can sometimes be observed in the diffraction pattern.
-# Input parameters including (1) beam, (2) detector, (3) particle(s) are needed for the FXS Experiment class.
+# Input parameters including (1) beam, (2) detector, (3) liquid jet radius, (4) particle(s), (5) number of particle per shot, (6) sticking=Ture or False are needed for the FXS Experiment class.
+# Note that FXS experiments require random distribution of particles (i.e. not stuck together), but there's no guarantee particles don't stick in FXS liquid jets.
 
 import numpy as np
 import matplotlib
@@ -15,7 +16,7 @@ import h5py as h5
 import time, os
 import skopi as sk
 
-# Parameters
+# Parameter(s)
 numOp = 1
 numCl = 1
 num = 2
@@ -52,19 +53,19 @@ particleCl.read_pdb(pdbfile2, ff='WK')
 
 # Perform FXS experiment with one particle type
 tic = time.time()
-experiment = sk.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particleOp], n_part_per_shot=numOp, gamma=0.5)
+experiment = sk.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particleOp], n_part_per_shot=numOp)
 patternOp = experiment.generate_image_stack()
 toc = time.time()
 print(">>> It took {:.2f} seconds to finish FXS calculation.".format(toc-tic))
 
 # Perform FXS experiment with one particle type
-experiment = sk.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particleCl], n_part_per_shot=numCl, gamma=0.5)
+experiment = sk.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particleCl], n_part_per_shot=numCl)
 patternCl = experiment.generate_image_stack()
 
 # Perform FXS experiment with two particle types
 # calculate 1 diffraction pattern from 2 particles, where each particle has 50% chance of being Open or Closed
 # (end up in 25% with two Open, 25% with two Closed, and 50% with one of each)
-experiment = sk.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particleOp, particleCl], n_part_per_shot=num, gamma=0.5)
+experiment = sk.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particleOp, particleCl], n_part_per_shot=num)
 pattern = experiment.generate_image_stack()
 
 # Remove polarization
@@ -110,3 +111,5 @@ divider = make_axes_locatable(ax2)
 cax = divider.append_axes("right", size="5%", pad=0.05)
 plt.colorbar(im2, cax=cax)
 plt.show()
+
+

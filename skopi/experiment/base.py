@@ -26,11 +26,9 @@ class Experiment(object):
             self.volumes.append(
                 pg.calculate_diffraction_pattern_gpu(mesh, particle, return_type='complex_field'))
 
-        # soon obsolete flag to handle multi particle hit
-        self.multi_particle_hit = False
-
-        # set up list to track diplacements from beam center
+        # set up lists to track diplacements from beam center and variations in fluence
         self.beam_displacements = list()
+        self.fluences = list()
 
     def generate_image(self, return_orientation=False):
         """
@@ -44,17 +42,18 @@ class Experiment(object):
             img_stack = self.generate_image_stack()
             return self.det.assemble_image_stack(img_stack)
 
-    def generate_image_stack(self, return_photons=None,
-                             return_intensities=False,
-                             return_orientation=False,
+    def generate_image_stack(self, return_photon=None,
+                             return_intensity=False,
+                             return_positions=False,
+                             return_orientations=False,
                              always_tuple=False, noise={}):
         """
         Generate and return a snapshot of the experiment.
 
         By default, return a photon snapshot.
         That behavior can be changed by setting:
-          - return_photons
-          - return_intensities
+          - return_photon
+          - return_intensity
         to True or False.
 
         If more than one is requested, the function returns a tuple of
@@ -62,22 +61,33 @@ class Experiment(object):
         To return a tuple even if only one array is requested, set
         always_tuple to True.
 
-        Noise is introduced based on contents of noise parameter. Dark
-        noise, beam jitter, and static noise are currently implemented.
+        Noise is introduced based on contents of noise parameter. Currently:
+        dark noise -  'dark_noise': True/False
+        miscentered beam - 'beam_offset': sigma in pixels
+        fluence jitter - 'fluence_jitter': sigma as fraction of ideal fluence
+        static background noise - 'static': True/False
+        sloped background - 'sloped': array of shape detector
+        are implemented using the above keys:values in the noise dictionary.
         """
-        if return_photons is None and return_intensities is False:
-            return_photons = True
-
-        beam_spectrum = self.beam.generate_new_state()
+        if return_photon is None and return_intensity is False:
+            return_photon = True
 
         sample_state = self.generate_new_sample_state()
+        positions = sample_state[0][0]
+        orientations = sample_state[0][1]
+       
+        # generate beam spectrum, optionally varying fluence from ideal value
+        if ('fluence_jitter' in noise.keys()) and (noise['fluence_jitter']!=0):
+            fluence = beam.add_fluence_jitter(sigma=noise['fluence_jitter'])
+            self.fluences.append(fluence)
+        beam_spectrum = self.beam.generate_new_state()
 
-        intensities_stack = 0.
+        intensity_stack = 0.
 
         orientations = sample_state[0][1]
 
-        if ('jitter' in noise.keys()) and (noise['jitter']!=0):
-            displacement = self.det.add_beam_jitter(noise['jitter'])
+        if ('beam_offset' in noise.keys()) and (noise['beam_offset']!=0):
+            displacement = self.det.offset_beam_center(noise['beam_offset'])
             self.beam_displacements.append(displacement)
 
         for spike in beam_spectrum:
@@ -94,30 +104,38 @@ class Experiment(object):
             group_pattern = np.abs(group_complex_pattern)**2
 
             # corrections are based on miscentered beam if there's jitter
-            group_intensities = self.det.add_correction(group_pattern) 
-            intensities_stack += group_intensities
+            group_intensity = self.det.add_correction(group_pattern) 
+            intensity_stack += group_intensity
 
         # add static noise to sum of all spikes and particles
         if 'static' in noise.keys() and noise['static'] is True:
-            intensities_stack = self.det.add_static_noise(intensities_stack)
+            intensity_stack = self.det.add_static_noise(intensity_stack)
 
         # add sloped background incoherently
         if 'sloped' in noise.keys():
             if noise['sloped'].shape != self.det.shape:
                 noise['sloped'] = self.det.disassemble_image_stack(noise['sloped'])
-            intensities_stack += noise['sloped']
+            intensity_stack += noise['sloped']
 
         # We are summing up intensities then converting to photons as opposed to converting to photons then summing up.
         # Note: We may want to revisit the correctness of this procedure.
-        photons_stack = self.det.add_quantization(intensities_stack)
+        photon_stack = self.det.add_quantization(intensity_stack)
 
         ret = []
-        if return_photons:
-            ret.append(photons_stack)
-        if return_intensities:
-            ret.append(intensities_stack)
+        if return_photon:
+            ret.append(photon_stack)
+        if return_intensity:
+            ret.append(intensity_stack)
 
-        if return_orientation:
+        if return_positions and return_orientations:
+            if len(ret) == 1:
+                return ret[0], positions, orientations
+            return tuple(ret), positions, orientations
+        elif return_positions:
+            if len(ret) == 1:
+                return ret[0], positions
+            return tuple(ret), positions
+        elif return_orientations:
             if len(ret) == 1:
                 return ret[0], orientations
             return tuple(ret), orientations
@@ -181,5 +199,3 @@ class Experiment(object):
         """
         raise NotImplementedError
 
-    def set_multi_particle_hit(self, multi_particle_hit):
-        self.multi_particle_hit = multi_particle_hit

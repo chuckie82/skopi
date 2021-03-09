@@ -47,7 +47,7 @@ particle.read_pdb(pdbfile, ff='WK')
 # Perform SPI experiment
 tic = time.time()
 
-experiment = sk.SPIExperiment(det, beam, particle)
+experiment = sk.SPIExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particle], n_part_per_shot=1)
 dp_photons = experiment.generate_image_stack() # generate diffraction field
 
 tau = beam.get_photon_energy()/1000.

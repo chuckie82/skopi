@@ -22,6 +22,9 @@ class Beam(object):
         # Default polarization angle, requires input from user or file in the future
         self.Polarization = np.array([1, 0, 0])
 
+        # variable to track original fluence if adding jitter
+        self._n_phot_ideal = None
+
     def init_from_arg_dict(self, arg_dict):
         self.set_wave_parameters_from_arg_dict(arg_dict)
         self.set_focus_from_arg_dict(arg_dict)
@@ -236,6 +239,47 @@ class Beam(object):
         # If simple Beam, return itself.
         # Variable beams should return simple one.
         return [self]
+
+    def add_fluence_jitter(self, sigma):
+        """
+        Add jitter to maximum fluence, assuming variation is Gaussian.
+        :param sigma: standard deviation of Gaussian in pixels
+        :return fluence: adjusted fluence due to jitter
+        """
+        # track or reset to ideal fluence (self._n_phot, before jitter)
+        if self._n_phot_ideal is None:
+            self._n_phot_ideal = self._n_phot
+        else:
+            self._n_phot = self._n_phot_ideal
+
+        # add fluence jitter
+        fluence = np.random.normal(loc=self._n_phot, scale=sigma*self._n_phot, size=1)[0]
+        self.set_photons_per_pulse(fluence)
+        return fluence
+
+    def fluence_at_position(self, position):
+        """
+        Compute flux at the particle's position, modeling the fluence within
+        the beam's focus area as a 2d Gaussian in the plane of the beam and 
+        constant along the direction of the beam (z-axis). Sigma is based on
+        the given FWHM, and the fluence is assumed constant across the particle.
+    
+        :param position: particle's position in meters, origin is beam center
+        :return fluence: fluence at particle's position
+        """
+        if self._n_phot_ideal is None:
+            self._n_phot_ideal = self._n_phot
+        else:
+            self._n_phot = self._n_phot_ideal
+
+        sigma = np.mean(np.array(self.get_focus()[:2])) / (2*np.sqrt(2*np.log(2)))
+        p_radius = np.sqrt(np.sum(np.square(position[:2])))
+        scale_factor = np.exp(-np.square(p_radius)/(2*np.square(sigma)))
+        fluence = scale_factor*self._n_phot
+
+        self.set_photons_per_pulse(fluence)    
+        return fluence
+
 
     ####
     # Old-style setters and getters, for compatibility
