@@ -47,7 +47,7 @@ particle.read_pdb(pdbfile, ff='WK')
 
 # Perform SPI calculation
 tic = time.time()
-experiment = sk.SPIExperiment(det=det, beam=beam, particle=particle, n_part_per_shot=num) 
+experiment = sk.SPIExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particle], n_part_per_shot=num)
 img = experiment.generate_image()
 toc = time.time()
 print(">>> It took {:.2f} seconds to finish SPI calculation.".format(toc-tic))

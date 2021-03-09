@@ -11,9 +11,8 @@ class Experiment(object):
         self.particles = particles
         self.n_particle_kinds = len(particles)
 
-        # Create mesh, reinitializing detector with highest k-beam spike
+        # Create mesh
         highest_k_beam = self.beam.get_highest_wavenumber_beam()
-        self.det.initialize_pixels_with_beam(beam=highest_k_beam)
         mesh, self.voxel_length = det.get_reciprocal_mesh(
             voxel_number_1d=self.mesh_size)
 
@@ -43,18 +42,18 @@ class Experiment(object):
             img_stack = self.generate_image_stack()
             return self.det.assemble_image_stack(img_stack)
 
-    def generate_image_stack(self, return_photons=None,
-                             return_intensities=False,
+    def generate_image_stack(self, return_photon=None,
+                             return_intensity=False,
                              return_positions=False,
-                             return_orientation=False,
+                             return_orientations=False,
                              always_tuple=False, noise={}):
         """
         Generate and return a snapshot of the experiment.
 
         By default, return a photon snapshot.
         That behavior can be changed by setting:
-          - return_photons
-          - return_intensities
+          - return_photon
+          - return_intensity
         to True or False.
 
         If more than one is requested, the function returns a tuple of
@@ -70,16 +69,12 @@ class Experiment(object):
         sloped background - 'sloped': array of shape detector
         are implemented using the above keys:values in the noise dictionary.
         """
-        if return_photons is None and return_intensities is False:
-            return_photons = True
+        if return_photon is None and return_intensity is False:
+            return_photon = True
 
-        # generate new sample state: particles' positions and orientations
         sample_state = self.generate_new_sample_state()
-        positions = np.squeeze(np.array([x[0] for x in sample_state]))
-        orientations = np.squeeze(np.array([x[1] for x in sample_state]))
-        if len(positions.shape)==1:
-            positions = np.expand_dims(positions, axis=0)
-            orientations = np.expand_dims(orientations, axis=0)
+        positions = sample_state[0][0]
+        orientations = sample_state[0][1]
        
         # generate beam spectrum, optionally varying fluence from ideal value
         if ('fluence_jitter' in noise.keys()) and (noise['fluence_jitter']!=0):
@@ -88,6 +83,8 @@ class Experiment(object):
         beam_spectrum = self.beam.generate_new_state()
 
         intensity_stack = 0.
+
+        orientations = sample_state[0][1]
 
         if ('beam_offset' in noise.keys()) and (noise['beam_offset']!=0):
             displacement = self.det.offset_beam_center(noise['beam_offset'])
@@ -125,12 +122,12 @@ class Experiment(object):
         photon_stack = self.det.add_quantization(intensity_stack)
 
         ret = []
-        if return_photons:
+        if return_photon:
             ret.append(photon_stack)
-        if return_intensities:
+        if return_intensity:
             ret.append(intensity_stack)
 
-        if return_positions and return_orientation:
+        if return_positions and return_orientations:
             if len(ret) == 1:
                 return ret[0], positions, orientations
             return tuple(ret), positions, orientations
@@ -138,7 +135,7 @@ class Experiment(object):
             if len(ret) == 1:
                 return ret[0], positions
             return tuple(ret), positions
-        elif return_orientation:
+        elif return_orientations:
             if len(ret) == 1:
                 return ret[0], orientations
             return tuple(ret), orientations

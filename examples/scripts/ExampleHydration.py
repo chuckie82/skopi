@@ -51,8 +51,7 @@ for i in range(len(thickness)):
     mesh_voxel_size = 2.0*1e-10
     particle.set_hydration_layer_thickness(hydration_layer_thickness)
     particle.create_masks()
-    experiment = sk.SPIExperiment(det=det, beam=beam, particle=particle, jet_radius=1e-4, n_part_per_shot=1)
-    experiment.set_orientations(orientation)
+    experiment = sk.SPIExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particle], n_part_per_shot=1)
     imgs[i] = experiment.generate_image()
 
 # Visualization

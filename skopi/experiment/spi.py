@@ -1,7 +1,9 @@
 import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
 import skopi.geometry as psg
+import skopi as ps
 from skopi.particlePlacement import *
-from skopi.aggregate import build_bpca
 
 from .base import Experiment
 
@@ -11,97 +13,65 @@ class SPIExperiment(Experiment):
     Class for SPI experiment.
     """
 
-    def __init__(self, det, beam, particle, n_part_per_shot=1, jet_radius=None):
+    def __init__(self, det, beam, jet_radius, particles, n_part_per_shot, sticking=True, ratios=None):
         """
-        Initialize a SPI experiment. Here we assume n_part_per_shot (default=1) of a single
-        particle type. If more than one particle, then the particles form an aggregate that
-        is randomly positioned in the volume formed by the intersection of the jet and beam.
-        If an aggregate of different particle types is desired, the FXS class should be used
-        instead with the sticking flag set to True.
+        Initialize a SPI experiment.
         
         :param det: The detector object.
         :param beam: The beam object.
-        :param particle: The particle object.
-        :param jet_radius: The radius of the gas jet in meters.
-        :param n_part_per_shot: The number of particles per shot, default is 1.
+        :param jet_radius: The radius of the gas jet.
+        :param particles: The particle objects.
+        :param n_part_per_shot: The number of photons per pulse/shot.
+        :param sticking: If multiple particles, whether aggregated (default) or disperse.
+        :param ratios: The ratios of the particles.
         """
-        super(SPIExperiment, self).__init__(det, beam, [particle]*n_part_per_shot)
+        super(SPIExperiment, self).__init__(det, beam, particles)
         self.jet_radius = jet_radius
+        self.particles = particles
         self.n_part_per_shot = n_part_per_shot
-        self.particle_radius = max_radius([particle])
-        self._orientations, self._positions = None, None
+        self.sticking = sticking
+
+        if ratios is None:
+            ratios = np.ones(len(particles))
+        ratios = np.array(ratios)
+        if np.any(ratios < 0):
+            raise ValueError("Ratios need to be positive.")
+        if len(ratios) != self.n_particle_kinds:
+            raise ValueError("Need as many ratios as particles.")
+        ratios /= ratios.sum()  # Normalize to 1
+        self.ratios = ratios
 
     def generate_new_sample_state(self):
         """
         Return a list of "particle group"
+
         Each group is a tuple (positions, orientations)
         where the positions and orientations have one line
         per particle in the sample at this state.
-        In the SPI case, it is n_part_per_shot of one particle type.
         """
-        orientations = self.get_next_orientation()
-        positions = self.get_next_position()
-        particle_groups = [(np.array([p]),np.array([o])) for p,o in zip(positions,orientations)]
+        particle_groups = []
+        particle_distribution = np.random.multinomial(
+            self.n_part_per_shot, self.ratios)
+        particle_dict = {self.particles[i]: n_particles for i, n_particles in enumerate(particle_distribution)}
+        part_states, part_positions = distribute_particles(particle_dict, self.beam.get_focus()[0]/2, self.jet_radius, self.sticking)
+        part_states = np.array(part_states)
+        for i in range(self.n_particle_kinds):
+            n_particles = particle_distribution[i]
+            orientations = psg.get_random_quat(n_particles)
+            positions = part_positions[part_states == self.particles[i]]
+            particle_groups.append((positions, orientations))
         return particle_groups
 
-    def get_next_orientation(self):
+    def add_fluence_jitter(self):
         """
-        Return the next orientation. If orientations were not explicitly
-        set, then random orientations will be generated.
+        Return fluence_jitter
 
-        :return orientation: array of n_part_per_shot quaternions
+        The fluence jitters from run to run as the focus size
+        and position changes with photo energy and bandwidth.
         """
-        if self._orientations is None:
-            return psg.get_random_quat(self.n_part_per_shot)
-
-        if self._i_orientations >= len(self._orientations):
-            raise StopIteration("No more orientation available.")
-        
-        orientation = self._orientations[self._i_orientations:
-                                         self._i_orientations+self.n_part_per_shot]
-
-        self._i_orientations += self.n_part_per_shot
-        return orientation
-
-    def set_orientations(self, orientations):
-        """
-        Set all orientations to be used by this instance of class.
-        
-        :param orientations: array of quaternions
-        """
-        self._orientations = orientations
-        self._i_orientations = 0
-
-    def get_next_position(self):
-        """
-        Return the next position.
-
-        :return position: array of n_part_per_shot coordinates
-        """
-        if self._positions is None:
-            center, offset = np.zeros((self.n_part_per_shot,3)), np.zeros((1,3))
-            if self.n_part_per_shot > 1:
-                aggregate = build_bpca(num_pcles=self.n_part_per_shot, radius=self.particle_radius)
-                center = aggregate.pos
-            if self.jet_radius is not None:
-                offset = random_positions_in_beam(1, self.beam.get_focus()[0]/2, self.jet_radius)
-            return center + offset
-
-        if self._i_positions >= len(self._positions):
-            raise StopIteration("No more position available.")
-
-        position = self._positions[self._i_positions:
-                                   self._i_positions+self.n_part_per_shot]
-
-        self._i_positions += self.n_part_per_shot
-        return position
-
-    def set_positions(self, positions):
-        """
-        Set all particle positions to be used by this instance of the class.
-        
-        :param positions: array of coordinates in meters
-        """
-        self._positions = positions
-        self._i_positions = 0
-
+        sample_state = self.generate_new_sample_state()
+        positions = sample_state[0][0]
+        orientations = sample_state[0][1]
+        dist_to_focus = np.sqrt(positions[0][0]**2+positions[0][1]**2+positions[0][2]**2)
+        fluence_jitter = np.exp(-dist_to_focus**2/(2*(self.beam.get_focus()[0]/2)**2+self.jet_radius**2))
+        return fluence_jitter
