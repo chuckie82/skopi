@@ -30,13 +30,13 @@ class Experiment(object):
         self.beam_displacements = list()
         self.fluences = list()
 
-    def generate_image(self, return_orientation=False):
+    def generate_image(self, return_orientations=False):
         """
         Assemble images from detector panels and (optionally) 
         return particle orientations.
         """
-        if return_orientation:
-            img_stack, orientation = self.generate_image_stack(return_orientation=return_orientation)
+        if return_orientations:
+            img_stack, orientation = self.generate_image_stack(return_orientations=return_orientations)
             return self.det.assemble_image_stack(img_stack), orientation
         else:
             img_stack = self.generate_image_stack()
@@ -83,8 +83,6 @@ class Experiment(object):
         beam_spectrum = self.beam.generate_new_state()
 
         intensities_stack = 0.
-
-        orientations = sample_state[0][1]
 
         if ('beam_offset' in noise.keys()) and (noise['beam_offset']!=0):
             displacement = self.det.offset_beam_center(noise['beam_offset'])
