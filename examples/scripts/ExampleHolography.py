@@ -26,7 +26,7 @@ increase_factor = 1e2
 print('BEFORE: # of photons per pulse = {}'.format(beam.get_photons_per_pulse()))
 print('>>> Increasing the number of photons per pulse by a factor {}'.format(increase_factor))
 beam.set_photons_per_pulse(increase_factor*beam.get_photons_per_pulse())
-print('AFTER : # of photons per pulse = {}'.format(beam.get_photons_per_pulse()))
+print('AFTER: # of photons per pulse = {}'.format(beam.get_photons_per_pulse()))
 
 # Load and initialize the detector
 det = sk.PnccdDetector(geom=geom, beam=beam)
@@ -34,7 +34,7 @@ increase_factor = 0.5
 print('BEFORE: detector distance = {} m'.format(det.distance))
 print('>>> Increasing the detector distance by a factor of {}'.format(increase_factor))
 det.distance = increase_factor*det.distance
-print('AFTER : detector distance = {} m'.format(det.distance))
+print('AFTER: detector distance = {} m'.format(det.distance))
 
 # Create particle object(s)
 particle = sk.Particle()
@@ -44,7 +44,7 @@ particle_2.read_pdb(pdbfile2, ff='WK')
 
 # Perform Holography experiment
 tic = time.time()
-experiment = sk.HOLOExperiment(det, beam, [particle], [particle_2])
+experiment = sk.HOLOExperiment(det=det, beam=beam, reference=[particle], particles=[particle2], ref_position=np.array([[0., 0., 0.]]), part_positions=np.array([[[0., 1e-7, 0.]]]))
 toc = time.time()
 print(">>> It took {:.2f} seconds to finish Holography calculation.".format(toc-tic))
 
