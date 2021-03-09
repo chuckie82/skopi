@@ -39,8 +39,8 @@ print('AFTER: detector distance = {} m'.format(det.distance))
 # Create particle object(s)
 particle = sk.Particle()
 particle.read_pdb(pdbfile, ff='WK')
-particle_2 = sk.Particle()
-particle_2.read_pdb(pdbfile2, ff='WK')
+particle2 = sk.Particle()
+particle2.read_pdb(pdbfile2, ff='WK')
 
 # Perform Holography experiment
 tic = time.time()
