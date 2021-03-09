@@ -57,9 +57,11 @@ print('AFTER : detector distance = {} m'.format(det.distance))
 particle = sk.Particle()
 particle.read_pdb(pdbfile, ff='WK')
 
-# Perform SPI experiment calculation with particles sticking together to form a single cluster (set sticking = True)
+# Perform SPI experiment calculation with particles sticking together to form a single cluster.
+# If a multi-particle shot of dispersed rather than aggregated particles is desired, the FXSExperiment 
+# should be used instead.
 tic = time.time()
-experiment = sk.SPIExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particle], n_part_per_shot=num, sticking=True)
+experiment = sk.SPIExperiment(det=det, beam=beam, particle=particle, n_part_per_shot=num)
 img = experiment.generate_image()
 toc = time.time()
 print(">>> It took {:.2f} seconds to finish FXS calculation.".format(toc-tic))
@@ -68,20 +70,11 @@ viz.imshow(img)
 plt.show()
 
 # Visualize particle sticking
-particle_group = experiment.generate_new_sample_state()
-part_positions = particle_group[0][0]
+particle_groups = experiment.generate_new_sample_state()
+part_positions = np.array([i[0] for i in particle_groups])
 radius = max_radius({particle: num})
 
-x = []
-y = []
-z = []
-for i in range(num):
-    x.append(part_positions[i,0])
-    y.append(part_positions[i,1])
-    z.append(part_positions[i,2])
-x = np.array(x)
-y = np.array(y)
-z = np.array(z)
+x,y,z = part_positions[0][:,0], part_positions[0][:,1], part_positions[0][:,2]
 r = np.ones(num)*radius
 
 fig = plt.figure()

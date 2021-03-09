@@ -20,8 +20,7 @@ class DetectorBase(object):
     """
 
     def __init__(self):
-        # We no longer want detectors to have direct access to the beam
-        # but we keep it for a while for retro-compatibility
+        # Reciprocal space information is only available if detector has access to beam.
         self._has_beam = False
 
         # Define the hierarchy system. For simplicity, we only use two-layer structure.
