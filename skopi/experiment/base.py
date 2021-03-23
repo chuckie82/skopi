@@ -83,7 +83,7 @@ class Experiment(object):
        
         # generate beam spectrum, optionally varying fluence from ideal value
         if ('fluence_jitter' in noise.keys()) and (noise['fluence_jitter']!=0):
-            fluence = beam.add_fluence_jitter(sigma=noise['fluence_jitter'])
+            fluence = self.beam.add_fluence_jitter(sigma=noise['fluence_jitter'])
             self.fluences.append(fluence)
         beam_spectrum = self.beam.generate_new_state()
 
