@@ -28,7 +28,7 @@ class SimpleSquareDetector(DetectorBase):
         sep = float(det_size) / N_pixel
         x = -det_size/2 + sep/2 + ar*sep
         y = -det_size/2 + sep/2 + ar*sep
-        X, Y = xp.meshgrid(x, y, indexing='xy')
+        Y, X = xp.meshgrid(x, y, indexing='xy')
         Xar, Yar = xp.meshgrid(ar, ar, indexing='xy')
 
         self.panel_num = 1
