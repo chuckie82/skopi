@@ -46,12 +46,12 @@ class Experiment(object):
     def generate_image_stack(self, return_photons=None,
                              return_intensities=False,
                              return_positions=False,
-                             return_orientation=False,
+                             return_orientations=False,
                              always_tuple=False, noise={}):
         """
         Generate and return a snapshot of the experiment.
 
-        By default, return a photon snapshot.
+        By default, return a photons snapshot.
         That behavior can be changed by setting:
           - return_photons
           - return_intensities
@@ -83,11 +83,11 @@ class Experiment(object):
        
         # generate beam spectrum, optionally varying fluence from ideal value
         if ('fluence_jitter' in noise.keys()) and (noise['fluence_jitter']!=0):
-            fluence = beam.add_fluence_jitter(sigma=noise['fluence_jitter'])
+            fluence = self.beam.add_fluence_jitter(sigma=noise['fluence_jitter'])
             self.fluences.append(fluence)
         beam_spectrum = self.beam.generate_new_state()
 
-        intensity_stack = 0.
+        intensities_stack = 0.
 
         if ('beam_offset' in noise.keys()) and (noise['beam_offset']!=0):
             displacement = self.det.offset_beam_center(noise['beam_offset'])
@@ -107,30 +107,30 @@ class Experiment(object):
             group_pattern = np.abs(group_complex_pattern)**2
 
             # corrections are based on miscentered beam if there's jitter
-            group_intensity = self.det.add_correction(group_pattern) 
-            intensity_stack += group_intensity
+            group_intensities = self.det.add_correction(group_pattern) 
+            intensities_stack += group_intensities
 
         # add static noise to sum of all spikes and particles
         if 'static' in noise.keys() and noise['static'] is True:
-            intensity_stack = self.det.add_static_noise(intensity_stack)
+            intensities_stack = self.det.add_static_noise(intensities_stack)
 
         # add sloped background incoherently
         if 'sloped' in noise.keys():
             if noise['sloped'].shape != self.det.shape:
                 noise['sloped'] = self.det.disassemble_image_stack(noise['sloped'])
-            intensity_stack += noise['sloped']
+            intensities_stack += noise['sloped']
 
         # We are summing up intensities then converting to photons as opposed to converting to photons then summing up.
         # Note: We may want to revisit the correctness of this procedure.
-        photon_stack = self.det.add_quantization(intensity_stack)
+        photons_stack = self.det.add_quantization(intensities_stack)
 
         ret = []
         if return_photons:
-            ret.append(photon_stack)
+            ret.append(photons_stack)
         if return_intensities:
-            ret.append(intensity_stack)
+            ret.append(intensities_stack)
 
-        if return_positions and return_orientation:
+        if return_positions and return_orientations:
             if len(ret) == 1:
                 return ret[0], positions, orientations
             return tuple(ret), positions, orientations
@@ -138,7 +138,7 @@ class Experiment(object):
             if len(ret) == 1:
                 return ret[0], positions
             return tuple(ret), positions
-        elif return_orientation:
+        elif return_orientations:
             if len(ret) == 1:
                 return ret[0], orientations
             return tuple(ret), orientations

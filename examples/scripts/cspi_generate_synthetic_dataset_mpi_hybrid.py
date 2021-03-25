@@ -54,13 +54,6 @@ os.environ["USE_CUPY"] = '1' if RANK in GPU_RANKS else '0'
 os.environ["HDF5_USE_FILE_LOCKING"] = 'FALSE'
 
 import sys
-
-ROOT_DIR = "/reg/neh/home5/deebanr/rdeeban-pysingfel/pysingfel"
-if ROOT_DIR not in sys.path:
-    sys.path.append(ROOT_DIR)
-
-sys.path.append(ROOT_DIR+"/../../lcls2/psana")
-
 import argparse
 import json
 import numpy as np
@@ -147,20 +140,14 @@ def main():
 
     sys.stdout.flush()
 
-    # Create a particle object
-    if RANK == GPU_RANKS[0]:
-        
-        # Load PDB
-        print("(GPU 0) Reading PDB file: {}".format(pdb_file))
-        particle = sk.Particle()
-        particle.read_pdb(pdb_file, ff='WK')
+    # Load PDB
+    print("(GPU 0) Reading PDB file: {}".format(pdb_file))
+    particle = sk.Particle()
+    particle.read_pdb(pdb_file, ff='WK')
 
-        # Calculate diffraction volume
-        print("(GPU 0) Calculating diffraction volume")
-        experiment = sk.SPIExperiment(det, beam, particle)
-
-    else:
-        experiment = sk.SPIExperiment(det, beam, None)
+    # Calculate diffraction volume
+    print("(GPU 0) Calculating diffraction volume")
+    experiment = sk.SPIExperiment(det, beam, particle)
 
     sys.stdout.flush()
 
@@ -315,11 +302,11 @@ def main():
                 np_diffraction_pattern = experiment.det.assemble_image_stack(image_stack_tuple)
 
                 # Add the assembled diffraction pattern to the batch
-                np_diffraction_patterns[i] = np_diffraction_pattern
+                np_diffraction_patterns[i] = asnumpy(np_diffraction_pattern)
 
                 # Save diffraction pattern as PNG file
                 data_index = batch_start + i
-                save_diffraction_pattern_as_image(data_index, img_dir, np_diffraction_pattern)
+                save_diffraction_pattern_as_image(data_index, img_dir, asnumpy(np_diffraction_pattern))
 
                 # Intensities
                 if with_intensities:
@@ -329,13 +316,13 @@ def main():
                 n_images_processed += 1
 
             # Add the batch of photons to the HDF5 file
-            h5_photons[batch_start:batch_end] = np_photons
+            h5_photons[batch_start:batch_end] = asnumpy(np_photons)
 
             # Add the batch of diffraction patterns to the HDF5 file
-            h5_diffraction_patterns[batch_start:batch_end] = np_diffraction_patterns
+            h5_diffraction_patterns[batch_start:batch_end] = asnumpy(np_diffraction_patterns)
 
             if with_intensities:
-                h5_intensities[batch_start:batch_end] = np_intensities
+                h5_intensities[batch_start:batch_end] = asnumpy(np_intensities)
 
         # Close the HDF5 file
         f.close()
