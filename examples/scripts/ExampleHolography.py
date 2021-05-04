@@ -44,7 +44,8 @@ particle2.read_pdb(pdbfile2, ff='WK')
 
 # Perform Holography experiment
 tic = time.time()
-experiment = sk.HOLOExperiment(det=det, beam=beam, reference=[particle], particles=[particle2], ref_position=np.array([[0., 0., 0.]]), part_positions=np.array([[[0., 1e-7, 0.]]]))
+experiment = sk.HOLOExperiment(det=det, beam=beam, reference=[particle], particles=[particle2], 
+                               ref_position=np.array([[0., 0., 0.]]), part_positions=np.array([[0., 1e-7, 0.]]), jet_radius=1e-7, ref_jet_radius=1e-7)
 toc = time.time()
 print(">>> It took {:.2f} seconds to finish Holography calculation.".format(toc-tic))
 
