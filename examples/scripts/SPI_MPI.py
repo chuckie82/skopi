@@ -6,7 +6,6 @@ import scipy as sp
 import h5py as h5
 from mpi4py import MPI # module required to use MPI
 import argparse
-sys.path.append('/cds/home/i/iris/skopi')
 import skopi as sk
 from skopi.util import asnumpy, xp
 
