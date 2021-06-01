@@ -1,5 +1,5 @@
 # FXS simulation:
-# Generates a diffraction pattern of 20 chaperones randomly oriented / randomly positioned in a jet
+# Generates a diffraction pattern of 20 randomly oriented / randomly positioned chaperones
 import matplotlib.pyplot as plt
 import skopi as sk
 
@@ -14,7 +14,7 @@ det = sk.SimpleSquareDetector(n_pixels, det_size, det_dist)
 # x-ray focus radius: 0.5e-6m
 beam = sk.Beam("../input/beam/amo86615.beam")
 
-# Set jet radius (m)
+# Set jet radius (m) of the particle injector
 # Currently scattering from the jet is not taken into account in the diffraction simulation
 jet_radius = 1e-6
 
