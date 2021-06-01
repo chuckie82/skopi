@@ -32,6 +32,6 @@ img = exp.generate_image()
 
 # Visualize
 plt.imshow(img, vmin=0, vmax=3, origin='lower');
-plt.title("FXS diffraction pattern from {} mmCpns".format(n_part_per_shot))
+plt.title("FXS: photons diffracted from {} mmCpns".format(n_part_per_shot))
 plt.colorbar() 
 plt.show()
