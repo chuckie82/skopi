@@ -5,9 +5,9 @@
 <table style="padding:10px">
   <tr>
     <!--- example 1: -->
-    <td align="center"><img src="https://user-images.githubusercontent.com/1917664/107894591-f364cb00-6ee4-11eb-94be-72aa926cf069.png" alt="2" width=128px height=128px>
+    <td align="center"><img src="https://user-images.githubusercontent.com/1917664/120390650-d365e580-c2e2-11eb-9c0d-cc9d31ec6fff.png" alt="1" height=128px>
     <br />
-    <strong><a href="https://github.com/chuckie82/skopi/blob/master/docs/installation.md">Under construction</a></strong>
+    <strong><a href="https://github.com/chuckie82/skopi/blob/main/examples/scripts/spi_chaperone.py">SPI chaperone</a></strong>
     </td>   
   </tr>
 </table>
