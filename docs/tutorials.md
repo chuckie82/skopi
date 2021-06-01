@@ -19,7 +19,7 @@
     <!--- example 1: -->
     <td align="center"><img src="https://user-images.githubusercontent.com/1917664/120163172-14101280-c1ae-11eb-81f1-7c80815b06b2.png" alt="1" height=128px>
     <br />
-    <strong><a href="https://github.com/chuckie82/skopi/blob/master/docs/installation.md">FXS chaperones</a></strong>
+    <strong><a href="https://github.com/chuckie82/skopi/blob/main/examples/scripts/fxs_chaperones.py">FXS chaperones</a></strong>
     </td>   
     <!--- example 2: 
     <td align="center"><img src="https://user-images.githubusercontent.com/1917664/107894591-f364cb00-6ee4-11eb-94be-72aa926cf069.png" alt="2" width=128px height=128px>
