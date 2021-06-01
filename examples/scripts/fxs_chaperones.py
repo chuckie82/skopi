@@ -24,12 +24,14 @@ particle = sk.Particle()
 particle.read_pdb("../input/pdb/3iyf.pdb", ff='WK')
 
 # Set up FXS experiment with 20 particles per shot
-exp = sk.FXSExperiment(det, beam, jet_radius, [particle], n_part_per_shot=20)
+n_part_per_shot=20
+exp = sk.FXSExperiment(det, beam, jet_radius, [particle], n_part_per_shot)
 
 # Generate an image
 img = exp.generate_image()
 
 # Visualize
-plt.imshow(img, vmin=0, vmax=3, origin='lower'); 
-plt.colorbar(); 
+plt.imshow(img, vmin=0, vmax=3, origin='lower');
+plt.title("FXS diffraction pattern from {} mmCpns".format(n_part_per_shot))
+plt.colorbar() 
 plt.show()
