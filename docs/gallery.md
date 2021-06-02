@@ -1,4 +1,4 @@
-## Gallery
+## General Examples
 
 **Single Particle Imaging**
 
