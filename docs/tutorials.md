@@ -9,6 +9,11 @@
     <br />
     <strong><a href="https://github.com/chuckie82/skopi/blob/main/examples/scripts/spi_chaperone.py">SPI chaperone</a></strong>
     </td>   
+    <!--- example 2: -->
+    <td align="center"><img src="https://user-images.githubusercontent.com/1917664/120415795-fc9d6a80-c310-11eb-84dc-e414d77a62c4.png" alt="2" height=128px>
+    <br />
+    <strong><a href="https://github.com/chuckie82/skopi/blob/main/examples/scripts/spi_multiple_hit.py">SPI multiple hit</a></strong>
+    </td>
   </tr>
 </table>
 
