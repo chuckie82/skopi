@@ -47,14 +47,15 @@
   </tr>
 </table>
 
+<!--- example 1: 
 **Small-angle X-ray Scattering**
 
 <table style="padding:10px">
   <tr>
-    <!--- example 1: -->
     <td align="center"><img src="https://user-images.githubusercontent.com/1917664/107894591-f364cb00-6ee4-11eb-94be-72aa926cf069.png" alt="2" width=128px height=128px>
     <br />
     <strong><a href="https://github.com/chuckie82/skopi/blob/master/docs/installation.md">Under construction</a></strong>
     </td>   
   </tr>
 </table>
+-->
