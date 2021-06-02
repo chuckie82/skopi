@@ -14,7 +14,6 @@ det = sk.SimpleSquareDetector(n_pixels, det_size, det_dist)
 # photons per shot: 1e12 photons/pulse
 # x-ray focus radius: 0.5e-6m
 beam = sk.Beam("../input/beam/amo86615.beam")
-#beam.set_photons_per_pulse(100*beam.get_photons_per_pulse())
 
 # Set jet radius (m) of the particle injector
 # Currently scattering from the jet is not taken into account in the diffraction simulation
