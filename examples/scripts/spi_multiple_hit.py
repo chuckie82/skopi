@@ -1,5 +1,5 @@
-# FXS simulation:
-# Generates a diffraction pattern of 20 randomly oriented / randomly positioned chaperones
+# SPI simulation:
+# Generates a diffraction pattern of 2 randomly oriented viruses stuck together
 import matplotlib.pyplot as plt
 import skopi as sk
 
@@ -10,7 +10,7 @@ det = sk.SimpleSquareDetector(n_pixels, det_size, det_dist)
 
 # Set up x-ray beam
 # photon energy: 4600eV
-# photons per shot: 1e12 photons/pulse, 
+# photons per shot: 1e12 photons/pulse
 # x-ray focus radius: 0.5e-6m
 beam = sk.Beam("../input/beam/amo86615.beam")
 
@@ -23,7 +23,7 @@ jet_radius = 1e-6
 particle = sk.Particle()
 particle.read_pdb("../input/pdb/1fpv.pdb", ff='WK')
 
-# Set up FXS experiment with 20 particles per shot
+# Set up SPI experiment with 2 particles per shot
 n_part_per_shot=2
 exp = sk.SPIExperiment(det, beam, particle, n_part_per_shot)
 
@@ -32,6 +32,6 @@ img = exp.generate_image()
 
 # Visualize
 plt.imshow(img, vmin=0, vmax=3, origin='lower');
-plt.title("FXS: photons diffracted from {} panleukopenia viruses".format(n_part_per_shot))
+plt.title("SPI: photons diffracted from {} panleukopenia viruses".format(n_part_per_shot))
 plt.colorbar() 
 plt.show()
