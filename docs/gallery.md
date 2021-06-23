@@ -59,17 +59,15 @@
   </tr>
 </table>
 
-<!--- example 1: 
 **Small-angle X-ray Scattering**
 
 <table style="padding:10px">
   <tr>
-    <td align="center"><img src="https://user-images.githubusercontent.com/1917664/107894591-f364cb00-6ee4-11eb-94be-72aa926cf069.png" alt="2" width=128px height=128px>
+    <td align="center"><img src="https://user-images.githubusercontent.com/1917664/123035524-53421580-d3a0-11eb-9193-3d3bead7c0a2.png" alt="2" height=128px>
     <br />
-    <strong><a href="https://github.com/chuckie82/skopi/blob/master/docs/installation.md">Under construction</a></strong>
+    <strong><a href="https://github.com/chuckie82/skopi/blob/main/examples/scripts/ExampleSAXS.py">SAXS chaperones</a></strong>
     </td>   
   </tr>
 </table>
--->
 
 <!-- slides: https://docs.google.com/presentation/d/1yQxaXSVnIe8NSf1rIK-qrwn_OG14Qd5CgWK4ixoJRhw/edit?usp=sharing -->
