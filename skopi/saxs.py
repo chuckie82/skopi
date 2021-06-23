@@ -4,6 +4,28 @@ from skopi.util import xp
 
 class SAXS():
     def __init__(self, particle, N, resmax):
+        """
+        Computing SAXS curve of a particle.
+
+        Parameters
+        ----------
+        particle : Particle()
+            A particle object for a pdb entry of interest.
+
+        N : int
+            Number of random HKL samples.
+
+        resmax: float
+            Maximum resolution of the SAXS curve (m).
+
+        Examples
+        --------
+
+        >>> particle = sk.Particle()
+        >>> particle.read_pdb("3iyf.pdb", ff='WK')
+        >>> saxs = sk.SAXS(particle, 100000, 1e-9)
+        >>> saxs.plot()
+        """
         self.particle = particle
         self.N        = N
         self.qmax     = 1/resmax
@@ -11,6 +33,10 @@ class SAXS():
         self.qs, self.saxs = self.compute()
     
     def define_hkl(self):
+        """
+        Generate random reciprocal points (hkl) within qmax.
+        """
+
         phi = xp.arccos(1-2*xp.random.rand(self.N))
         theta = xp.random.rand(self.N) * 2 * xp.pi
         q = xp.random.rand(self.N) * self.qmax
@@ -21,6 +47,11 @@ class SAXS():
         return hkl
     
     def compute(self):
+        """
+        Compute diffraction intensity of the particle at points hkl
+        then bin along q.
+        """
+
         import skopi.gpu as gpu
         stack = gpu.calculate_diffraction_pattern_gpu(self.hkl, 
                                                       self.particle, 
@@ -38,9 +69,16 @@ class SAXS():
           return qs.get(), saxs.get()
     
     def plot(self):
-        plt.yscale('log')
-        plt.xlim(0,self.qmax/10**10)
-        plt.xlabel('q (inverse Angstroem)')
-        plt.ylabel('logI')
-        plt.plot(self.qs/10**10, self.saxs)
+        """
+        Plot SAXS curve in log scale.
+        """
+        qmaxAng = self.qmax*1e-10 # convert metre to Angstroem
+        qsAng = self.qs*1e-10
+
+        fig, ax = plt.subplots(constrained_layout=True)
+        ax.set_yscale('log')
+        ax.set_xlim(0,qmaxAng)
+        ax.set_xlabel('q (inverse Angstroem)')
+        ax.set_ylabel('logI')
+        ax.plot(qsAng, self.saxs)
         plt.show()
