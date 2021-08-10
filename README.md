@@ -22,6 +22,10 @@
 <br />
 <strong><a href="https://github.com/chuckie82/skopi/blob/master/docs/installation.md">Installation</a></strong></p>
 
+<p align="center"><a href="https://github.com/chuckie82/skopi/blob/main/docs/gallery.md"><img src="https://user-images.githubusercontent.com/1917664/120442021-09828400-c33a-11eb-8a75-3088fc4f36f9.png" alt="Gallery" height="64px" style="float:left" class="center"></a>
+<br />
+<strong><a href="https://github.com/chuckie82/skopi/blob/main/docs/gallery.md">Gallery</a></strong></p>
+
 <p align="center"><a href="https://github.com/chuckie82/skopi/blob/master/docs/tutorials.md"><img src="https://user-images.githubusercontent.com/1917664/107894692-43439200-6ee5-11eb-8699-77e772186191.png" alt="Tutorials" height="64px" style="float:left" class="center"></a>
 <br />
 <strong><a href="https://github.com/chuckie82/skopi/blob/master/docs/tutorials.md">Tutorials</a></strong></p>

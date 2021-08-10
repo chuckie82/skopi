@@ -381,7 +381,7 @@ class Particle(object):
             self.center_and_align_according_to_principal_axes()
 
     def create_from_atoms(self, atoms, center_and_align_according_to_principal_axes=False):
-        atom_types = {'H': 1, 'HE': 2, 'C': 6, 'N1+': 6, 'N': 7, 'O': 8, 'O1-': 9, 'P': 15, 'S': 16, 'CL': 18, 'FE': 26}
+        atom_types = {'H': 1, 'HE': 2, 'C': 6, 'N1+': 6, 'N': 7, 'O': 8, 'O1-': 9, 'P': 15, 'S': 16, 'CL': 18, 'FE': 26, 'AU': 79}
 
         all_atoms = []
         for atom_info in atoms:
