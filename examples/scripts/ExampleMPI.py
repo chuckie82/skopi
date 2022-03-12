@@ -8,6 +8,7 @@ from mpi4py import MPI # module required to use MPI
 import argparse
 import skopi as sk
 from skopi.util import asnumpy, xp
+from skopi.detector.pnccd import PnccdDetector
 
 
 # set up MPI environment
@@ -38,7 +39,7 @@ def main():
         beam = sk.Beam(beam)
 
         # load and initialize the detector
-        det = sk.PnccdDetector(geom=geom, beam=beam)
+        det = PnccdDetector(geom=geom, beam=beam)
 
         # create particle object(s)
         particle = sk.Particle()

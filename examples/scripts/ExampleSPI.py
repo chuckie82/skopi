@@ -14,6 +14,7 @@ from matplotlib.colors import LogNorm
 import h5py as h5
 import time, os
 import skopi as sk
+from skopi.detector.pnccd import PnccdDetector
 
 # Parameter(s)
 num = 1
@@ -34,7 +35,7 @@ print('AFTER : # of photons per pulse = {}'.format(beam.get_photons_per_pulse())
 print('photon energy = {} eV'.format(beam.photon_energy))
 
 # Load and initialize the detector
-det = sk.PnccdDetector(geom=geom, beam=beam)
+det = PnccdDetector(geom=geom, beam=beam)
 increase_factor = 0.5
 print('BEFORE: detector distance = {} m'.format(det.distance))
 print('>>> Increasing the detector distance by a factor of {}'.format(increase_factor))

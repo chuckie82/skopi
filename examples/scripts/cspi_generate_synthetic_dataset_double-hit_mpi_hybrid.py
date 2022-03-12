@@ -70,6 +70,7 @@ import h5py as h5
 
 import skopi as sk
 from skopi.util import asnumpy, xp
+from skopi.detector.pnccd import PnccdDetector
 
 
 def main():
@@ -131,7 +132,7 @@ def main():
         beam.set_photons_per_pulse(beam_fluence_increase_factor * beam.get_photons_per_pulse())
 
     # Load geometry of detector
-    det = sk.PnccdDetector(geom=geom_file, beam=beam)
+    det = PnccdDetector(geom=geom_file, beam=beam)
 
     # Get the shape of the diffraction pattern
     diffraction_pattern_height = det.detector_pixel_num_x.item()

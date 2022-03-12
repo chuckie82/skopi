@@ -3,6 +3,7 @@ import h5py as h5
 import time
 import skopi as sk
 import skopi.gpu as sg
+from skopi.detector.pnccd import PnccdDetector
 from mpi4py import MPI
 import numpy as np
 import argparse
@@ -37,7 +38,7 @@ def main():
        print("Running %d parallel MPI processes" % (comm.size))
 
        t_start = MPI.Wtime()
-         
+
        orientations = np.zeros((2*number,4))
        particle = sk.Particle()
 
@@ -46,36 +47,36 @@ def main():
           orientations = sk.geometry.get_uniform_quat(num_pts=number).astype(np.float64)
        elif orient== 0:
           orientations = sk.geometry.get_random_quat(num_pts=number).astype(np.float64)
-       print "O=",orientations.shape
-       print "ODtype=", orientations.dtype
+       print("O=",orientations.shape)
+       print("ODtype=", orientations.dtype)
        #sys.exit(0)
        print("Reading PDB file...")
        particle.read_pdb(pdb, ff='WK')
        # reading beam and detector files
        beam= sk.Beam(beam)
        #beam.set_wavelength(1.0e-10)
-       print beam.get_wavelength()
-       det = sk.PnccdDetector(geom=geom, beam=beam)
+       print(beam.get_wavelength())
+       det = PnccdDetector(geom=geom, beam=beam)
        print("Broadcasting input to processes...")
-    
+
        data = {'particle': particle, 'orientations': orientations, 'detector': det}
 
     dct = comm.bcast(data,root=0)
-    
+
     if rank==0:
        pattern_shape = det.pedestals.shape  
        fin = h5.File(os.path.join(outDir,'test_saveHDF5_parallel_intens_combined.h5'),'w')
        if savePhotons == 1:
           fph = h5.File(os.path.join(outDir,'test_saveHDF5_parallel_photons_combined.h5'),'w')
-       
+
        if savePhotons == 1:
           dset_photons = fph.create_dataset('imgPhot', shape=(number,)+pattern_shape,dtype=np.int32, chunks=(1,)+pattern_shape, compression="gzip", compression_opts=4)
        dset_intens =  fin.create_dataset('imgIntens', shape=(number,)+pattern_shape,dtype=np.float32, chunks=(1,)+pattern_shape, compression="gzip", compression_opts=4)
-       
+
        if savePhotons == 1:
-       	  fph.create_dataset('orientation', data=orientations, compression="gzip", compression_opts=4)
+           fph.create_dataset('orientation', data=orientations, compression="gzip", compression_opts=4)
        fin.create_dataset('orientation', data=orientations, compression="gzip", compression_opts=4)
-   
+
        print("Done creating HDF5 file and datasets...")
 
        c = 0
@@ -83,14 +84,14 @@ def main():
            status1 = MPI.Status()
            result = comm.recv(source=MPI.ANY_SOURCE,status=status1) # (index,photImg) 
            i = status1.Get_source()
-           
+
            dd = det.add_correction(result[1])
            print("Rank 0: Received image %d from rank %d" % (result[0],i)) 
            dset_intens[result[0],:,:,:] = dd #result[1]
            #photoImg = det.add_correction_and_quantization(pattern=result[1])
            if savePhotons == 1:
-	      photoImg = det.add_quantization(pattern=dd)
-              dset_photons[result[0],:,:,:] = photoImg
+               photoImg = det.add_quantization(pattern=dd)
+               dset_photons[result[0],:,:,:] = photoImg
            c += 1
 
     else: # slave
@@ -104,14 +105,14 @@ def main():
         sliceOne = np.zeros((pattern_shape))  #left out dtype=np.float32
         mesh_length = 128
         mesh,voxel_length = det.get_reciprocal_mesh(voxel_number_1d=mesh_length)
-        print "MeshDtype=",mesh.dtype
-        
+        print("MeshDtype=",mesh.dtype)
+
         intensVol = sg.diffraction.calculate_diffraction_pattern_gpu(mesh, particle, return_type='intensity')
         # lft out mesh.astype(np.float32)
         for i in range((rank-1),number,sz-1):
            # transform quaternion (set of orientations) into 3D rotation  
            rotmat = sk.geometry.quaternion2rot3d(ori[i,:])
-           
+
            intensSlice = slave_calc_intensity(rot3d = rotmat,
                                          pixel_momentum = pixel_momentum,
                                          pattern_shape = pattern_shape,
@@ -123,7 +124,7 @@ def main():
            # astype(np.int32)
            print("Sending slice %d from rank %d" % (i,rank))
            comm.ssend((i,intensSlice),dest=0)
-           
+
     if rank==0:
        t_end = MPI.Wtime()
        print("Finishing constructing %d patterns in %f seconds" % (number,t_end-t_start))
@@ -143,7 +144,7 @@ def main():
        #plt.imshow(diffImgAssemb)
        #plt.colorbar()
        #ax1.colorbar()
-       
+
        #ax2 = fig.add_subplot(2,1,2)
        #ax2.imshow(np.log(photImgAssem+1), interpolation='none')
        #ax2.colorbar()
@@ -167,7 +168,7 @@ def slave_calc_intensity(rot3d, pixel_momentum, pattern_shape, volume, voxel_len
     """
     pixel_num = np.prod(pattern_shape)
     sliceOne = np.zeros((pattern_shape)) # dtype=np.float32
-    print "SliceOneDtype=",sliceOne.dtype
+    print("SliceOneDtype=",sliceOne.dtype)
     rotated_pixel_position = np.zeros((1,)+pattern_shape+(3,))
 
     # new pixel position in reciprocal space
@@ -180,12 +181,12 @@ def slave_calc_intensity(rot3d, pixel_momentum, pattern_shape, volume, voxel_len
     intensSlice = sk.geometry.extract_slice(local_index = index,
                                           local_weight = weight, 
                                           volume = volume)
-    
+
     #intensSliceWCorrection = sk.detector.add_linear_correction(intensSlice)
-     
+
     return intensSlice
 # local index, weight int32, float32
-    
+
 def parse_input_arguments(args):
     del args[0]
     parse = argparse.ArgumentParser()
@@ -203,5 +204,5 @@ def parse_input_arguments(args):
 
 if __name__ == '__main__':
     main()
-   
+
 

@@ -3,25 +3,33 @@ import numpy as np
 import matplotlib.pyplot as plt
 import h5py as h5
 import skopi as sk
+from skopi.detector.pnccd import PnccdDetector
 import time, os
 
 # Create a particle object
-input_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../input')
+script_dir = os.path.dirname(os.path.abspath(__file__))
+pdb_dir    = '../input/pdb/3iyf.pdb'
+pdb_path   = os.path.join(script_dir, pdb_dir)
 particleOp = sk.Particle()
-particleOp.read_pdb(input_dir+'/3iyf.pdb', ff='WK')
+particleOp.read_pdb(pdb_path, ff='WK')
 #particleOp.rotate_randomly()
 
 #exit()
 
+pdb_dir    = '../input/pdb/3j03.pdb'
+pdb_path   = os.path.join(script_dir, pdb_dir)
 particleCl = sk.Particle()
-particleCl.read_pdb(input_dir+'/3j03.pdb', ff='WK')
+particleCl.read_pdb(pdb_path, ff='WK')
 
 # Load beam
-beam = sk.Beam(input_dir+'/beam/amo86615.beam') 
+beam_file = '../input/beam/amo86615.beam'
+beam_path = os.path.join(script_dir, beam_file)
+beam      = sk.Beam(beam_path) 
 
 # Load and initialize the detector
-det = sk.PnccdDetector(geom = input_dir+'/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data', 
-                       beam = beam)
+geom_file = '../input/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data'
+geom_path = os.path.join(script_dir, geom_file)
+det       = PnccdDetector(geom = geom_path, beam = beam)
 
 tic = time.time()
 patternOp = det.get_photons(device='gpu', particle=particleOp)
