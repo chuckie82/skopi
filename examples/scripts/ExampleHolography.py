@@ -11,6 +11,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 import skopi as sk
+from skopi.detector.pnccd import PnccdDetector
 import time, os
 
 # Input files
@@ -29,7 +30,7 @@ beam.set_photons_per_pulse(increase_factor*beam.get_photons_per_pulse())
 print('AFTER: # of photons per pulse = {}'.format(beam.get_photons_per_pulse()))
 
 # Load and initialize the detector
-det = sk.PnccdDetector(geom=geom, beam=beam)
+det = PnccdDetector(geom=geom, beam=beam)
 increase_factor = 0.5
 print('BEFORE: detector distance = {} m'.format(det.distance))
 print('>>> Increasing the detector distance by a factor of {}'.format(increase_factor))

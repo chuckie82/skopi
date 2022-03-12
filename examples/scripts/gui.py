@@ -11,12 +11,15 @@ import matplotlib.pyplot as plt
 import h5py as h5
 import time
 
-from matplotlib.backends.qt_compat import QtWidgets, QtCore, is_pyqt5
-if is_pyqt5():
-    from matplotlib.backends.backend_qt5agg import (
-            FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
-else:
-    from matplotlib.backends.backend_qt4agg import (
+from matplotlib.backends.qt_compat import QtWidgets, QtCore
+## from matplotlib.backends.qt_compat import QtWidgets, QtCore, is_pyqt5
+## if is_pyqt5():
+##     from matplotlib.backends.backend_qt5agg import (
+##             FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
+## else:
+##     from matplotlib.backends.backend_qt4agg import (
+##         FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
+from matplotlib.backends.backend_qt5agg import (
         FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
 from matplotlib.colors import LogNorm
@@ -24,6 +27,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 import skopi as sk
 import skopi.gpu as sg
+from skopi.detector.pnccd import PnccdDetector
 
 
 # Set default matplotlib parameters
@@ -45,7 +49,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         beam = sk.Beam('../input/beam/amo86615.beam') 
 
         # Load and initialize the detector
-        self.det = sk.PnccdDetector(
+        self.det = PnccdDetector(
             geom='../input/lcls/amo86615/PNCCD::CalibV1/'
                  'Camp.0:pnCCD.1/geometry/0-end.data', 
             beam=beam)

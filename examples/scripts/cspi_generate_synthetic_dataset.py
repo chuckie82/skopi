@@ -15,6 +15,7 @@ from PIL import Image
 import h5py as h5
 
 import skopi as sk
+from skopi.detector.pnccd import PnccdDetector
 
 
 """
@@ -99,7 +100,7 @@ def main():
 
     # Geometry of detector
     print("Load detector geometry: {}".format(geom_file))
-    det = sk.PnccdDetector(geom=geom_file, beam=beam)
+    det = PnccdDetector(geom=geom_file, beam=beam)
 
     
     # Simulate the SPI Experiment

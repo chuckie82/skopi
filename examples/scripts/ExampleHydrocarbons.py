@@ -5,6 +5,7 @@ import h5py as h5
 import time, os
 
 import skopi as sk
+from skopi.detector.pnccd import PnccdDetector
 
 numCyclohexane = 500
 numDinitro = 500
@@ -27,7 +28,7 @@ beam = sk.Beam(os.path.join(pwd,'../input/beam/temp.beam'))
 geom = os.path.join(pwd,'../input/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data')
 
 # Load and initialize the detector
-det = sk.PnccdDetector(geom=geom, beam = beam)
+det = PnccdDetector(geom=geom, beam = beam)
 
 tic = time.time()
 patternC = det.get_photons(device='gpu', particle=particleC)
