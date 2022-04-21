@@ -15,7 +15,6 @@ except Exception:
         # psana unavailable; skip all AutorangingDetector tests
         psana_version=0
 
-psana_version = 0
 if psana_version > 0:
     from .lcls import LCLSDetector
     from .pnccd import PnccdDetector
