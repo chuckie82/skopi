@@ -8,3 +8,4 @@ from skopi.ff_waaskirf_database import *
 from skopi.experiment import *
 from skopi.visualizer import *
 from skopi.saxs import *
+from skopi.datasets import *
