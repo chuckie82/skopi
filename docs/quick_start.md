@@ -9,8 +9,8 @@ tar -xvf lcls.tar.gz
 
 ## Example
 
-Simulate open and closed states of chaperones on an LCLS pnCCD detector
+Simulate a chaperone on an LCLS pnCCD detector
 ```
 cd skopi/examples/scripts
-python ExampleFXS.py
+python ExampleSPI.py
 ```

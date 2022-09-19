@@ -3,6 +3,7 @@ import os
 import gdown
 import tarfile
 import numpy as np
+import shutil
 
 def load_data(path=".tmp_1A8J6aiIsl1To8E7DtrysRkJfGVOQrXmX"):
     """Loads 3IYF dataset.
@@ -44,7 +45,7 @@ def load_data(path=".tmp_1A8J6aiIsl1To8E7DtrysRkJfGVOQrXmX"):
         if os.path.exists(npzFile):
             os.remove(npzFile)
         if os.path.exists(path) and createdTmp:
-            os.rmdir(path)
+            shutil.rmtree(path)
 
     try:
         # download tarball from google drive
@@ -64,8 +65,8 @@ def load_data(path=".tmp_1A8J6aiIsl1To8E7DtrysRkJfGVOQrXmX"):
         x_test, y_test = f["x_test"], f["y_test"]
 
         return (x_train, y_train), (x_test, y_test)
-    except PermissionError:
-        print("Error: try again by providing a path argument with write-permission!")
+    except:
+        print("Error: try again by providing a path argument with write-permission and approx. 3GB disk space.")
     finally:
         cleanup()
 

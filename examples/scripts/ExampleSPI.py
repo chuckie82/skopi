@@ -2,13 +2,11 @@
 # coding: utf-8
 
 ########## SPI Experiment ###############
-# In this notebook, we demonstrate how to simulate an SPI experiment, where a diffraction volume of the particle is computed in the reciprocal space, and the diffraction patterns are sliced from the diffraction volume in random orientations.
-# Input parameters including (1) beam, (2) detector, (3) gas jet radius, (4) particle(s), (5) number of particle per shot, (6) sticking=Ture or False are needed for the SPI Experiment class.
-# sticking=True is used to simulate multiple-particle hit (which we must veto before reconstruction), where particles are forced to form a single cluster, as demonstrated in ExampleAggregate.py.
+# We demonstrate how to simulate an SPI experiment, where a diffraction volume of the particle is computed in the reciprocal space, and the diffraction patterns are sliced from the diffraction volume in random orientations.
+# Input parameters for SPIExperiment class including (1) detector, (2) beam, and (3) particle.
 
 import numpy as np
 import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 import h5py as h5
@@ -35,7 +33,7 @@ print('photon energy = {} eV'.format(beam.photon_energy))
 
 # Load and initialize the detector
 det = sk.PnccdDetector(geom=geom, beam=beam)
-increase_factor = 0.5
+increase_factor = 0.3
 print('BEFORE: detector distance = {} m'.format(det.distance))
 print('>>> Increasing the detector distance by a factor of {}'.format(increase_factor))
 det.distance = increase_factor*det.distance
