@@ -7,7 +7,8 @@ import numpy as np
 def load_data(path=".tmp_1A8J6aiIsl1To8E7DtrysRkJfGVOQrXmX"):
     """Loads 3IYF dataset.
     This is a dataset of 30,000 128x128 diffraction images of chaperone (PDB:3iyf),
-    along with a test set of 10,000 images.
+    along with a test set of 10,000 images. Each image contains single, double, triple,
+    and quadruple particles. 
     Args:
       path: path where to cache the dataset locally
         (relative to $PWD).
@@ -15,12 +16,12 @@ def load_data(path=".tmp_1A8J6aiIsl1To8E7DtrysRkJfGVOQrXmX"):
       Tuple of NumPy arrays: `(x_train, y_train), (x_test, y_test)`.
     **x_train**: float32 NumPy array of grayscale image data with shapes
       `(30000, 1, 128, 128)`, containing the training data.
-    **y_train**: uint8 NumPy array of digit labels (integers in range 0-9)
+    **y_train**: uint8 NumPy array of digit labels (integers in range 1-4)
       with shape `(30000,)` for the training data.
     **x_test**: uint8 NumPy array of grayscale image data with shapes
       (10000, 28, 28), containing the test data. Pixel values range
       from 0 to 255.
-    **y_test**: uint8 NumPy array of digit labels (integers in range 0-9)
+    **y_test**: uint8 NumPy array of digit labels (integers in range 1-4)
       with shape `(10000,)` for the test data.
     Example:
     ```python
