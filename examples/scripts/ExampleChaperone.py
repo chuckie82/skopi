@@ -8,13 +8,13 @@ import time, os
 # Create a particle object
 input_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../input')
 particleOp = sk.Particle()
-particleOp.read_pdb(input_dir+'/3iyf.pdb', ff='WK')
+particleOp.read_pdb(input_dir+'/pdb/3iyf.pdb', ff='WK')
 #particleOp.rotate_randomly()
 
 #exit()
 
 particleCl = sk.Particle()
-particleCl.read_pdb(input_dir+'/3j03.pdb', ff='WK')
+particleCl.read_pdb(input_dir+'/pdb/3j03.pdb', ff='WK')
 
 # Load beam
 beam = sk.Beam(input_dir+'/beam/amo86615.beam') 
@@ -32,9 +32,12 @@ print("It takes {:.2f} seconds to finish the calculation.".format(toc-tic))
 
 fig = plt.figure(figsize=(10, 8))
 plt.subplot(121)
-plt.imshow(det.assemble_image_stack(patternOp),vmin=0, vmax=10)
+plt.imshow(det.assemble_image_stack(patternOp),vmin=0, vmax=4)
+plt.colorbar()
 plt.title('Open state')
 plt.subplot(122)
-plt.imshow(det.assemble_image_stack(patternCl),vmin=0, vmax=10)
+plt.imshow(det.assemble_image_stack(patternCl),vmin=0, vmax=4)
 plt.title('Closed state')
+plt.colorbar()
 plt.show()
+
