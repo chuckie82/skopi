@@ -1,7 +1,7 @@
 import numpy as np
 from skopi.particleCollection import ParticleCollection
 
-def build_bpca(num_pcles=1024, radius=0.5, overlap=None, output=True):
+def build_bpca(num_pcles=1024, radius=0.5, overlap=None):
     """
     Build a simple ballistic particle cluster aggregate by generating particle and
     allowing it to stick where it first intersects another particle.
@@ -24,8 +24,6 @@ def build_bpca(num_pcles=1024, radius=0.5, overlap=None, output=True):
 
         success = False
         while not success:
-            
-            if output: print('Generating particle %d of %d' % (n+2, num_pcles))
 
             first = random_sphere() * max(pc.farthest() * 2.0, radius *4.)
             second = random_sphere() * max(pc.farthest() * 2.0, radius *4.)

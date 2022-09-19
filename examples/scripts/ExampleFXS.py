@@ -2,13 +2,12 @@
 # coding: utf-8
 
 ########## FXS Experiment ###############
-# In this notebook, we demonstrate how to simulate a FXS experiment by introducing the capability to place multiple particles (with user-defined ratio) at the interaction point. Interference can sometimes be observed in the diffraction pattern.
-# Input parameters including (1) beam, (2) detector, (3) liquid jet radius, (4) particle(s), (5) number of particle per shot, (6) sticking=Ture or False are needed for the FXS Experiment class.
-# Note that FXS experiments require random distribution of particles (i.e. not stuck together), but there's no guarantee particles don't stick in FXS liquid jets.
+# We demonstrate how to simulate a FXS experiment by introducing the capability to place multiple particles (with user-defined ratio) at the interaction point.
+# Input parameters including (1) beam, (2) detector, (3) liquid jet radius, (4) particle(s), (5) number of particle per shot.
+# We also demonstrate polarization correction.
 
 import numpy as np
 import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -38,7 +37,7 @@ print('AFTER : # of photons per pulse = {}'.format(beam.get_photons_per_pulse())
 
 # Load and initialize the detector
 det = sk.PnccdDetector(geom=geom, beam=beam)
-increase_factor = 0.5
+increase_factor = 0.3
 print('BEFORE: detector distance = {} m'.format(det.distance))
 print('>>> Increasing the detector distance by a factor of {}'.format(increase_factor))
 det.distance = increase_factor*det.distance
@@ -50,17 +49,6 @@ particleOp.read_pdb(pdbfile1, ff='WK')
 
 particleCl = sk.Particle()
 particleCl.read_pdb(pdbfile2, ff='WK')
-
-# Perform FXS experiment with one particle type
-tic = time.time()
-experiment = sk.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particleOp], n_part_per_shot=numOp)
-patternOp = experiment.generate_image_stack()
-toc = time.time()
-print(">>> It took {:.2f} seconds to finish FXS calculation.".format(toc-tic))
-
-# Perform FXS experiment with one particle type
-experiment = sk.FXSExperiment(det=det, beam=beam, jet_radius=1e-4, particles=[particleCl], n_part_per_shot=numCl)
-patternCl = experiment.generate_image_stack()
 
 # Perform FXS experiment with two particle types
 # calculate 1 diffraction pattern from 2 particles, where each particle has 50% chance of being Open or Closed
@@ -80,22 +68,8 @@ with h5.File('mixed_chaperones_and_mask.hdf5', 'w') as f:
     f.create_dataset('mask', data=np_mask, dtype=np.int16)
 
 # Visualization
-fig, (ax1, ax2, ax3) = plt.subplots(1,3, figsize=(15,12))
-im1 = ax1.imshow(det.assemble_image_stack(patternOp),norm=LogNorm())
-ax1.set_title('Open Chaperone (photons)')
-divider = make_axes_locatable(ax1)
-cax = divider.append_axes("right", size="5%", pad=0.05)
-plt.colorbar(im1, cax=cax)
-im2 = ax2.imshow(det.assemble_image_stack(patternCl),norm=LogNorm())
-ax2.set_title('Closed Chaperone (photons)')
-divider = make_axes_locatable(ax2)
-cax = divider.append_axes("right", size="5%", pad=0.05)
-plt.colorbar(im2, cax=cax)
-im3 = ax3.imshow(det.assemble_image_stack(pattern),norm=LogNorm())
-ax3.set_title('Mixed Chaperones (photons)')
-divider = make_axes_locatable(ax3)
-cax = divider.append_axes("right", size="5%", pad=0.05)
-plt.colorbar(im3, cax=cax)
+viz = sk.Visualizer(experiment, diffraction_rings="auto", log_scale=True)
+viz.imshow(np_img)
 plt.show()
 
 fig, (ax1, ax2) = plt.subplots(1,2, figsize=(15,12))
@@ -111,5 +85,4 @@ divider = make_axes_locatable(ax2)
 cax = divider.append_axes("right", size="5%", pad=0.05)
 plt.colorbar(im2, cax=cax)
 plt.show()
-
 
