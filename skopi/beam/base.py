@@ -253,7 +253,9 @@ class Beam(object):
             self._n_phot = self._n_phot_ideal
 
         # add fluence jitter
-        fluence = np.random.normal(loc=self._n_phot, scale=sigma*self._n_phot, size=1)[0]
+        # prevent negative fluence and minimum fluence set to 1
+        fluence = np.abs(np.random.normal(loc=0, scale=sigma, size=1)[0]) + 1
+        fluence *= self._n_phot
         self.set_photons_per_pulse(fluence)
         return fluence
 
