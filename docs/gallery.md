@@ -20,6 +20,14 @@
     <br />
     <strong><a href="https://github.com/chuckie82/skopi/blob/main/examples/scripts/spi_multiple_hit.py">SPI multiple hit</a></strong>
     </td>
+        <!--- example 3: -->
+    <td align="center">
+      <a href="https://github.com/chuckie82/skopi/blob/main/examples/scripts/numberOfSnapshots.py">
+      <img src="https://user-images.githubusercontent.com/1917664/191352375-19ddb7d8-d11c-49f7-aceb-81dd81a96ea0.png" alt="3" height=128px>
+      </a>
+    <br />
+    <strong><a href="https://github.com/chuckie82/skopi/blob/main/examples/scripts/numberOfSnapshots.py">Estimate number of snapshots</a></strong>
+    </td>
   </tr>
 </table>
 
