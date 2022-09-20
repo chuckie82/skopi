@@ -12,11 +12,12 @@ requirements = [
     'pytest',
     'matplotlib',
     'setuptools',
+    'gdown'
 ]
 
 setuptools.setup(name='skopi',
       maintainer='Chunhong Yoon',
-      version='0.5.7',
+      version='0.6.0',
       maintainer_email='yoon82@stanford.edu',
       description='Single particle imaging simulation package',
       long_description=open('README.md', encoding='utf8').read(),
