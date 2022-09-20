@@ -26,7 +26,7 @@ def load_data(path=".tmp_1A8J6aiIsl1To8E7DtrysRkJfGVOQrXmX"):
       with shape `(10000,)` for the test data.
     Example:
     ```python
-    (x_train, y_train), (x_test, y_test) = skopi.datasets.3iyf.load_data()
+    (x_train, y_train), (x_test, y_test) = skopi.datasets.spidata.load_data()
     assert x_train.shape == (30000, 128, 128)
     assert x_test.shape == (10000, 128, 128)
     assert y_train.shape == (30000,)
