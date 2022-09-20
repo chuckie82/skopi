@@ -5,6 +5,9 @@ import skopi
 import matplotlib.pyplot as plt
 
 # Load SPI dataset with single/double/triple/quadruple hits (PDB:3iyf)
+# x_train: (30000, 1, 128, 128) -> (number of images, panels, number of rows, number of cols)
+# y_train: (30000, ) -> (1: single, 2: double, 3: triple, 4: quadruple)
+# x_test and y_test contain 10000 images 
 (x_train,y_train), (x_test,y_test) = skopi.datasets.spidata.load_data()
 
 # Display x_train images with y_train labels
