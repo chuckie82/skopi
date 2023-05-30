@@ -25,6 +25,15 @@ Add notebooks to skopi/examples/notebooks and add a description in skopi/docs/tu
 
 Test code with Flake8 and Pytest before pull request
 
+## Downloading test data
+Prior to running pytest, use following script to download and extract test data into the right path.
+```
+cd skopi/examples/input
+bash ./download.sh
+tar -xf lcls.tar.gz
+```
+Your test data (0-end.data) should be in this path: `skopi/examples/input/lcls/amo86615/PNCCD::CalibV1/Camp.0:pnCCD.1/geometry/0-end.data`.
+
 ## Unit Test
 
 With your environment loaded, run the unit tests with
