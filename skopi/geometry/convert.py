@@ -1,5 +1,5 @@
 import numpy as np
-from numba import jit
+from skopi.util import xp, asnumpy
 from six import string_types
 
 from skopi.util import deprecated
@@ -124,7 +124,6 @@ def quaternion_to_angle_axis(quaternion):
     return theta, axis
 
 
-@jit
 def rotmat_to_quaternion(rotmat):
     """
     Convert the rotation matrix to a quaternion.
@@ -146,27 +145,27 @@ def rotmat_to_quaternion(rotmat):
     r22 = rotmat[2,2]
 
     tr = r00 + r11 + r22
-    quat = np.zeros(4)
+    quat = xp.zeros(4)
     if tr > 0:
-        S = np.sqrt(tr+1.0) * 2.   # S=4*qw
+        S = xp.sqrt(tr+1.0) * 2.   # S=4*qw
         quat[0] = 0.25 * S
         quat[1] = (r21 - r12) / S
         quat[2] = (r02 - r20) / S
         quat[3] = (r10 - r01) / S
     elif (r00 > r11) and (r00 > r22):
-        S = np.sqrt(1.0 + r00 - r11 - r22) * 2. # S=4*qx
+        S = xp.sqrt(1.0 + r00 - r11 - r22) * 2. # S=4*qx
         quat[0] = (r21 - r12) / S
         quat[1] = 0.25 * S
         quat[2] = (r01 + r10) / S
         quat[3] = (r02 + r20) / S
     elif r11 > r22:
-        S = np.sqrt(1.0 + r11 - r00 - r22) * 2. # S=4*qy
+        S = xp.sqrt(1.0 + r11 - r00 - r22) * 2. # S=4*qy
         quat[0] = (r02 - r20) / S
         quat[1] = (r01 + r10) / S
         quat[2] = 0.25 * S
         quat[3] = (r12 + r21) / S
     else:
-        S = np.sqrt(1.0 + r22 - r00 - r11) * 2. # S=4*qz
+        S = xp.sqrt(1.0 + r22 - r00 - r11) * 2. # S=4*qz
         quat[0] = (r10 - r01) / S
         quat[1] = (r02 + r20) / S
         quat[2] = (r12 + r21) / S
@@ -175,7 +174,6 @@ def rotmat_to_quaternion(rotmat):
     return quat
 
 
-@jit
 def quaternion2rot3d(quat):
     """
     Convert the quaternion to rotation matrix.
@@ -198,7 +196,7 @@ def quaternion2rot3d(quat):
     q33 = quat[3] * quat[3]
 
     # Obtain the rotation matrix
-    rotation = np.zeros((3, 3))
+    rotation = xp.zeros((3, 3))
     rotation[0, 0] = (1. - 2. * (q22 + q33))
     rotation[0, 1] = 2. * (q12 - q03)
     rotation[0, 2] = 2. * (q13 + q02)
@@ -209,4 +207,4 @@ def quaternion2rot3d(quat):
     rotation[2, 1] = 2. * (q23 + q01)
     rotation[2, 2] = (1. - 2. * (q11 + q22))
 
-    return rotation
+    return asnumpy(rotation)
