@@ -4,7 +4,6 @@ import sys
 
 import skopi.geometry as pg
 import skopi.util as pu
-import skopi.crosstalk as pc
 
 from .base import DetectorBase
 
