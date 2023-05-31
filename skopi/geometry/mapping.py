@@ -1,6 +1,5 @@
 import numpy as np
 import time
-from numba import jit
 
 from skopi.util import deprecated, xp
 
@@ -9,7 +8,6 @@ from skopi.util import deprecated, xp
 # The following functions are utilized to rotate the pixels in reciprocal space
 ######################################################################
 
-# @jit(nopython=True, parallel=True)
 def rotate_pixels_in_reciprocal_space(rot_mat, pixels_position):
     """
     Rotate the pixel positions according to the rotation matrix
@@ -30,7 +28,6 @@ def rotate_pixels_in_reciprocal_space(rot_mat, pixels_position):
 # Take slice from the volume
 ######################################################################
 
-# @jit(nopython=True, parallel=True)
 def get_weight_and_index(pixel_position, voxel_length, voxel_num_1d):
     """
     Obtain the weight of the pixel for adjacent voxels.
@@ -118,7 +115,6 @@ def get_weight_and_index(pixel_position, voxel_length, voxel_num_1d):
 # Take slice from the volume
 ######################################################################
 
-# @jit(nopython=True, parallel=True)
 def get_weight_in_reciprocal_space(pixel_position, voxel_length, voxel_num_1d):
     """
     Obtain the weight of the pixel for adjacent voxels.

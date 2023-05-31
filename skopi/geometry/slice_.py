@@ -1,6 +1,5 @@
 import numpy as np
 import time
-from numba import jit
 
 from skopi.util import deprecated, xp
 
