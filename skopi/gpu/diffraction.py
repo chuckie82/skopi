@@ -72,6 +72,8 @@ def calculate_diffraction_pattern_gpu(reciprocal_space, particle, return_type='i
     """
     """This function can be used to calculate the diffraction field for
     arbitrary reciprocal space """
+    if xp == np: 
+        print(f'Warning: using numpy to generate diffraction patterns could be slow (set USE_CUPY=1 to use gpu).')
     # convert the reciprocal space into a 1d series.
     shape = reciprocal_space.shape
     pixel_number = int(np.prod(shape[:-1]))
