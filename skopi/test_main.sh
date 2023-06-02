@@ -14,12 +14,8 @@ fi
 
 
 # Pick up all the tests
-jsrun -n1 -g1 pytest -s tests/test_diffraction.py
-jsrun -n1 -g1 pytest beam/tests
-jsrun -n1 -g1 pytest detector/tests
-jsrun -n1 -g1 pytest -s geometry/tests
 export USE_CUPY=1
-jsrun -n1 -g1 pytest -s tests/test_diffraction.py
+jsrun -n1 -g1 pytest tests/test_diffraction.py
 jsrun -n1 -g1 pytest beam/tests
 jsrun -n1 -g1 pytest detector/tests
-jsrun -n1 -g1 pytest -s geometry/tests
+jsrun -n1 -g1 pytest geometry/tests
