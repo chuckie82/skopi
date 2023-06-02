@@ -1,10 +1,11 @@
 #!/bin/bash
 set -x
 set -e
-    
+
+target=$(hostname --fqdn)
 
 # Set internet proxy for summit and ascent. Psana2 needs this access.
-if [[ $(hostname --fqdn) = *".crusher."* || $(hostname --fqdn) = *".frontier."* || $(hostname --fqdn) = *".summit."* || $(hostname --fqdn) = *".ascent."* ]]; then
+if [[ ${target} = *".crusher."* || ${target} = *".frontier."* || ${target} = *".summit."* || ${target} = *".ascent."* ]]; then
     export all_proxy=socks://proxy.ccs.ornl.gov:3128/
     export ftp_proxy=ftp://proxy.ccs.ornl.gov:3128/
     export http_proxy=http://proxy.ccs.ornl.gov:3128/
@@ -13,9 +14,17 @@ if [[ $(hostname --fqdn) = *".crusher."* || $(hostname --fqdn) = *".frontier."* 
 fi
 
 
+# Set job submisson command
+if [[ ${target} = *"summit"* || ${target} = *"ascent"* ]]; then
+    export SKOPI_TEST_LAUNCHER="jsrun -n1 -a1 -g1"
+elif [[ ${target} = *"perlmutter"* || ${target} = *"frontier"* ]]; then
+    export SKOPI_TEST_LAUNCHER="srun -n1 -G1"
+fi
+
+
 # Pick up all the tests
 export USE_CUPY=1
-jsrun -n1 -g1 pytest tests/test_diffraction.py
-jsrun -n1 -g1 pytest beam/tests
-jsrun -n1 -g1 pytest detector/tests
-jsrun -n1 -g1 pytest geometry/tests
+$SKOPI_TEST_LAUNCHER pytest tests/test_diffraction.py
+$SKOPI_TEST_LAUNCHER pytest beam/tests
+$SKOPI_TEST_LAUNCHER pytest detector/tests
+$SKOPI_TEST_LAUNCHER pytest geometry/tests
