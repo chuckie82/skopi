@@ -3,7 +3,6 @@ from io import open
 
 requirements = [
     'numpy',
-    'numba',
     'scipy',
     'mpi4py',
     'h5py',
