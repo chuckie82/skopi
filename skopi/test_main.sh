@@ -22,6 +22,16 @@ elif [[ ${target} = *"perlmutter"* || ${target} = *"frontier"* ]]; then
 fi
 
 
+# Download geometry file
+if [ ! -d "../examples/input/lcls" ]; then
+    pushd ../examples/input
+    bash ./download.sh
+    tar -xf lcls.tar.gz
+    rm lcls.tar.gz
+    popd
+fi
+
+
 # Pick up all the tests
 export USE_CUPY=1
 $SKOPI_TEST_LAUNCHER pytest tests/test_diffraction.py
