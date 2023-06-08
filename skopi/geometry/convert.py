@@ -1,5 +1,5 @@
 import numpy as np
-from numba import jit
+from skopi.util import xp, asnumpy
 from six import string_types
 
 from skopi.util import deprecated
@@ -107,79 +107,6 @@ def euler_to_rot3d(psi, theta, phi):
     return np.dot(rpsi, np.dot(rtheta, rphi))
 
 
-# def euler_to_quaternion(psi, theta, phi):
-#     """
-#     Convert rotation with euler angle (psi, theta, phi) to quaternion description.
-#
-#     :param psi:
-#     :param theta:
-#     :param phi:
-#     :return:
-#     """
-#
-#     if abs(psi) == 0 and abs(theta) == 0 and abs(phi) == 0:
-#         quaternion = np.array([1., 0., 0., 0.])
-#     else:
-#         r = euler_to_rot3d(psi, theta, phi)
-#         w = np.array([r[1, 2] - r[2, 1], r[2, 0] - r[0, 2], r[0, 1] - r[1, 0]])
-#         if w[0] >= 0:
-#             w /= np.linalg.norm(w)
-#         else:
-#             w /= np.linalg.norm(w) * -1
-#         theta = np.arccos(0.5 * (np.trace(r) - 1))
-#         cc_is_theta = np.corrcoef(x=r, y=angle_axis_to_rot3d(w, theta))
-#         cc_is_negtheta = np.corrcoef(x=r, y=angle_axis_to_rot3d(w, -theta))
-#         if cc_is_negtheta > cc_is_theta:
-#             theta = -theta
-#         quaternion = np.array(
-#             [np.cos(theta / 2.),
-#             np.sin(theta / 2.) * w[0], np.sin(theta / 2.) * w[1], np.sin(theta / 2.) * w[2]])
-#     if quaternion[0] < 0:
-#         quaternion *= -1
-#     return quaternion
-
-
-@deprecated("Euler angles conventions are used inconsistently "
-    "and might be removed in the future. "
-    "Please consider another method.")
-@jit
-def euler_to_quaternion(psi, theta, phi):
-    """
-    Convert rotation with euler angle (psi, theta, phi) to quaternion
-    description, following a Body 3-2-1 sequence
-    (a.k.a. pitch - roll - yaw convention).
-
-    To understand this function, please see the wiki
-    https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-
-    The function is translated from the C++ code in the section
-    Euler Angles to Quaternion Conversion
-
-    yaw --> psi
-    pitch --> theta
-    roll --> phi
-
-    :param psi:
-    :param theta:
-    :param phi:
-    :return:
-    """
-    # Abbreviations for the various angular functions
-    cy = np.cos(psi * 0.5)
-    sy = np.sin(psi * 0.5)
-    cp = np.cos(theta * 0.5)
-    sp = np.sin(theta * 0.5)
-    cr = np.cos(phi * 0.5)
-    sr = np.sin(phi * 0.5)
-
-    q = np.zeros(4)
-    q[0] = cy * cp * cr + sy * sp * sr
-    q[1] = cy * cp * sr - sy * sp * cr
-    q[2] = sy * cp * sr + cy * sp * cr
-    q[3] = sy * cp * cr - cy * sp * sr
-    return q
-
-
 def quaternion_to_angle_axis(quaternion):
     """
     Convert quaternion to a right hand rotation theta about certain axis.
@@ -197,7 +124,6 @@ def quaternion_to_angle_axis(quaternion):
     return theta, axis
 
 
-@jit
 def rotmat_to_quaternion(rotmat):
     """
     Convert the rotation matrix to a quaternion.
@@ -219,27 +145,27 @@ def rotmat_to_quaternion(rotmat):
     r22 = rotmat[2,2]
 
     tr = r00 + r11 + r22
-    quat = np.zeros(4)
+    quat = xp.zeros(4)
     if tr > 0:
-        S = np.sqrt(tr+1.0) * 2.   # S=4*qw
+        S = xp.sqrt(tr+1.0) * 2.   # S=4*qw
         quat[0] = 0.25 * S
         quat[1] = (r21 - r12) / S
         quat[2] = (r02 - r20) / S
         quat[3] = (r10 - r01) / S
     elif (r00 > r11) and (r00 > r22):
-        S = np.sqrt(1.0 + r00 - r11 - r22) * 2. # S=4*qx
+        S = xp.sqrt(1.0 + r00 - r11 - r22) * 2. # S=4*qx
         quat[0] = (r21 - r12) / S
         quat[1] = 0.25 * S
         quat[2] = (r01 + r10) / S
         quat[3] = (r02 + r20) / S
     elif r11 > r22:
-        S = np.sqrt(1.0 + r11 - r00 - r22) * 2. # S=4*qy
+        S = xp.sqrt(1.0 + r11 - r00 - r22) * 2. # S=4*qy
         quat[0] = (r02 - r20) / S
         quat[1] = (r01 + r10) / S
         quat[2] = 0.25 * S
         quat[3] = (r12 + r21) / S
     else:
-        S = np.sqrt(1.0 + r22 - r00 - r11) * 2. # S=4*qz
+        S = xp.sqrt(1.0 + r22 - r00 - r11) * 2. # S=4*qz
         quat[0] = (r10 - r01) / S
         quat[1] = (r02 + r20) / S
         quat[2] = (r12 + r21) / S
@@ -248,7 +174,6 @@ def rotmat_to_quaternion(rotmat):
     return quat
 
 
-@jit
 def quaternion2rot3d(quat):
     """
     Convert the quaternion to rotation matrix.
@@ -271,7 +196,7 @@ def quaternion2rot3d(quat):
     q33 = quat[3] * quat[3]
 
     # Obtain the rotation matrix
-    rotation = np.zeros((3, 3))
+    rotation = xp.zeros((3, 3))
     rotation[0, 0] = (1. - 2. * (q22 + q33))
     rotation[0, 1] = 2. * (q12 - q03)
     rotation[0, 2] = 2. * (q13 + q02)
@@ -282,4 +207,4 @@ def quaternion2rot3d(quat):
     rotation[2, 1] = 2. * (q23 + q01)
     rotation[2, 2] = (1. - 2. * (q11 + q22))
 
-    return rotation
+    return asnumpy(rotation)

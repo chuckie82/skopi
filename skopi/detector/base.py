@@ -5,7 +5,6 @@ import sys
 import skopi as ps
 import skopi.geometry as pg
 import skopi.util as pu
-import skopi.crosstalk as pc
 from skopi.util import deprecation_message, xp
 from skopi import particle
 from skopi.particlePlacement import * #max_radius, distribute_particles
@@ -357,23 +356,6 @@ class DetectorBase(object):
 
         raw_data = self.get_pattern_without_corrections(particle=particle,return_type="intensity")
         return self.add_correction_and_quantization(raw_data)
-
-    def get_adu(self, particle, path, device=None):
-        """
-        Get a simulated adu pattern stack
-
-        :param particle: The particle object.
-        :param path: The path to the crosstalk effect library.
-        :param device: 'cpu' or 'gpu'
-        :return: An image stack of adu.
-        """
-        if device:
-            deprecation_message(
-                "Device option is deprecated. "
-                "Everything now runs on the GPU.")
-
-        raw_photon = self.get_photons(particle=particle)
-        return pc.add_cross_talk_effect_panel(db_path=path, photons=raw_photon)
 
     ###############################################################################################
     # For 3D slicing: computing full diffraction volume and slicing to compute pixels' intensities.

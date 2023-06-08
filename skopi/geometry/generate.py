@@ -1,5 +1,4 @@
 import numpy as np
-from numba import jit
 from scipy.stats import special_ortho_group
 
 from skopi.util import deprecated
