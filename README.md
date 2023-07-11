@@ -1,3 +1,5 @@
+Skopi has moved to LCLS-PSANA: https://github.com/lcls-psana/skopi
+
 <p align="center"><a href="https://github.com/chuckie82/skopi"><img src="https://user-images.githubusercontent.com/1917664/87212570-1b97a600-c2d4-11ea-86d5-8d1cdea0f5c5.gif" alt="ribosome" height="120px"></a></p>
 
 <div class="row">
