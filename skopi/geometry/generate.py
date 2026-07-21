@@ -35,7 +35,7 @@ def points_on_3sphere(num_pts):
     """
     Attempt to distribute points evenly on a unit 3-sphere in 4D.
 
-    The 3-sphere is the clasical hypersphere embedded in the 4D
+    The 3-sphere is the classical hypersphere embedded in the 4D
     Euclidian space.
 
     :param num_pts: Number of points
@@ -48,7 +48,7 @@ def points_on_3hemisphere(num_pts):
     """
     Attempt to distribute points evenly on half of a unit 3-sphere in 4D.
 
-    The 3-sphere is the clasical hypersphere embedded in the 4D
+    The 3-sphere is the classical hypersphere embedded in the 4D
     Euclidian space.
 
     :param num_pts: Number of points
